@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "torchchronos"
+version = "0.0.1"
+authors = ["Maurice Kraus <dev@mkraus.io>"]
+readme = "README.md"
+description = "PyTorch and Lightning compatible library that provides easy and flexible access to various time-series datasets for classification and regression tasks"
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+sktime = "^0.16.1"
+torch = "^2.0.0"
+lightning = "^2.0.0"
+fastapi = { version = "^0.88.0" }
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.1.0"
+pytest = "^7.2.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
