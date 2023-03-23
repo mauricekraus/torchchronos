@@ -8,6 +8,8 @@ from torchchronos.datasets.ucr_uea_dataset import UCRUEADataset
 from torchchronos.download import _download_uea_ucr
 from torch.utils.data import random_split, DataLoader
 
+from ..utils import swap_batch_seq_collate_fn
+
 from ..transforms import Compose
 
 
@@ -42,7 +44,7 @@ class UCRUEAModule(LightningDataModule):
 
         # split dataset
         test_size = round(1 - self.split_ratio[0] - self.split_ratio[1], 2)
-        if not math.isclose(test_size, 0.0):
+        if math.isclose(test_size, 0.0):
             self.train_dataset, self.val_dataset = random_split(
                 dataset, [self.split_ratio[0], self.split_ratio[1]]
             )
@@ -52,10 +54,23 @@ class UCRUEAModule(LightningDataModule):
             )
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size)
+        return DataLoader(
+            self.train_dataset,
+            batch_size=self.batch_size,
+            shuffle=True,
+            collate_fn=swap_batch_seq_collate_fn,
+        )
 
     def val_dataloader(self):
-        return DataLoader(self.val_dataset, batch_size=self.batch_size)
+        return DataLoader(
+            self.val_dataset,
+            batch_size=self.batch_size,
+            collate_fn=swap_batch_seq_collate_fn,
+        )
 
     def test_dataloader(self):
-        return DataLoader(self.test_dataset, batch_size=self.batch_size)
+        return DataLoader(
+            self.test_dataset,
+            batch_size=self.batch_size,
+            collate_fn=swap_batch_seq_collate_fn,
+        )

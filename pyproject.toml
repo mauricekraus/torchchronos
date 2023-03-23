@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "torchchronos"
-version = "0.0.1-post3"
+version = "0.0.1-post4"
 authors = ["Maurice Kraus <dev@mkraus.io>"]
 readme = "README.md"
 description = "PyTorch and Lightning compatible library that provides easy and flexible access to various time-series datasets for classification and regression tasks"

@@ -20,8 +20,8 @@ def test_padfront_gunpoint():
     mod.setup()
 
     batch = next(iter(mod.train_dataloader()))
-    assert batch[0].shape == (32, 160, 1)
-    assert batch[0][0, :10].sum() == 0
+    assert batch[0].shape == (160, 32, 1)
+    assert batch[0][:10].sum() == 0
 
 
 def test_padback_gunpoint():
@@ -37,8 +37,8 @@ def test_padback_gunpoint():
     mod.setup()
 
     batch = next(iter(mod.train_dataloader()))
-    assert batch[0].shape == (32, 160, 1)
-    assert batch[0][0, -10:].sum() == 0
+    assert batch[0].shape == (160, 32, 1)
+    assert batch[0][-10:].sum() == 0
 
 
 def test_pad_gunpoint():
@@ -54,6 +54,6 @@ def test_pad_gunpoint():
     mod.setup()
 
     batch = next(iter(mod.train_dataloader()))
-    assert batch[0].shape == (32, 170, 1)
-    assert batch[0][0, -10:].sum() == 0
-    assert batch[0][0, :10].sum() == 0
+    assert batch[0].shape == (170, 32, 1)
+    assert batch[0][-10:].sum() == 0
+    assert batch[0][:10].sum() == 0
