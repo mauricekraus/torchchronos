@@ -1,3 +1,4 @@
+import math
 from pathlib import Path
 from typing import Callable, Optional, Union
 from lightning import LightningDataModule
@@ -41,8 +42,8 @@ class UCRUEAModule(LightningDataModule):
 
         # split dataset
         test_size = round(1 - self.split_ratio[0] - self.split_ratio[1], 2)
-        if test_size == 0:
-            self.train_dataset, self.val_dataset, self.test_dataset = random_split(
+        if not math.isclose(test_size, 0.0):
+            self.train_dataset, self.val_dataset = random_split(
                 dataset, [self.split_ratio[0], self.split_ratio[1]]
             )
         else:
