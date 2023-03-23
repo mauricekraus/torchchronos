@@ -6,7 +6,6 @@ from lightning import seed_everything
 
 def test_lightning_gunpoint():
     seed_everything(12)
-    os.system("rm -rf .cache/data/GunPoint")
     mod = UCRUEAModule("GunPoint", split_ratio=(0.75, 0.15), batch_size=32)
     mod.prepare_data()
     mod.setup()

@@ -28,7 +28,8 @@ class UCRUEADataset(Dataset):
             return_type="numpy3d",
         )
         self.xs = torch.tensor(self.xs, dtype=torch.float32).transpose(1, 2)
-        self.transform = self.transform.fit(self.xs)
+        if self.transform is not None:
+            self.transform = self.transform.fit(self.xs)
 
         if self.ys.dtype == "U2" or self.ys.dtype == "<U1":
             # convert string labels to int
