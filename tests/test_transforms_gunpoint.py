@@ -1,6 +1,8 @@
 # Pytest of download file
 import os
 
+import pytest
+
 from torchchronos.lightning import UCRUEAModule
 from lightning import seed_everything
 
@@ -57,3 +59,26 @@ def test_pad_gunpoint():
     assert batch[0].shape == (170, 32, 1)
     assert batch[0][-10:].sum() == 0
     assert batch[0][:10].sum() == 0
+
+
+def test_properties_gunpoint():
+    seed_everything(12)
+    os.system("rm -rf .cache/data/GunPoint")
+    mod = UCRUEAModule(
+        "GunPoint",
+        split_ratio=(0.75, 0.15),
+        batch_size=32,
+        transform=Compose([PadBack(10), PadFront(10)]),
+    )
+
+    with pytest.raises(Exception) as e_info:
+        mod.num_classes
+
+    mod.prepare_data()
+    mod.setup()
+
+    assert mod.num_classes == 2
+    assert mod.dimensions == 1
+    assert mod.series_length == 150
+    assert mod.equal_length
+    assert mod.univariate

@@ -1,11 +1,11 @@
 # Pytest of download file
 import os
-from torchchronos.download import _download_uea_ucr
+from torchchronos.download import download_uea_ucr
 
 
 def test_download_ucr():
     os.system("rm -rf .cache/data/GunPoint")
-    _download_uea_ucr(None, "GunPoint")
+    download_uea_ucr(None, "GunPoint")
     # assert that files where downloaded
     elems = os.listdir(".cache/data/GunPoint")
     endings = ["arff", "ts", "txt"]
