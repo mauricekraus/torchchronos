@@ -18,7 +18,9 @@ To use a dataset, you can simply import the corresponding dataset class and crea
 ```python
 from torchchronos.datasets import UCRUEADataset
 from torchchronos.transforms import PadFront
+from torchchronos.download import download_uea_ucr
 
+download_uea_ucr(Path(".cache/data"), "ECG5000")
 dataset = UCRUEADataset('ECG5000',path=Path(".cache/data"), transforms=PadFront(10))
 ```
 
@@ -27,7 +29,7 @@ torchchronos also provides a multi gpu Lightning compatible DataModules to make 
 
 ```python
 from torchchronos.lightning import UCRUEAModule
-from torchchronos.transforms import PadFront
+from torchchronos.transforms import PadFront, PadBack
 
 module = UCRUEAModule('ECG5000', split_ratio= (0.75, 0.15), batch_size= 32) transforms=Compose([PadFront(10), PadBack(10)]))
 ```
@@ -47,7 +49,7 @@ class Normalize(Transform):
         self.mean = data.mean()
         self.std = data.std()
 
-    def transform(self, data):
+    def __call__(self, data):
         return (data - self.mean) / self.std
 ```
 
