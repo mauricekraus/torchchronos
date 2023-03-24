@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 from ..transforms import Compose
 
-from ..utils import get_project_root
+from ..utils import get_project_root, parse_ts
 
 
 class UCRUEADataset(Dataset):
@@ -20,6 +20,13 @@ class UCRUEADataset(Dataset):
         ] = None,
     ) -> None:
         super().__init__()
+        # It doesnt matter if test or train, but test is usually smaller
+        ts_info = parse_ts(get_project_root() / path / ds_name / f"{ds_name}_TEST.ts")
+        self.dimensions = ts_info.dimensions
+        self.num_classes = ts_info.num_classes
+        self.series_length = ts_info.series_length
+        self.equal_length = ts_info.equal_length
+        self.univariate = ts_info.univariate
 
         self.transform = transform
         self.xs, self.ys = load_UCR_UEA_dataset(

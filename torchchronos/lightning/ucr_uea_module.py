@@ -5,7 +5,7 @@ from lightning import LightningDataModule
 import torch
 
 from torchchronos.datasets.ucr_uea_dataset import UCRUEADataset
-from torchchronos.download import _download_uea_ucr
+from torchchronos.download import download_uea_ucr
 from torch.utils.data import random_split, DataLoader
 
 from ..utils import swap_batch_seq_collate_fn
@@ -32,15 +32,45 @@ class UCRUEAModule(LightningDataModule):
         self.transform = transform
 
     def prepare_data(self):
-        _download_uea_ucr(self.cache_dir, self.name)
+        download_uea_ucr(self.cache_dir, self.name)
 
     def label_from_float_index(self, index: float) -> str:
         assert self.__label_from_float_index is not None, "You need to call setup first"
         return self.__label_from_float_index(index)
 
+    @property
+    def num_classes(self) -> int:
+        assert self.__num_classes is not None, "You need to call setup first"
+        return self.__num_classes
+
+    @property
+    def dimensions(self) -> int:
+        assert self.__dimensions is not None, "You need to call setup first"
+        return self.__dimensions
+
+    @property
+    def series_length(self) -> int:
+        assert self.__series_length is not None, "You need to call setup first"
+        return self.__series_length
+
+    @property
+    def equal_length(self) -> bool:
+        assert self.__equal_length is not None, "You need to call setup first"
+        return self.__equal_length
+
+    @property
+    def univariate(self) -> bool:
+        assert self.__univariate is not None, "You need to call setup first"
+        return self.__univariate
+
     def setup(self, stage=None):
         dataset = UCRUEADataset(self.name, self.cache_dir, self.transform)
         self.__label_from_float_index = dataset.label_from_float_index
+        self.__num_classes = dataset.num_classes
+        self.__dimensions = dataset.dimensions
+        self.__series_length = dataset.series_length
+        self.__equal_length = dataset.equal_length
+        self.__univariate = dataset.univariate
 
         # split dataset
         test_size = round(1 - self.split_ratio[0] - self.split_ratio[1], 2)
