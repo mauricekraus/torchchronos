@@ -34,9 +34,9 @@ class UCRUEAModule(LightningDataModule):
     def prepare_data(self):
         download_uea_ucr(self.cache_dir, self.name)
 
-    def label_from_float_index(self, index: float) -> str:
-        assert self.__label_from_float_index is not None, "You need to call setup first"
-        return self.__label_from_float_index(index)
+    def label_from_index(self, index: float) -> str:
+        assert self.__label_from_index is not None, "You need to call setup first"
+        return self.__label_from_index(index)
 
     @property
     def num_classes(self) -> int:
@@ -65,7 +65,7 @@ class UCRUEAModule(LightningDataModule):
 
     def setup(self, stage=None):
         dataset = UCRUEADataset(self.name, self.cache_dir, self.transform)
-        self.__label_from_float_index = dataset.label_from_float_index
+        self.__label_from_index = dataset.label_from_index
         self.__num_classes = dataset.num_classes
         self.__dimensions = dataset.dimensions
         self.__series_length = dataset.series_length
