@@ -44,22 +44,15 @@ class UCRUEADataset(Dataset):
             self.y_labels = factorized_y[1]
             self.ys = factorized_y[0]
 
-        self.ys = torch.tensor(self.ys, dtype=torch.float32)
+        self.ys = torch.tensor(self.ys, dtype=torch.long)
 
-        if len(self.ys.shape) == 1:
-            self.ys = self.ys.unsqueeze(-1)
+    def label_from_index(self, index: int) -> str:
+        return self.y_labels[int(index)]
 
-    def label_from_float_index(self, index: float) -> str:
-        # check if float index is int
-        if index.is_integer():
-            return self.y_labels[int(index)]
-        else:
-            raise ValueError("Index is not an integer.")
-
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.xs)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> tuple[torch.FloatTensor, torch.LongTensor]:
         if self.transform:
             return self.transform(self.xs[index]), self.ys[index]
         return self.xs[index], self.ys[index]
