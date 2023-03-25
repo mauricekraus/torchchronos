@@ -13,6 +13,6 @@ def test_lightning_phoneme_spectra():
 
     batch = next(iter(mod.train_dataloader()))
     assert batch[0].shape == (217, 32, 11)
-    assert batch[1].shape == (32, 1)
-    assert mod.label_from_float_index(0.0) == "aa"
-    assert mod.label_from_float_index(1.0) == "ae"
+    assert batch[1].shape == (32,)
+    assert mod.label_from_index(0.0) == "aa"
+    assert mod.label_from_index(1.0) == "ae"

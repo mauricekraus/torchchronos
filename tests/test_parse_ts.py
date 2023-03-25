@@ -4,7 +4,7 @@ from pathlib import Path
 
 def test_parse_ucr_phoneme_ts():
     tsinfo = parse_ts(Path("./tests/fixtures/PhonemeSpectra_TEST.ts"))
-    assert tsinfo.num_classes == 40
+    assert tsinfo.num_classes == 39
     assert tsinfo.series_length == 217
     assert tsinfo.equal_length == True
     assert tsinfo.dimensions == 11
