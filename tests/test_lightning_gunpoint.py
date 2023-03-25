@@ -1,5 +1,7 @@
 import os
 
+import torch
+
 from torchchronos.lightning import UCRUEAModule
 from lightning import seed_everything
 
@@ -12,5 +14,6 @@ def test_lightning_gunpoint():
 
     batch = next(iter(mod.train_dataloader()))
     assert batch[0].shape == (150, 32, 1)
-    assert batch[1].shape == (32, 1)
-    assert mod.label_from_float_index(0.0) == "1"
+    assert batch[1].shape == (32,)
+    assert batch[1].dtype == torch.long
+    assert mod.label_from_index(0) == "1"
