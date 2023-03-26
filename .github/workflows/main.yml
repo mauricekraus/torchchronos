@@ -22,18 +22,18 @@ jobs:
   pytest:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'
-    - name: Install poetry
-      run: |
-        python -m pip install poetry
-    - name: Install dependencies with updated version
-      run: poetry install
-    - name: Run pytest
-      run: poetry run pytest
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - name: Install poetry
+        run: |
+          python -m pip install poetry
+      - name: Install dependencies with updated version
+        run: poetry install
+      - name: Run pytest
+        run: poetry run pytest
 
   prerelease:
     # needs: pytest
@@ -67,7 +67,6 @@ jobs:
           git config user.email "<>"
           git add pyproject.toml
           git commit -m "Bump version to ${{ github.event.inputs.version }}"
-          git tag ${{ github.event.inputs.version }}
 
       - name: Push changes
         uses: ad-m/github-push-action@master
@@ -80,13 +79,13 @@ jobs:
           curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
           -H "Accept: application/vnd.github.luke-cage-preview+json" \
           https://api.github.com/repos/mauricekraus/torchchronos/branches/next/protection \
-          -d '{"restrictions": { "apps": []}, "required_pull_request_reviews": {"dismissal_restrictions": {"users": [], "teams": []}, "dismiss_stale_reviews": true, "require_code_owner_reviews": false, "required_approving_review_count": 1}, "required_status_checks": {"contexts": [], "strict": true, "contexts_url": null}, "enforce_admins": true}'
+          -d '{"required_pull_request_reviews": {"dismiss_stale_reviews": true, "require_code_owner_reviews": true}}'
   release:
     needs: prerelease
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: "main"
       - name: Set up Python
@@ -97,33 +96,39 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install poetry
-      
+
       - name: Disable branch protection main
         run: |
           curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
           -H "Accept: application/vnd.github.luke-cage-preview+json" \
           https://api.github.com/repos/mauricekraus/torchchronos/branches/main/protection \
           -d '{"restrictions": null, "required_pull_request_reviews": null, "required_status_checks": null, "enforce_admins": null}'
-      
+      - name: Checkout and fetch next
+        uses: actions/checkout@v3
+        with:
+          ref: "next"
+
+      - name: Checkout main
+        uses: actions/checkout@v3
+        with:
+          ref: "main"
+      - name: Configure git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "<>"
       - name: Merge next -> main
         run: |
-          git config --local user.email "actions@github.com"
-          git config --local user.name "Github Actions"
+          git fetch origin
+          git merge --allow-unrelated-histories --strategy-option theirs -m "Merge next -> main" origin/next
+          git push origin main
 
-          git merge origin/next --no-commit
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: "main"
 
       - name: Enable branch protection main
         run: |
           curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
           -H "Accept: application/vnd.github.luke-cage-preview+json" \
           https://api.github.com/repos/mauricekraus/torchchronos/branches/main/protection \
-          -d '{"restrictions": {"apps": []}, "required_pull_request_reviews": {"dismissal_restrictions": {"users": [], "teams": []}, "dismiss_stale_reviews": true, "require_code_owner_reviews": false, "required_approving_review_count": 1}, "required_status_checks": {"contexts": [], "strict": true, "contexts_url": null}, "enforce_admins": true}'
+          -d '{"required_pull_request_reviews": {"dismiss_stale_reviews": true, "require_code_owner_reviews": true}}'
 
       - name: Install dependencies with updated version
         run: poetry install
