@@ -36,7 +36,7 @@ jobs:
         run: poetry run pytest
 
   prerelease:
-    # needs: pytest
+    needs: pytest
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.target_branch == 'main'
     runs-on: ubuntu-latest
     steps:
@@ -119,9 +119,8 @@ jobs:
       - name: Merge next -> main
         run: |
           git fetch origin
-          git merge --allow-unrelated-histories --strategy-option theirs -m "Merge next -> main" origin/next
+          git merge --allow-unrelated-histories --strategy-option theirs --ff-only origin/next 
           git push origin main
-
 
       - name: Enable branch protection main
         run: |
