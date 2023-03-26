@@ -11,7 +11,6 @@ from torchchronos.transforms import Compose, PadFront, PadBack
 
 def test_padfront_gunpoint():
     seed_everything(12)
-    os.system("rm -rf .cache/data/GunPoint")
     mod = UCRUEAModule(
         "GunPoint",
         split_ratio=(0.75, 0.15),
@@ -28,7 +27,6 @@ def test_padfront_gunpoint():
 
 def test_padback_gunpoint():
     seed_everything(12)
-    os.system("rm -rf .cache/data/GunPoint")
     mod = UCRUEAModule(
         "GunPoint",
         split_ratio=(0.75, 0.15),
@@ -45,7 +43,6 @@ def test_padback_gunpoint():
 
 def test_pad_gunpoint():
     seed_everything(12)
-    os.system("rm -rf .cache/data/GunPoint")
     mod = UCRUEAModule(
         "GunPoint",
         split_ratio=(0.75, 0.15),
@@ -63,7 +60,6 @@ def test_pad_gunpoint():
 
 def test_properties_gunpoint():
     seed_everything(12)
-    os.system("rm -rf .cache/data/GunPoint")
     mod = UCRUEAModule(
         "GunPoint",
         split_ratio=(0.75, 0.15),
