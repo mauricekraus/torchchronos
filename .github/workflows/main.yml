@@ -36,7 +36,7 @@ jobs:
       run: poetry run pytest
 
   release:
-    # needs: pytest
+    needs: pytest
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.target_branch == 'main'
     runs-on: ubuntu-latest
     steps:
