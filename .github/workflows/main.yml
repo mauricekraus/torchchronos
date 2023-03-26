@@ -8,12 +8,15 @@ on:
   workflow_dispatch:
     inputs:
       target_branch:
-        description: 'The target branch to release to'
+        description: "The target branch to release to"
         required: true
-        default: 'main'
+        default: "main"
       version:
-        description: 'The version number to release'
+        description: "The version number to release"
         required: true
+      changelog:
+        description: "The changelog"
+        required: false
 
 jobs:
   # pytest:
@@ -37,74 +40,87 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.target_branch == 'main'
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        ref: 'next'
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.10'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install poetry
-    - name: Update version number
-      run: poetry version ${{ github.event.inputs.version }}
-    - name: Disable branch protection next
-      run: |
-        curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
-        -H "Accept: application/vnd.github.luke-cage-preview+json" \
-        https://api.github.com/repos/mauricekraus/torchchronos/branches/next/protection \
-        -d '{"restrictions": null, "required_pull_request_reviews": null, "required_status_checks": null, "enforce_admins": null}'
-        
-    - name: Commit version changes
-      run: |
-        git config user.name "GitHub Actions"
-        git config user.email "<>"
-        git add pyproject.toml
-        git commit -m "Bump version to ${{ github.event.inputs.version }}"
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: "next"
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+      - name: Update version number
+        run: poetry version ${{ github.event.inputs.version }}
+      - name: Disable branch protection next
+        run: |
+          curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
+          -H "Accept: application/vnd.github.luke-cage-preview+json" \
+          https://api.github.com/repos/mauricekraus/torchchronos/branches/next/protection \
+          -d '{"restrictions": null, "required_pull_request_reviews": null, "required_status_checks": null, "enforce_admins": null}'
 
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: 'next'
+      - name: Commit version changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "<>"
+          git add pyproject.toml
+          git commit -m "Bump version to ${{ github.event.inputs.version }}"
 
-    - name: Enable branch protection next
-      run: |
-        curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
-        -H "Accept: application/vnd.github.luke-cage-preview+json" \
-        https://api.github.com/repos/mauricekraus/torchchronos/branches/next/protection \
-        -d '{"restrictions": {"users": [], "teams": [], "apps": []}, "required_pull_request_reviews": {"dismissal_restrictions": {"users": [], "teams": []}, "dismiss_stale_reviews": true, "require_code_owner_reviews": false, "required_approving_review_count": 1}, "required_status_checks": {"contexts": [], "strict": true, "contexts_url": null}, "enforce_admins": true}'
-    
-    - name: Disable branch protection main
-      run: |
-        curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
-        -H "Accept: application/vnd.github.luke-cage-preview+json" \
-        https://api.github.com/repos/mauricekraus/torchchronos/branches/main/protection \
-        -d '{"restrictions": null, "required_pull_request_reviews": null, "required_status_checks": null, "enforce_admins": null}'
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: "next"
 
-    - name: Merge next -> main
-      uses: devmasx/merge-branch@master
-      with:
-        type: now
-        target_branch: main
-        message: "Release ${{ github.event.inputs.version }}: Merge changes from next branch"
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-     
-    - name: Enable branch protection main
-      run: |
-        curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
-        -H "Accept: application/vnd.github.luke-cage-preview+json" \
-        https://api.github.com/repos/mauricekraus/torchchronos/branches/main/protection \
-        -d '{"restrictions": {"users": [], "teams": [], "apps": []}, "required_pull_request_reviews": {"dismissal_restrictions": {"users": [], "teams": []}, "dismiss_stale_reviews": true, "require_code_owner_reviews": false, "required_approving_review_count": 1}, "required_status_checks": {"contexts": [], "strict": true, "contexts_url": null}, "enforce_admins": true}'
+      - name: Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: Release ${{ github.event.inputs.version }}
+          body: |
+            Release ${{ github.event.inputs.version }}
+            ${{ github.event.inputs.changelog }}
+          draft: false
+          prerelease: ${{ contains(github.event.inputs.version, 'post') }}
 
-    
-    - name: Install dependencies with updated version
-      run: poetry install
-    - name: Build and publish package
-      run: |
-        poetry build
-        poetry config pypi-token.pypi ${{ secrets.POETRY_PYPI_TOKEN }}
-        poetry publish
+      - name: Enable branch protection next
+        run: |
+          curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
+          -H "Accept: application/vnd.github.luke-cage-preview+json" \
+          https://api.github.com/repos/mauricekraus/torchchronos/branches/next/protection \
+          -d '{"restrictions": { "apps": []}, "required_pull_request_reviews": {"dismissal_restrictions": {"users": [], "teams": []}, "dismiss_stale_reviews": true, "require_code_owner_reviews": false, "required_approving_review_count": 1}, "required_status_checks": {"contexts": [], "strict": true, "contexts_url": null}, "enforce_admins": true}'
+
+      - name: Disable branch protection main
+        run: |
+          curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
+          -H "Accept: application/vnd.github.luke-cage-preview+json" \
+          https://api.github.com/repos/mauricekraus/torchchronos/branches/main/protection \
+          -d '{"restrictions": null, "required_pull_request_reviews": null, "required_status_checks": null, "enforce_admins": null}'
+      - name: Merge next -> main
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "Github Actions"
+
+          git switch main
+          git merge origin/next --no-commit
+
+          git push origin main
+
+      - name: Enable branch protection main
+        run: |
+          curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
+          -H "Accept: application/vnd.github.luke-cage-preview+json" \
+          https://api.github.com/repos/mauricekraus/torchchronos/branches/main/protection \
+          -d '{"restrictions": {"apps": []}, "required_pull_request_reviews": {"dismissal_restrictions": {"users": [], "teams": []}, "dismiss_stale_reviews": true, "require_code_owner_reviews": false, "required_approving_review_count": 1}, "required_status_checks": {"contexts": [], "strict": true, "contexts_url": null}, "enforce_admins": true}'
+
+      - name: Install dependencies with updated version
+        run: poetry install
+      - name: Build and publish package
+        run: |
+          poetry build
+          poetry config pypi-token.pypi ${{ secrets.POETRY_PYPI_TOKEN }}
+          poetry publish
