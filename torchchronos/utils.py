@@ -52,9 +52,3 @@ def parse_ts(path: Path):
                 univariate = True
                 dimensions = 1
     return TSInfo(num_classes, series_length, equal_length, dimensions, univariate)
-
-
-tsinfo = parse_ts(Path(".cache/data/PhonemeSpectra/PhonemeSpectra_TEST.ts"))
-print(
-    f"num_classes: {tsinfo.num_classes}, series_length: {tsinfo.series_length}, equal_length: {tsinfo.equal_length}, dimensions: {tsinfo.dimensions}, univariate: {tsinfo.univariate}"
-)

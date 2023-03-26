@@ -1,8 +1,6 @@
 import math
 from pathlib import Path
-from typing import Callable, Optional, Union
 from lightning import LightningDataModule
-import torch
 
 from torchchronos.datasets.ucr_uea_dataset import UCRUEADataset
 from torchchronos.download import download_uea_ucr
@@ -10,7 +8,7 @@ from torch.utils.data import random_split, DataLoader
 
 from ..utils import swap_batch_seq_collate_fn
 
-from ..transforms import Compose
+from ..transforms import Compose, Transform
 
 
 class UCRUEAModule(LightningDataModule):
@@ -19,9 +17,7 @@ class UCRUEAModule(LightningDataModule):
         name: str,
         split_ratio: tuple[float, float] = (0.75, 0.15),
         batch_size: int = 32,
-        transform: Optional[
-            Union[Callable[[torch.Tensor], torch.Tensor], Compose]
-        ] = None,
+        transform: Transform | Compose | None = None,
     ):
         super().__init__()
 
@@ -34,7 +30,7 @@ class UCRUEAModule(LightningDataModule):
     def prepare_data(self):
         download_uea_ucr(self.cache_dir, self.name)
 
-    def label_from_index(self, index: float) -> str:
+    def label_from_index(self, index: int) -> str:
         assert self.__label_from_index is not None, "You need to call setup first"
         return self.__label_from_index(index)
 
@@ -83,7 +79,7 @@ class UCRUEAModule(LightningDataModule):
                 dataset, [self.split_ratio[0], self.split_ratio[1], test_size]
             )
 
-    def train_dataloader(self):
+    def train_dataloader(self) -> DataLoader:
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
@@ -91,14 +87,14 @@ class UCRUEAModule(LightningDataModule):
             collate_fn=swap_batch_seq_collate_fn,
         )
 
-    def val_dataloader(self):
+    def val_dataloader(self) -> DataLoader:
         return DataLoader(
             self.val_dataset,
             batch_size=self.batch_size,
             collate_fn=swap_batch_seq_collate_fn,
         )
 
-    def test_dataloader(self):
+    def test_dataloader(self) -> DataLoader:
         return DataLoader(
             self.test_dataset,
             batch_size=self.batch_size,
