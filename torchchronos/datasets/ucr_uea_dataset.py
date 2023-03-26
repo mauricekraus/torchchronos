@@ -1,11 +1,10 @@
 from pathlib import Path
-from typing import Callable, Optional, Union
 import pandas as pd
 from sktime.datasets import load_UCR_UEA_dataset
 import torch
 from torch.utils.data import Dataset
 
-from ..transforms import Compose
+from ..transforms import Compose, Transform
 
 from ..utils import get_project_root, parse_ts
 
@@ -15,9 +14,7 @@ class UCRUEADataset(Dataset):
         self,
         ds_name: str,
         path: Path,
-        transform: Optional[
-            Union[Callable[[torch.Tensor], torch.Tensor], Compose]
-        ] = None,
+        transform: Transform | Compose | None = None,
     ) -> None:
         super().__init__()
         # It doesnt matter if test or train, but test is usually smaller
@@ -52,7 +49,7 @@ class UCRUEADataset(Dataset):
     def __len__(self) -> int:
         return len(self.xs)
 
-    def __getitem__(self, index) -> tuple[torch.FloatTensor, torch.LongTensor]:
+    def __getitem__(self, index: int) -> tuple[torch.FloatTensor, torch.LongTensor]:
         if self.transform:
             return self.transform(self.xs[index]), self.ys[index]
         return self.xs[index], self.ys[index]
