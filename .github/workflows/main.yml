@@ -51,9 +51,9 @@ jobs:
         pip install poetry
     - name: Update version number
       run: poetry version ${{ github.event.inputs.version }}
-    - name: Disable branch protection
+    - name: Disable branch protection next
       run: |
-        curl -X PUT -H "Authorization: Bearer ${{ secrets.PAT_WITH_PUSH_PERMISSIONS }}" \
+        curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
         -H "Accept: application/vnd.github.luke-cage-preview+json" \
         https://api.github.com/repos/mauricekraus/torchchronos/branches/next/protection \
         -d '{"restrictions": null, "required_pull_request_reviews": null, "required_status_checks": null, "enforce_admins": null}'
@@ -71,26 +71,40 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: 'next'
 
-    - name: Enable branch protection
+    - name: Enable branch protection next
       run: |
-        curl -X PUT -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+        curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
         -H "Accept: application/vnd.github.luke-cage-preview+json" \
         https://api.github.com/repos/mauricekraus/torchchronos/branches/next/protection \
-        -d '{"restrictions": {"users": [], "teams": [], "apps": []}, "required_pull_request_reviews": {"dismissal_restrictions": {"users": [], "teams": []}, "dismiss_stale_reviews": true, "require_code_owner_reviews": false, "required_approving_review_count": 1}, "required_status_checks": {"contexts": [], "strict": true, "contexts_url": null}, "enforce_admins": true
+        -d '{"restrictions": {"users": [], "teams": [], "apps": []}, "required_pull_request_reviews": {"dismissal_restrictions": {"users": [], "teams": []}, "dismiss_stale_reviews": true, "require_code_owner_reviews": false, "required_approving_review_count": 1}, "required_status_checks": {"contexts": [], "strict": true, "contexts_url": null}, "enforce_admins": true}'
+    
+    - name: Disable branch protection main
+      run: |
+        curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
+        -H "Accept: application/vnd.github.luke-cage-preview+json" \
+        https://api.github.com/repos/mauricekraus/torchchronos/branches/main/protection \
+        -d '{"restrictions": null, "required_pull_request_reviews": null, "required_status_checks": null, "enforce_admins": null}'
 
-    # - name: Create Pull Request
-    #   uses: peter-evans/create-pull-request@v3
-    #   with:
-    #     title: "Merge 'next' into 'main'"
-    #     commit-message: "Merge 'next' into 'main'"
-    #     branch: 'main'
-    #     body: "This is an automated pull request merging 'next' into 'main'."
-    #     delete-branch: false
-    #     labels: 'automerge'
-    # - name: Install dependencies with updated version
-    #   run: poetry install
-    # - name: Build and publish package
-    #   run: |
-    #     poetry build
-    #     poetry config pypi-token.pypi ${{ secrets.POETRY_PYPI_TOKEN }}
-    #     poetry publish
+    - name: Merge next -> main
+      uses: devmasx/merge-branch@master
+      with:
+        type: now
+        target_branch: main
+        message: "Release ${{ github.event.inputs.version }}: Merge changes from next branch"
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+     
+    - name: Enable branch protection main
+      run: |
+        curl -X PUT -H "Authorization: Bearer ${{ secrets.TORCHCHRONOS_PROT }}" \
+        -H "Accept: application/vnd.github.luke-cage-preview+json" \
+        https://api.github.com/repos/mauricekraus/torchchronos/branches/main/protection \
+        -d '{"restrictions": {"users": [], "teams": [], "apps": []}, "required_pull_request_reviews": {"dismissal_restrictions": {"users": [], "teams": []}, "dismiss_stale_reviews": true, "require_code_owner_reviews": false, "required_approving_review_count": 1}, "required_status_checks": {"contexts": [], "strict": true, "contexts_url": null}, "enforce_admins": true}'
+
+    
+    - name: Install dependencies with updated version
+      run: poetry install
+    - name: Build and publish package
+      run: |
+        poetry build
+        poetry config pypi-token.pypi ${{ secrets.POETRY_PYPI_TOKEN }}
+        poetry publish
