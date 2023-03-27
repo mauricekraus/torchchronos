@@ -119,7 +119,7 @@ jobs:
       - name: Merge next -> main
         run: |
           git fetch origin
-          git merge --allow-unrelated-histories --strategy-option theirs --ff-only origin/next 
+          git merge --allow-unrelated-histories --strategy-option theirs origin/next 
           git push origin main
 
       - name: Enable branch protection main
