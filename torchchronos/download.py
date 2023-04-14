@@ -2,11 +2,11 @@ import shutil
 import tempfile
 import urllib.request
 import zipfile
-from os import PathLike
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
 
 from sktime.datasets._data_io import _download_and_extract, _list_available_datasets
+from .typing import AnyPath
 
 
 def download_uea_ucr(extract_path: Optional[Path], dataset_name: str) -> None:
@@ -37,7 +37,7 @@ def download_uea_ucr(extract_path: Optional[Path], dataset_name: str) -> None:
             ) from e
 
 
-def download_and_unzip_dataset(url: str, path: Union[str, bytes, PathLike]) -> None:
+def download_and_unzip_dataset(url: str, path: AnyPath) -> None:
     with tempfile.NamedTemporaryFile() as zipped_file:
         with urllib.request.urlopen(url) as response:
             shutil.copyfileobj(response, zipped_file)
