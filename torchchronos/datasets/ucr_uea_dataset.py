@@ -4,7 +4,7 @@ from sktime.datasets import load_UCR_UEA_dataset
 import torch
 from torch.utils.data import Dataset
 
-from ..transforms import Compose, Transform
+from ..transforms import Transform
 
 from ..utils import parse_ts
 
@@ -14,7 +14,7 @@ class UCRUEADataset(Dataset):
         self,
         ds_name: str,
         path: Path,
-        transform: Transform | Compose | None = None,
+        transform: Transform | None = None,
     ) -> None:
         super().__init__()
         # It doesnt matter if test or train, but test is usually smaller
