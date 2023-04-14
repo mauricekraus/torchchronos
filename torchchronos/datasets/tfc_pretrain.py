@@ -8,7 +8,7 @@ from ..transforms import Transform
 from ..typing import DatasetSplit, AnyPath
 
 
-class TFCPaperDataset(Dataset):
+class TFCPretrainDataset(Dataset):
     """Loads certain pieces of data from the TF-C paper [1]_ [2]_.
 
     Supported datasets:
@@ -72,8 +72,11 @@ class TFCPaperDataset(Dataset):
             self._labels
         ), "Samples and labels must have same length"
 
+        if self.transform is not None:
+            self.transform = self.transform.fit(self._samples)
+
     def download(self) -> None:
-        url = TFCPaperDataset.NAME_TO_URL[self.name]
+        url = TFCPretrainDataset.NAME_TO_URL[self.name]
         dataset_path = Path(self.path) / self.name
         download_and_unzip_dataset(url, dataset_path)
         if not self.full_path.exists():
@@ -81,9 +84,6 @@ class TFCPaperDataset(Dataset):
                 f"Downloaded data to {dataset_path.absolute()} "
                 f"but file {self.full_path} does not exist."
             )
-
-    def label_from_index(self, index: int) -> str:
-        return self.y_labels[int(index)]
 
     def __len__(self) -> int:
         return len(self._samples)
@@ -93,9 +93,3 @@ class TFCPaperDataset(Dataset):
         if self.transform is not None:
             x = self.transform(x)
         return x, self._labels[index]
-
-
-if __name__ == "__main__":
-    dataset = TFCPaperDataset("EMG", "data")
-    print(len(dataset))
-    print(dataset[0])
