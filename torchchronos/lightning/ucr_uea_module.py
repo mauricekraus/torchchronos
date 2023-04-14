@@ -8,7 +8,7 @@ from torch.utils.data import random_split, DataLoader
 
 from ..utils import swap_batch_seq_collate_fn
 
-from ..transforms import Compose, Transform
+from ..transforms import Transform
 
 
 class UCRUEAModule(LightningDataModule):
@@ -17,7 +17,7 @@ class UCRUEAModule(LightningDataModule):
         name: str,
         split_ratio: tuple[float, float] = (0.75, 0.15),
         batch_size: int = 32,
-        transform: Transform | Compose | None = None,
+        transform: Transform | None = None,
     ):
         super().__init__()
 
