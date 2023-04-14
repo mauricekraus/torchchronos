@@ -1,11 +1,15 @@
-from pathlib import Path
-from typing import Optional
+import shutil
+import tempfile
+import urllib.request
 import zipfile
+from os import PathLike
+from pathlib import Path
+from typing import Optional, Union
 
 from sktime.datasets._data_io import _download_and_extract, _list_available_datasets
 
 
-def download_uea_ucr(extract_path: Optional[Path], dataset_name: str):
+def download_uea_ucr(extract_path: Optional[Path], dataset_name: str) -> None:
     """This downloads the uea ucr dataset from sktime to the path extract_path."""
     # Download UCR/UEA archive from sktime
     if extract_path is not None:
@@ -31,3 +35,12 @@ def download_uea_ucr(extract_path: Optional[Path], dataset_name: str):
                 f"{extract_path}. Nor is it available on "
                 f"https://timeseriesclassification.com/.",
             ) from e
+
+
+def download_and_unzip_dataset(url: str, path: Union[str, bytes, PathLike]) -> None:
+    with tempfile.NamedTemporaryFile() as zipped_file:
+        with urllib.request.urlopen(url) as response:
+            shutil.copyfileobj(response, zipped_file)
+
+        with zipfile.ZipFile(zipped_file) as zf:
+            zf.extractall(path)
