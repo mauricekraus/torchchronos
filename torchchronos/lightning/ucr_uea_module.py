@@ -22,7 +22,7 @@ class UCRUEAModule(LightningDataModule):
         super().__init__()
 
         self.batch_size = batch_size
-        self.cache_dir = Path(".cache/data")
+        self.cache_dir = Path(".cache") / "data"
         self.split_ratio = split_ratio
         self.name = name
         self.transform = transform
