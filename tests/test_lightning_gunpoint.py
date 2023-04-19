@@ -2,13 +2,13 @@ import os
 
 import torch
 
-from torchchronos.lightning import UCRUEAModule
+from torchchronos.lightning import UCRUEADataModule
 from lightning import seed_everything
 
 
 def test_lightning_gunpoint():
     seed_everything(12)
-    mod = UCRUEAModule("GunPoint", split_ratio=(0.75, 0.15), batch_size=32)
+    mod = UCRUEADataModule("GunPoint", split_ratio=(0.75, 0.15), batch_size=32)
     mod.prepare_data()
     mod.setup()
 

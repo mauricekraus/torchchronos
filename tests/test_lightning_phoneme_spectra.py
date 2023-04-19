@@ -1,13 +1,13 @@
 import os
 
-from torchchronos.lightning import UCRUEAModule
+from torchchronos.lightning import UCRUEADataModule
 from lightning import seed_everything
 
 
 def test_lightning_phoneme_spectra():
     seed_everything(12)
     os.system("rm -rf .cache/data/PhonemeSpectra")
-    mod = UCRUEAModule("PhonemeSpectra", split_ratio=(0.75, 0.15), batch_size=32)
+    mod = UCRUEADataModule("PhonemeSpectra", split_ratio=(0.75, 0.15), batch_size=32)
     mod.prepare_data()
     mod.setup()
 
