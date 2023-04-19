@@ -1,5 +1,11 @@
 from os import PathLike
-from typing import Literal, TypeAlias, Union
+from typing import TypeAlias
+from enum import Enum
 
-AnyPath: TypeAlias = Union[str, bytes, PathLike]
-DatasetSplit: TypeAlias = Union[Literal["train"], Literal["val"], Literal["test"]]
+AnyPath: TypeAlias = str | bytes | PathLike
+
+
+class DatasetSplit(Enum):
+    TRAIN = "train"
+    VAL = "val"
+    TEST = "test"
