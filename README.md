@@ -28,7 +28,7 @@ dataset = UCRUEADataset('ECG5000', path=Path(".cache") / "data", transforms=PadF
 ```
 
 ### Data Modules
-torchchronos also provides [Lightning compatible `DataModules`](https://lightning.ai/docs/pytorch/stable/data/datamodule.html) to make it easy to load and preprocess data. They support commun use cases like (multi-)GPU training and train/test/val-splitting out of the box. For example:
+torchchronos also provides [Lightning compatible `DataModules`](https://lightning.ai/docs/pytorch/stable/data/datamodule.html) to make it easy to load and preprocess data. They support common use cases like (multi-)GPU training and train/test/val-splitting out of the box. For example:
 
 ```python
 from torchchronos.lightning import UCRUEAModule
