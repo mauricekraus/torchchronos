@@ -2,8 +2,8 @@ import math
 from pathlib import Path
 from lightning import LightningDataModule
 
-from torchchronos.datasets.ucr_uea_dataset import UCRUEADataset
-from torchchronos.download import download_uea_ucr
+from ..datasets import UCRUEADataset
+from ..download import download_uea_ucr
 from torch.utils.data import random_split, DataLoader
 
 from ..utils import swap_batch_seq_collate_fn
@@ -11,7 +11,7 @@ from ..utils import swap_batch_seq_collate_fn
 from ..transforms import Transform
 
 
-class UCRUEAModule(LightningDataModule):
+class UCRUEADataModule(LightningDataModule):
     def __init__(
         self,
         name: str,
