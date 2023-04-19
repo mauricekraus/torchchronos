@@ -29,24 +29,30 @@ class TFCPretrainDataModule(LightningDataModule):
 
     def prepare_data(self) -> None:
         # The test split does not matter
-        TFCPretrainDataset(self.name, self.cache_dir, "train", transform=None)
+        TFCPretrainDataset(
+            self.name, self.cache_dir, DatasetSplit.TRAIN, transform=None
+        )
 
     def setup(self, stage: str | None = None) -> None:
-        if stage == "fit":
-            self.train_dataset = TFCPretrainDataset(
-                self.name, self.cache_dir, "train", self.transform
-            )
-            self.val_dataset = TFCPretrainDataset(
-                self.name, self.cache_dir, "val", self.transform
-            )
-        elif stage == "validate":
-            self.val_dataset = TFCPretrainDataset(
-                self.name, self.cache_dir, "val", self.transform
-            )
-        elif stage == "test":
-            self.test_dataset = TFCPretrainDataset(
-                self.name, self.cache_dir, "test", self.transform
-            )
+        match stage:
+            case "fit":
+                self.train_dataset = TFCPretrainDataset(
+                    self.name, self.cache_dir, DatasetSplit.TRAIN, self.transform
+                )
+                self.val_dataset = TFCPretrainDataset(
+                    self.name, self.cache_dir, DatasetSplit.VAL, self.transform
+                )
+            case "validate":
+                self.val_dataset = TFCPretrainDataset(
+                    self.name, self.cache_dir, DatasetSplit.VAL, self.transform
+                )
+            case "test":
+                self.test_dataset = TFCPretrainDataset(
+                    self.name, self.cache_dir, "test", self.transform
+                )
+            case _:
+                # Handle any other cases or raise an error if needed
+                raise ValueError(f"Invalid stage: {stage}")
 
     def train_dataloader(self) -> DataLoader:
         return DataLoader(

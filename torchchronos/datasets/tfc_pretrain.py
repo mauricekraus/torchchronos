@@ -51,7 +51,7 @@ class TFCPretrainDataset(Dataset):
         self,
         name: str,
         path: AnyPath,
-        split: DatasetSplit = "train",
+        split: DatasetSplit = DatasetSplit.TRAIN,
         transform: Transform | None = None,
     ) -> None:
         super().__init__()
@@ -61,7 +61,7 @@ class TFCPretrainDataset(Dataset):
         self.split = split
         self.transform = transform
 
-        self.full_path = Path(self.path) / self.name / f"{self.split}.pt"
+        self.full_path = Path(self.path) / self.name / f"{self.split.value}.pt"
         if not self.full_path.exists():
             self.download()
 
