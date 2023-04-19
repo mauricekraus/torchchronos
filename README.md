@@ -1,5 +1,11 @@
 # torchchronos
+
+[![PyPI version](https://img.shields.io/pypi/v/torchchronos.svg?color=blue)](https://pypi.org/project/torchchronos)
+[![license](https://img.shields.io/pypi/l/torchchronos.svg?color=blue)](https://github.com/felixdivo/torchchronos/blob/main/LICENSE)
+[![python version](https://img.shields.io/badge/python-3.10+-blue)](https://devguide.python.org/versions/)
+
 [![test](https://github.com/mauricekraus/torchchronos/actions/workflows/main.yml/badge.svg)](https://github.com/mauricekraus/torchchronos/actions/workflows/main.yml)
+[![code style](https://img.shields.io/badge/code%20style-black-black)](https://github.com/psf/black)
 
 *torchchronos* is an experimental [PyTorch](https://pytorch.org/) and [Lightning](https://lightning.ai/pytorch-lightning/) compatible library that provides easy and flexible access to various time-series datasets for classification and regression tasks. It also provides a simple and extensible transform API to preprocess data.
 It is inspired by the much more complicated [torchtime](https://github.com/philipdarke/torchtime).
