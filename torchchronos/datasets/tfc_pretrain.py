@@ -61,29 +61,18 @@ class TFCPretrainDataset(Dataset):
         self.split = split
         self.transform = transform
 
-        self.full_path = Path(self.path) / self.name / f"{self.split.value}.pt"
-        if not self.full_path.exists():
-            self.download()
+        download_tfc_pretrain(self.path, self.name)
+        self.full_path = Path(path) / name / f"{split.value}.pt"
 
         data = torch.load(self.full_path)
         self._samples = data["samples"].transpose(1, 2)  # move features to last dim
         self._labels = data["labels"].long()
         assert len(self._samples) == len(
             self._labels
-        ), "Samples and labels must have same length"
+        ), "Samples and labels must have the same length"
 
         if self.transform is not None:
             self.transform = self.transform.fit(self._samples)
-
-    def download(self) -> None:
-        url = TFCPretrainDataset.NAME_TO_URL[self.name]
-        dataset_path = Path(self.path) / self.name
-        download_and_unzip_dataset(url, dataset_path)
-        if not self.full_path.exists():
-            raise RuntimeError(
-                f"Downloaded data to {dataset_path.absolute()} "
-                f"but file {self.full_path} does not exist."
-            )
 
     def __len__(self) -> int:
         return len(self._samples)
@@ -93,3 +82,17 @@ class TFCPretrainDataset(Dataset):
         if self.transform is not None:
             x = self.transform(x)
         return x, self._labels[index]
+
+
+def download_tfc_pretrain(path: AnyPath, name: str) -> None:
+    dataset_path = Path(path) / name
+
+    if not dataset_path.exists():
+        url = TFCPretrainDataset.NAME_TO_URL[name]
+        # This downloads all splits at once
+        download_and_unzip_dataset(url, dataset_path)
+
+    if not dataset_path.exists():
+        raise RuntimeError(
+            f"Downloaded data to {dataset_path.absolute()} but it does not exist."
+        )

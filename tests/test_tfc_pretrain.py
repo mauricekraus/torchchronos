@@ -1,3 +1,4 @@
+from torchchronos.typing import DatasetSplit
 from torchchronos.datasets import TFCPretrainDataset
 from torchchronos.lightning import TFCPretrainDataModule
 from torchchronos.transforms import PadFront
@@ -6,7 +7,9 @@ from torchchronos.transforms import PadFront
 def test_shapes_Gesture_train(tmp_path) -> None:
     """Test that the dataset returns the correct shapes."""
 
-    dataset = TFCPretrainDataset(name="Gesture", path=tmp_path, split="train")
+    dataset = TFCPretrainDataset(
+        name="Gesture", path=tmp_path, split=DatasetSplit.TRAIN
+    )
     assert len(dataset) == 320
     data, label = dataset[0]
     assert data.shape == (206, 3)
@@ -16,7 +19,7 @@ def test_shapes_Gesture_train(tmp_path) -> None:
 def test_shapes_EMG_test(tmp_path) -> None:
     """Test that the dataset returns the correct shapes."""
 
-    dataset = TFCPretrainDataset(name="EMG", path=tmp_path, split="test")
+    dataset = TFCPretrainDataset(name="EMG", path=tmp_path, split=DatasetSplit.TEST)
     assert len(dataset) == 41
     data, label = dataset[1]
     assert data.shape == (1_500, 1)

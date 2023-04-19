@@ -7,7 +7,7 @@ from ..utils import swap_batch_seq_collate_fn
 
 from ..transforms import Transform
 from ..typing import DatasetSplit
-from ..datasets import TFCPretrainDataset
+from ..datasets.tfc_pretrain import TFCPretrainDataset, download_tfc_pretrain
 
 
 class TFCPretrainDataModule(LightningDataModule):
@@ -28,10 +28,7 @@ class TFCPretrainDataModule(LightningDataModule):
         self.cache_dir = Path(".cache") / "data"
 
     def prepare_data(self) -> None:
-        # The test split does not matter
-        TFCPretrainDataset(
-            self.name, self.cache_dir, DatasetSplit.TRAIN, transform=None
-        )
+        download_tfc_pretrain(self.cache_dir, self.name)
 
     def setup(self, stage: str | None = None) -> None:
         match stage:
@@ -51,7 +48,6 @@ class TFCPretrainDataModule(LightningDataModule):
                     self.name, self.cache_dir, "test", self.transform
                 )
             case _:
-                # Handle any other cases or raise an error if needed
                 raise ValueError(f"Invalid stage: {stage}")
 
     def train_dataloader(self) -> DataLoader:
