@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from torchchronos.lightning import UCRUEAModule
+from torchchronos.lightning import UCRUEADataModule
 from lightning import seed_everything
 
 from torchchronos.transforms import Compose, PadFront, PadBack
@@ -11,7 +11,7 @@ from torchchronos.transforms import Compose, PadFront, PadBack
 
 def test_padfront_gunpoint():
     seed_everything(12)
-    mod = UCRUEAModule(
+    mod = UCRUEADataModule(
         "GunPoint",
         split_ratio=(0.75, 0.15),
         batch_size=32,
@@ -27,7 +27,7 @@ def test_padfront_gunpoint():
 
 def test_padback_gunpoint():
     seed_everything(12)
-    mod = UCRUEAModule(
+    mod = UCRUEADataModule(
         "GunPoint",
         split_ratio=(0.75, 0.15),
         batch_size=32,
@@ -43,7 +43,7 @@ def test_padback_gunpoint():
 
 def test_pad_gunpoint():
     seed_everything(12)
-    mod = UCRUEAModule(
+    mod = UCRUEADataModule(
         "GunPoint",
         split_ratio=(0.75, 0.15),
         batch_size=32,
@@ -60,7 +60,7 @@ def test_pad_gunpoint():
 
 def test_properties_gunpoint():
     seed_everything(12)
-    mod = UCRUEAModule(
+    mod = UCRUEADataModule(
         "GunPoint",
         split_ratio=(0.75, 0.15),
         batch_size=32,
