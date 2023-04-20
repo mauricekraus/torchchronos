@@ -37,7 +37,7 @@ dataset = UCRUEADataset('ECG5000', path=Path(".cache") / "data", transforms=PadF
 torchchronos also provides [Lightning compatible `DataModules`](https://lightning.ai/docs/pytorch/stable/data/datamodule.html) to make it easy to load and preprocess data. They support common use cases like (multi-)GPU training and train/test/val-splitting out of the box. For example:
 
 ```python
-from torchchronos.lightning import UCRUEAModule
+from torchchronos.lightning import UCRUEADataModule
 from torchchronos.transforms import PadFront, PadBack
 
 module = UCRUEAModule('ECG5000', split_ratio= (0.75, 0.15), batch_size= 32,
@@ -45,7 +45,7 @@ module = UCRUEAModule('ECG5000', split_ratio= (0.75, 0.15), batch_size= 32,
 ```
 
 Analogous the the datasets above, these dataloaders are supported as of now, wrapping the respective datasets:
-- `torchchronos.lightning.UCRUEAModule`
+- `torchchronos.lightning.UCRUEADataModule`
 - `torchchronos.lightning.TFCPretrainDataModule`
 
 ### Transforms
