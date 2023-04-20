@@ -15,7 +15,7 @@ on:
         description: "The version number to release"
         required: true
       changelog:
-        description: "Changelog:<br><textarea name='text' rows='5' cols='50'></textarea>"
+        description: "Changelog:<br><textarea name='changelog' rows='5' cols='50'></textarea>"
         required: false
 
 jobs:
