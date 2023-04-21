@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Literal
 import pandas as pd
 from sktime.datasets import load_UCR_UEA_dataset
 import torch
@@ -14,6 +15,7 @@ class UCRUEADataset(Dataset):
         self,
         ds_name: str,
         path: Path,
+        split: Literal["TRAIN", "TEST"] = "TRAIN",
         transform: Transform | None = None,
     ) -> None:
         super().__init__()
@@ -23,6 +25,7 @@ class UCRUEADataset(Dataset):
             ds_name,
             extract_path=".." / path,  # dont know why?
             return_type="numpy3d",
+            split=split,
         )
         self.xs = torch.tensor(self.xs, dtype=torch.float32).transpose(1, 2)
         if self.transform is not None:
