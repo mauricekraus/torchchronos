@@ -17,13 +17,6 @@ class UCRUEADataset(Dataset):
         transform: Transform | None = None,
     ) -> None:
         super().__init__()
-        # It doesnt matter if test or train, but test is usually smaller
-        ts_info = parse_ts(path / ds_name / f"{ds_name}_TEST.ts")
-        self.dimensions = ts_info.dimensions
-        self.num_classes = ts_info.num_classes
-        self.series_length = ts_info.series_length
-        self.equal_length = ts_info.equal_length
-        self.univariate = ts_info.univariate
 
         self.transform = transform
         self.xs, self.ys = load_UCR_UEA_dataset(
@@ -34,6 +27,14 @@ class UCRUEADataset(Dataset):
         self.xs = torch.tensor(self.xs, dtype=torch.float32).transpose(1, 2)
         if self.transform is not None:
             self.transform = self.transform.fit(self.xs)
+
+        # It doesnt matter if test or train, but test is usually smaller
+        ts_info = parse_ts(path / ds_name / f"{ds_name}_TEST.ts")
+        self.dimensions = ts_info.dimensions
+        self.num_classes = ts_info.num_classes
+        self.series_length = ts_info.series_length
+        self.equal_length = ts_info.equal_length
+        self.univariate = ts_info.univariate
 
         if self.ys.dtype == "U2" or self.ys.dtype == "<U1":
             # convert string labels to int
