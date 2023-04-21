@@ -21,7 +21,7 @@ class UCRUEADataset(Dataset):
         self.transform = transform
         self.xs, self.ys = load_UCR_UEA_dataset(
             ds_name,
-            extract_path="../" / path,  # dont know why?
+            extract_path=".." / path,  # dont know why?
             return_type="numpy3d",
         )
         self.xs = torch.tensor(self.xs, dtype=torch.float32).transpose(1, 2)
