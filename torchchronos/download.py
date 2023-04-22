@@ -24,15 +24,13 @@ def _list_available_datasets(data_dir: AnyPath) -> list[str]:
     return datasets
 
 
-def download_uea_ucr(
-    extract_path: str | Path | None = None, dataset_name: str = "GunPoint"
-) -> bool:
+def download_uea_ucr(dataset_name: str, extract_path: str | Path | None = None) -> bool:
     """
     Downloads the UEA/UCR time series dataset from sktime to the specified path.
 
     Parameters:
+    dataset_name (str): The name of the dataset to be downloaded.
     extract_path (str | Path | None, default=None) : The path to extract the dataset. If None, extract to `.cache/data` directory.
-    dataset_name (str, default="GunPoint"): The name of the dataset to be downloaded.
 
     Returns:
     bool: True if the dataset was already present, False otherwise.
