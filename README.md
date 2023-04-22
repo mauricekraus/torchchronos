@@ -68,7 +68,9 @@ class Normalize(Transform):
 ```
 
 ## Known issues
-The dataset [SpokenArabicDigits](https://www.timeseriesclassification.com/description.php?Dataset=SpokenArabicDigits) does not seem to work due to a missmatch of TRAIN and TEST size
+- The dataset [SpokenArabicDigits](https://www.timeseriesclassification.com/description.php?Dataset=SpokenArabicDigits) does not seem to work due to a missmatch of TRAIN and TEST size
+- The dataset [UrbanSound](https://www.timeseriesclassification.com/description.php?Dataset=UrbanSound) does not seem to work due to missing ts files
+
 
 ## Roadmap
 The following features are planned for future releases of torchchronos:
