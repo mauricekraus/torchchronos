@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Literal
 import pandas as pd
 from sktime.datasets import load_UCR_UEA_dataset
+from sktime.datasets._data_io import _load_provided_dataset
 import torch
 from torch.utils.data import Dataset
 
@@ -21,11 +22,12 @@ class UCRUEADataset(Dataset):
         super().__init__()
 
         self.transform = transform
-        self.xs, self.ys = load_UCR_UEA_dataset(
+        self.xs, self.ys = _load_provided_dataset(
             ds_name,
-            extract_path=".." / path,  # dont know why?
-            return_type="numpy3d",
             split=split,
+            return_type="numpy3d",
+            local_module=path.parent,
+            local_dirname=path.stem,
         )
         self.xs = torch.tensor(self.xs, dtype=torch.float32).transpose(1, 2)
         if self.transform is not None:
@@ -39,7 +41,9 @@ class UCRUEADataset(Dataset):
         self.equal_length = ts_info.equal_length
         self.univariate = ts_info.univariate
 
-        if self.ys.dtype == "U2" or self.ys.dtype == "<U1":
+        if (
+            self.ys.dtype == "U2" or self.ys.dtype == "<U1" or self.ys.dtype == "<U3"
+        ):  # todo need to capture the differnt U types
             # convert string labels to int
             factorized_y = pd.factorize(self.ys, sort=True)
             self.y_labels = factorized_y[1]
