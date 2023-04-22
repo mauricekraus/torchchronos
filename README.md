@@ -29,7 +29,7 @@ from torchchronos.datasets import UCRUEADataset
 from torchchronos.transforms import PadFront
 from torchchronos.download import download_uea_ucr
 
-download_uea_ucr(Path(".cache/data"), "ECG5000")
+download_uea_ucr("ECG5000",Path(".cache/data"))
 dataset = UCRUEADataset('ECG5000', path=Path(".cache") / "data", transforms=PadFront(10))
 ```
 
