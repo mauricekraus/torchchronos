@@ -15,15 +15,22 @@ class UCRUEADataset(Dataset):
         self,
         ds_name: str,
         path: Path,
-        split: DatasetSplit = DatasetSplit.TRAIN,
+        split: DatasetSplit | None = None,
         transform: Transform | None = None,
     ) -> None:
         super().__init__()
 
         self.transform = transform
-        if split == DatasetSplit.VAL:
-            raise ValueError("UCR/UEA datasets do not have a validation split")
-        split_val = "TRAIN" if split == DatasetSplit.TRAIN else "TEST"
+        match split:
+            case None:
+                split_val = None
+            case DatasetSplit.TRAIN:
+                split_val = "TRAIN"
+            case DatasetSplit.VAL:
+                raise ValueError("UCR/UEA datasets do not have a validation split")
+            case DatasetSplit.TEST:
+                split_val = "TEST"
+
         self.xs, self.ys = _load_provided_dataset(
             ds_name,
             split=split_val,
