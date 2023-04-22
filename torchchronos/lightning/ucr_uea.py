@@ -55,7 +55,7 @@ class UCRUEADataModule(LightningDataModule):
         self.transform = transform
 
     def prepare_data(self):
-        download_uea_ucr(self.cache_dir, self.name)
+        download_uea_ucr(self.name, self.cache_dir)
 
     def label_from_index(self, index: int) -> str:
         assert self.__label_from_index is not None, "You need to call setup first"

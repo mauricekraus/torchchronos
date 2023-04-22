@@ -25,7 +25,7 @@ def test_label_datatype_factorization(dataset_fixture: list[Dataset]):
 
     for dataset in dataset_fixture:  # TODO change
         cache_dir = Path(".cache") / "data"
-        download_uea_ucr(cache_dir, dataset.name)
+        download_uea_ucr(dataset.name, cache_dir)
 
         ds = UCRUEADataset(dataset.name, path=cache_dir)
 
