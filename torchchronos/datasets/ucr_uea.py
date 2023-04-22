@@ -1,11 +1,10 @@
 from pathlib import Path
-from typing import Literal
 import pandas as pd
 from sktime.datasets import load_UCR_UEA_dataset
 from sktime.datasets._data_io import _load_provided_dataset
 import torch
 from torch.utils.data import Dataset
-
+from ..typing import DatasetSplit
 from ..transforms import Transform
 
 from ..utils import parse_ts
@@ -16,15 +15,18 @@ class UCRUEADataset(Dataset):
         self,
         ds_name: str,
         path: Path,
-        split: Literal["TRAIN", "TEST"] = "TRAIN",
+        split: DatasetSplit = DatasetSplit.TRAIN,
         transform: Transform | None = None,
     ) -> None:
         super().__init__()
 
         self.transform = transform
+        if split == DatasetSplit.VAL:
+            raise ValueError("UCR/UEA datasets do not have a validation split")
+        split_val = "TRAIN" if split == DatasetSplit.TRAIN else "TEST"
         self.xs, self.ys = _load_provided_dataset(
             ds_name,
-            split=split,
+            split=split_val,
             return_type="numpy3d",
             local_module=path.parent,
             local_dirname=path.stem,
