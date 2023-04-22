@@ -67,6 +67,9 @@ class Normalize(Transform):
         return (data - self.mean) / self.std
 ```
 
+## Known issues
+The dataset [SpokenArabicDigits](https://www.timeseriesclassification.com/description.php?Dataset=SpokenArabicDigits) does not seem to work due to a missmatch of TRAIN and TEST size
+
 ## Roadmap
 The following features are planned for future releases of torchchronos:
 
