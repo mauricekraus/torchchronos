@@ -104,7 +104,9 @@ class UCRUEADataModule(LightningDataModule):
             self.__equal_length = train_split_dataset.equal_length
             self.__univariate = train_split_dataset.univariate
         else:
-            dataset = UCRUEADataset(self.name, self.cache_dir, self.transform)
+            dataset = UCRUEADataset(
+                ds_name=self.name, path=self.cache_dir, transform=self.transform
+            )
             self.__label_from_index = dataset.label_from_index
             self.__num_classes = dataset.num_classes
             self.__dimensions = dataset.dimensions
