@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Literal
 from lightning import LightningDataModule
 
+from ..typing import DatasetSplit
+
 from ..datasets import UCRUEADataset
 from ..download import download_uea_ucr
 from torch.utils.data import random_split, DataLoader
@@ -87,14 +89,20 @@ class UCRUEADataModule(LightningDataModule):
     def setup(self, stage=None):
         if isinstance(self.split_ratio, float):
             train_split_dataset = UCRUEADataset(
-                self.name, self.cache_dir, split="TRAIN", transform=self.transform
+                self.name,
+                self.cache_dir,
+                split=DatasetSplit.TRAIN,
+                transform=self.transform,
             )
             val_size = round(1 - self.split_ratio, 2)
             self.train_dataset, self.val_dataset = random_split(
                 train_split_dataset, [self.split_ratio, val_size]
             )
             self.test_dataset = UCRUEADataset(
-                self.name, self.cache_dir, split="TEST", transform=self.transform
+                self.name,
+                self.cache_dir,
+                split=DatasetSplit.TEST,
+                transform=self.transform,
             )
 
             self.__label_from_index = train_split_dataset.label_from_index
