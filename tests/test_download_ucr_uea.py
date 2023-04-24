@@ -1,6 +1,5 @@
 # Pytest of download file
 import os
-from pathlib import Path
 from torchchronos.download import download_uea_ucr
 
 
