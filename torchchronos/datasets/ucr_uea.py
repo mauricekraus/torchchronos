@@ -1,22 +1,36 @@
 from pathlib import Path
 import pandas as pd
-from sktime.datasets import load_UCR_UEA_dataset
 from sktime.datasets._data_io import _load_provided_dataset
+import numpy as np
 import torch
 from torch.utils.data import Dataset
+
 from ..typing import DatasetSplit
 from ..transforms import Transform
-
 from ..utils import parse_ts
 
 
 class UCRUEADataset(Dataset):
+    """UCR/UEA dataset.
+
+    Args:
+        ds_name (str): Name of the dataset.
+        path (Path): Path to the dataset storage.
+        split (DatasetSplit, optional): Dataset split to use. Defaults to None.
+        transform (Transform, optional): Transform to apply to the data. Defaults to None.
+        torchchronos_cache (bool, optional): Whether to cache the data in torchchronos format. Defaults to True.
+            This allows for much faster loading of the data once it has been loaded once.
+            It is recommended to leave this as True unless space is an issue.
+            The file is not compressed to allow for faster loading.
+    """
+
     def __init__(
         self,
         ds_name: str,
         path: Path,
         split: DatasetSplit | None = None,
         transform: Transform | None = None,
+        torchchronos_cache: bool = True,
     ) -> None:
         super().__init__()
 
@@ -31,13 +45,25 @@ class UCRUEADataset(Dataset):
             case DatasetSplit.TEST:
                 split_val = "TEST"
 
-        self.xs, self.ys = _load_provided_dataset(
-            ds_name,
-            split=split_val,
-            return_type="numpy3d",
-            local_module=path.parent,
-            local_dirname=path.stem,
-        )
+        tc_cache_dir = path / ds_name
+        tc_cache_path = tc_cache_dir / f"{split_val}.npz"
+        if torchchronos_cache and tc_cache_path.exists():
+            # memory-mapping is slightly faster
+            data = np.load(tc_cache_path, mmap_mode="r")
+            self.xs, self.ys = data["xs"], data["ys"]
+        else:
+            self.xs, self.ys = _load_provided_dataset(
+                ds_name,
+                split=split_val,
+                return_type="numpy3d",
+                local_module=path.parent,
+                local_dirname=path.stem,
+            )
+            if torchchronos_cache:
+                tc_cache_dir.mkdir(parents=True, exist_ok=True)
+                # Using savez instead of savez_compressed because the latter is much slower
+                np.savez(tc_cache_path, xs=self.xs, ys=self.ys)
+
         self.xs = torch.tensor(self.xs, dtype=torch.float32).transpose(1, 2)
         if self.transform is not None:
             self.transform = self.transform.fit(self.xs)
