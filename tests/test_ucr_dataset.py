@@ -2,6 +2,8 @@ from torchchronos.typing import DatasetSplit
 from torchchronos.datasets import UCRUEADataset
 from torchchronos.download import download_uea_ucr
 
+import torch
+
 
 def test_UCR_dataset_loading(tmp_path) -> None:
     """Smoke test for the different variants."""
@@ -27,3 +29,19 @@ def test_UCR_dataset_loading(tmp_path) -> None:
         ds_name=name, path=tmp_path, split=DatasetSplit.TEST, torchchronos_cache=True
     )
     assert len(dataset) == 15
+
+
+def test_UCR_dataset_loading_strings(tmp_path) -> None:
+    """Smoke test for datasets that contain strings as labels."""
+
+    # Prepare the dataset
+    name = "Handwriting"
+    download_uea_ucr(name, tmp_path)
+
+    # Train is a bit smaller than test
+    dataset = UCRUEADataset(ds_name=name, path=tmp_path, split=DatasetSplit.TRAIN)
+    assert len(dataset) == 150, len(dataset)
+    x, y = dataset[0]
+    assert x.shape == (152, 3), x.shape
+    assert y.shape == (1,) or y.shape == (), y.shape
+    assert y.dtype == torch.long, y.dtype
