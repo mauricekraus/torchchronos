@@ -76,10 +76,8 @@ class UCRUEADataset(Dataset):
         self.equal_length = ts_info.equal_length
         self.univariate = ts_info.univariate
 
-        if (
-            self.ys.dtype == "U2" or self.ys.dtype == "<U1" or self.ys.dtype == "<U3"
-        ):  # todo need to capture the differnt U types
-            # convert string labels to int
+        # convert string labels to int
+        if self.ys.dtype.kind in {"U", "S"}:
             factorized_y = pd.factorize(self.ys, sort=True)
             self.y_labels = factorized_y[1]
             self.ys = factorized_y[0]
