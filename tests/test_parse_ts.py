@@ -23,7 +23,7 @@ def test_parse_ucr_gunshot_ts():
 
 
 def test_parse_ucr_custom_missing():
-    tsinfo = parse_ts(Path("./tests/fixtures/CustomMissing_TEST.ts"))
+    tsinfo = parse_ts(Path("./tests/fixtures/Custom_Missing_TEST.ts"))
     assert tsinfo.num_classes == 39
     assert tsinfo.series_length == 217
     assert tsinfo.equal_length == True
