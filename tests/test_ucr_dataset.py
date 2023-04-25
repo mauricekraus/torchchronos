@@ -1,7 +1,8 @@
+import pytest
+from torchchronos.errors import MissingValueError
 from torchchronos.typing import DatasetSplit
 from torchchronos.datasets import UCRUEADataset
 from torchchronos.download import download_uea_ucr
-
 import torch
 
 
@@ -45,3 +46,28 @@ def test_UCR_dataset_loading_strings(tmp_path) -> None:
     assert x.shape == (152, 3), x.shape
     assert y.shape == (1,) or y.shape == (), y.shape
     assert y.dtype == torch.long, y.dtype
+
+
+def test_UCR_dataset_missing_raise(tmp_path) -> None:
+    # Prepare missing dataset
+    name = "DodgerLoopDay"
+    download_uea_ucr(name, tmp_path)
+
+    # Test that it raises
+    with pytest.raises(
+        MissingValueError,
+        match="Dataset contains NaN values. If this is intended behavior, set `raise_on_missing=False`",
+    ):
+        _ = UCRUEADataset(
+            ds_name=name, path=tmp_path, split=DatasetSplit.TRAIN, raise_on_missing=True
+        )
+
+    dataset = UCRUEADataset(
+        ds_name=name,
+        path=tmp_path,
+        split=DatasetSplit.TRAIN,
+        raise_on_missing=False,
+    )
+
+    assert dataset.missing
+    assert torch.count_nonzero(torch.isnan(dataset.xs)) > 0
