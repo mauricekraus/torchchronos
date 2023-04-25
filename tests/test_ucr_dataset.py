@@ -56,7 +56,7 @@ def test_UCR_dataset_missing_raise(tmp_path) -> None:
     # Test that it raises
     with pytest.raises(
         MissingValueError,
-        match="Dataset contains NaN values. If this is intended behavior, set `raise_on_missing=False`",
+        match=f"Dataset {name} contains NaN values. If this is intended behavior, set `raise_on_missing=False`",
     ):
         _ = UCRUEADataset(
             ds_name=name, path=tmp_path, split=DatasetSplit.TRAIN, raise_on_missing=True

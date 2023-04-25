@@ -80,7 +80,7 @@ class UCRUEADataset(Dataset):
 
         if raise_on_missing and ts_info.missing:
             raise MissingValueError(
-                "Dataset contains NaN values. If this is intended behavior, set `raise_on_missing=False`"
+                f"Dataset {ds_name} contains NaN values. If this is intended behavior, set `raise_on_missing=False`"
             )
 
         # convert string labels to int
