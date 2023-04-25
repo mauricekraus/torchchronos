@@ -29,7 +29,7 @@ from torchchronos.datasets import UCRUEADataset
 from torchchronos.transforms import PadFront
 from torchchronos.download import download_uea_ucr
 
-download_uea_ucr(Path(".cache/data"), "ECG5000")
+download_uea_ucr("ECG5000",Path(".cache/data"))
 dataset = UCRUEADataset('ECG5000', path=Path(".cache") / "data", transforms=PadFront(10))
 ```
 
@@ -66,6 +66,11 @@ class Normalize(Transform):
     def __call__(self, data):
         return (data - self.mean) / self.std
 ```
+
+## Known issues
+- The dataset [SpokenArabicDigits](https://www.timeseriesclassification.com/description.php?Dataset=SpokenArabicDigits) does not seem to work due to a missmatch of TRAIN and TEST size
+- The dataset [UrbanSound](https://www.timeseriesclassification.com/description.php?Dataset=UrbanSound) does not seem to work due to missing ts files
+
 
 ## Roadmap
 The following features are planned for future releases of torchchronos:

@@ -3,13 +3,21 @@ import os
 from torchchronos.download import download_uea_ucr
 
 
-def test_download_ucr():
-    os.system("rm -rf .cache/data/GunPoint")
-    download_uea_ucr(None, "GunPoint")
+def make_ucr_test(ds: str, path: str | None = ".cache/data", num_elems: int = 7):
+    os.system(f"rm -rf .cache/data/{ds}")
+    assert False == download_uea_ucr(ds, path)
     # assert that files where downloaded
-    elems = os.listdir(".cache/data/GunPoint")
+    elems = os.listdir(f".cache/data/{ds}")
     endings = ["arff", "ts", "txt"]
     splits = ["TRAIN", "TEST"]
-    assert len(elems) == 7
+    assert len(elems) == num_elems
     for s, e in zip(splits, endings):
-        assert f"GunPoint_{s}.{e}" in elems
+        assert f"{ds}_{s}.{e}" in elems
+
+    assert True == download_uea_ucr(ds, path)
+
+
+def test_download_ucr():
+    make_ucr_test("GunPoint", None)
+    make_ucr_test("Wafer")
+    make_ucr_test("AbnormalHeartbeat", num_elems=8)

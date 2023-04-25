@@ -20,6 +20,7 @@ class TSInfo:
     equal_length: bool
     dimensions: int
     univariate: bool
+    missing: bool
 
 
 def parse_ts(path: Path):
@@ -28,6 +29,7 @@ def parse_ts(path: Path):
     equal_length = False
     dimensions = -1
     univariate = False
+    missing = False
 
     with path.open("r") as f:
         for line in f:
@@ -42,9 +44,13 @@ def parse_ts(path: Path):
                 series_length = int(split[1])
             elif split[0] == "@equalLength" and split[1] == "true":
                 equal_length = True
+            elif split[0] == "@missing" and split[1] == "true":
+                missing = True
             elif split[0] == "@dimensions" and split[1].isdigit():
                 dimensions = int(split[1])
             elif split[0] == "@univariate" and split[1] == "true":
                 univariate = True
                 dimensions = 1
-    return TSInfo(num_classes, series_length, equal_length, dimensions, univariate)
+    return TSInfo(
+        num_classes, series_length, equal_length, dimensions, univariate, missing
+    )
