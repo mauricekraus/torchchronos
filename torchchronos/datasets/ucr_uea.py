@@ -4,7 +4,7 @@ from sktime.datasets._data_io import _load_provided_dataset
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-
+from ..errors import MissingValueError
 from ..typing import DatasetSplit
 from ..transforms import Transform
 from ..utils import parse_ts
@@ -31,6 +31,7 @@ class UCRUEADataset(Dataset):
         split: DatasetSplit | None = None,
         transform: Transform | None = None,
         torchchronos_cache: bool = True,
+        raise_on_missing: bool = True,
     ) -> None:
         super().__init__()
 
@@ -75,6 +76,12 @@ class UCRUEADataset(Dataset):
         self.series_length = ts_info.series_length
         self.equal_length = ts_info.equal_length
         self.univariate = ts_info.univariate
+        self.missing = ts_info.missing
+
+        if raise_on_missing and ts_info.missing:
+            raise MissingValueError(
+                "Dataset contains NaN values. If this is intended behavior, set `raise_on_missing=False`"
+            )
 
         # convert string labels to int
         if self.ys.dtype.kind in {"U", "S"}:

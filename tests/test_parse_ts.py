@@ -9,6 +9,7 @@ def test_parse_ucr_phoneme_ts():
     assert tsinfo.equal_length == True
     assert tsinfo.dimensions == 11
     assert tsinfo.univariate == False
+    assert tsinfo.missing == False
 
 
 def test_parse_ucr_gunshot_ts():
@@ -18,3 +19,14 @@ def test_parse_ucr_gunshot_ts():
     assert tsinfo.equal_length == True
     assert tsinfo.dimensions == 1
     assert tsinfo.univariate == True
+    assert tsinfo.missing == False
+
+
+def test_parse_ucr_custom_missing():
+    tsinfo = parse_ts(Path("./tests/fixtures/CustomMissing_TEST.ts"))
+    assert tsinfo.num_classes == 39
+    assert tsinfo.series_length == 217
+    assert tsinfo.equal_length == True
+    assert tsinfo.dimensions == 11
+    assert tsinfo.univariate == True
+    assert tsinfo.missing == True
