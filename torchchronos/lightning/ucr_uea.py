@@ -86,6 +86,11 @@ class UCRUEADataModule(LightningDataModule):
         assert self.__univariate is not None, "You need to call setup first"
         return self.__univariate
 
+    @property
+    def missing(self) -> bool:
+        assert self.__missing is not None, "You need to call setup first"
+        return self.__missing
+
     def setup(self, stage=None):
         if isinstance(self.split_ratio, float):
             train_split_dataset = UCRUEADataset(
@@ -111,6 +116,7 @@ class UCRUEADataModule(LightningDataModule):
             self.__series_length = train_split_dataset.series_length
             self.__equal_length = train_split_dataset.equal_length
             self.__univariate = train_split_dataset.univariate
+            self.__missing = train_split_dataset.missing
         else:
             dataset = UCRUEADataset(
                 ds_name=self.name, path=self.cache_dir, transform=self.transform
@@ -121,6 +127,7 @@ class UCRUEADataModule(LightningDataModule):
             self.__series_length = dataset.series_length
             self.__equal_length = dataset.equal_length
             self.__univariate = dataset.univariate
+            self.__missing = dataset.missing
 
             # split dataset
             test_size = round(1 - self.split_ratio[0] - self.split_ratio[1], 2)
