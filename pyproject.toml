@@ -5,6 +5,7 @@ authors = ["Maurice Kraus <dev@mkraus.io>"]
 readme = "README.md"
 description = "PyTorch and Lightning compatible library that provides easy and flexible access to various time-series datasets for classification and regression tasks"
 license = "MIT"
+homepage = "https://github.com/mauricekraus/torchchronos"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
