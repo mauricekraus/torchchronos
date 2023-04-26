@@ -13,6 +13,7 @@ sktime = "^0.16.1"
 torch = "^2.0.0"
 lightning = "^2.0.0"
 fastapi = { version = "^0.88.0" }
+uplink = "^0.9.7"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
