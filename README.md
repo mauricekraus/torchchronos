@@ -1,7 +1,7 @@
 # torchchronos
 
 [![PyPI version](https://img.shields.io/pypi/v/torchchronos.svg?color=blue)](https://pypi.org/project/torchchronos)
-[![license](https://img.shields.io/pypi/l/torchchronos.svg?color=blue)](https://github.com/felixdivo/torchchronos/blob/main/LICENSE)
+[![license](https://img.shields.io/pypi/l/torchchronos.svg?color=blue)](https://github.com/mauricekraus/torchchronos/blob/main/LICENSE)
 [![python version](https://img.shields.io/badge/python-3.10+-blue)](https://devguide.python.org/versions/)
 
 [![test](https://github.com/mauricekraus/torchchronos/actions/workflows/main.yml/badge.svg)](https://github.com/mauricekraus/torchchronos/actions/workflows/main.yml)
