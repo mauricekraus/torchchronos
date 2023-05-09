@@ -35,7 +35,7 @@ jobs:
       - name: Clear Cache
         run: poetry cache clear _default_cache --all
       - name: Run pytest
-        run: poetry run pytest
+        run: poetry install && poetry run pytest
 
   prerelease:
     needs: pytest
