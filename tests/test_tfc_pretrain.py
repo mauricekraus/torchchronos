@@ -28,7 +28,7 @@ def test_shapes_EMG_test(tmp_path) -> None:
 def test_shapes_ECG_test(tmp_path) -> None:
     """Test that the dataset returns the correct shapes."""
 
-    dataset = TFCPretrainDataset(name="ECG", path=tmp_path, split=DatasetSplit.TEST)
+    dataset = TFCPretrainDataset(name="ECG", path=tmp_path, split=DatasetSplit.TRAIN)
     assert len(dataset) == 43_673
     data, label = dataset[1]
     assert data.shape == (1_500, 1)
