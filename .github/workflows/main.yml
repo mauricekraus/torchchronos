@@ -32,6 +32,8 @@ jobs:
           python -m pip install poetry
       - name: Install dependencies with updated version
         run: poetry install
+      - name: Clear Cache
+        run: poetry cache clear --all
       - name: Run pytest
         run: poetry run pytest
 
