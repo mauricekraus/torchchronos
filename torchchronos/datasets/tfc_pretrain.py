@@ -14,6 +14,7 @@ class TFCPretrainDataset(Dataset):
     Supported datasets:
         - "Gesture"
         - "EMG"
+        - "ECG"
 
     They are preprocessed in the exact same way as in the original paper.
 
@@ -45,6 +46,7 @@ class TFCPretrainDataset(Dataset):
     NAME_TO_URL = {
         "Gesture": "https://figshare.com/ndownloader/articles/22634401/versions/2",
         "EMG": "https://figshare.com/ndownloader/articles/22634332/versions/2",
+        "ECG": "https://figshare.com/ndownloader/articles/22788794/versions/1",
     }
 
     def __init__(
