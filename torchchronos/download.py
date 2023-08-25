@@ -51,7 +51,7 @@ def download_uea_ucr(dataset_name: str, extract_path: str | Path | None = None) 
     if dataset_name not in _list_available_datasets(local_dirname):
         # Dataset is not already present in the datasets directory provided.
         # If it is not there, download and install it.
-        url = f"https://timeseriesclassification.com/Downloads/{dataset_name}.zip"
+        url = f"https://timeseriesclassification.com/aeon-toolkit/{dataset_name}.zip"
         try:
             download_and_unzip_dataset(url, full_path)
             # If zip contains folder name as root, move contents up one level

@@ -45,7 +45,7 @@ class TFCPretrainDataModule(LightningDataModule):
                 )
             case "test":
                 self.test_dataset = TFCPretrainDataset(
-                    self.name, self.cache_dir, "test", self.transform
+                    self.name, self.cache_dir, DatasetSplit.TEST, self.transform
                 )
             case _:
                 raise ValueError(f"Invalid stage: {stage}")

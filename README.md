@@ -59,9 +59,10 @@ class Normalize(Transform):
         self.mean = mean
         self.std = std
 
-    def fit(self, data):
+    def fit(self, data) -> Self:
         self.mean = data.mean()
         self.std = data.std()
+        return self
 
     def __call__(self, data):
         return (data - self.mean) / self.std
