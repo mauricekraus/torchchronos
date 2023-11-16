@@ -66,7 +66,9 @@ class UCRUEADataset(Dataset):
                 np.savez(tc_cache_path, xs=self.xs, ys=self.ys)
 
         self.xs = torch.tensor(self.xs, dtype=torch.float32).transpose(1, 2)
-        if self.transform is not None and split == DatasetSplit.TRAIN: # we base our transform parameters on the train set
+        if (
+            self.transform is not None and split == DatasetSplit.TRAIN
+        ):  # we base our transform parameters on the train set
             self.transform = self.transform.fit(self.xs)
 
         # It doesnt matter if test or train, but test is usually smaller
