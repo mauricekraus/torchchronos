@@ -62,7 +62,7 @@ class ClassificationDataset(PrepareableDataset):
             raise Exception("Dataset must be loaded before it can be used.")
         return len(self.X)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> torch.Tensor:
         if self.X is None:
             raise Exception("Dataset must be loaded before it can be used.")
         return self.X[idx], self.y[idx]
@@ -71,7 +71,7 @@ class ClassificationDataset(PrepareableDataset):
         load_classification(self.name, split=self.split, extract_path="data/")
 
     def _load(self):
-        self.X, self.y, self.meta_data = load_classification(
+        X, self.y, self.meta_data = load_classification(
             self.name, split=self.split, extract_path="data/"
         )
-        self.X = self.X.astype("float32")
+        self.X = torch.from_numpy(X.astype("float32"))
