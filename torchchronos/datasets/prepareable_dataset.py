@@ -7,58 +7,60 @@ from torch.utils.data import Dataset
 from aeon.datasets import load_classification
 
 
-class PrepareableDataset(ABC, Dataset):
+def load_wrapper(original_load):
+    def wrapper(self, *args, **kwargs):
+        if not self.is_prepared:
+            raise Exception("Dataset must be prepared before it can be loaded.")
+        elif self.is_loaded:
+            return
+        original_load(self, *args, **kwargs)
+        self.is_loaded = True
+    return wrapper
+
+
+def prepare_wrapper(original_prepare):
+    def wrapper(self, *args, **kwargs):
+        if self.is_prepared:
+            return
+        original_prepare(self, *args, **kwargs)
+        self.is_prepared = True
+    return wrapper
+
+
+def getitem_wrapper(original_getitem):
+    def wrapper(self, index):
+        if not self.is_loaded:
+            raise Exception("Dataset must be loaded before it can be used.")
+        return original_getitem(self, index)
+    return wrapper
+
+
+def len_wrapper(original_len):
+    def wrapper(self):
+        if not self.is_loaded:
+            raise Exception("Dataset must be loaded before it can be used.")
+        return original_len(self)
+    return wrapper
+
+
+class PrepareableDataset(ABC, torch.utils.data.Dataset):
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        original_load = cls.load
+     
+        # Override load method
+        cls.load = load_wrapper(cls.load)
 
-        def new_load(self, *args, **kwargs):
-            if not self.is_prepared:
-                raise Exception("Dataset must be prepared "
-                                "before it can be loaded.")
-            elif self.is_loaded:
-                return
-            original_load(self, *args, **kwargs)
-            self.is_loaded = True
-            return
+        # Override prepare method
+        cls.prepare = prepare_wrapper(cls.prepare)
 
-        cls.load = new_load
+        # Override __getitem__ method
+        cls.__getitem__ = getitem_wrapper(cls.__getitem__)
 
-        original_prepare = cls.prepare
+        # Override __len__ method
+        cls.__len__ = len_wrapper(cls.__len__)
 
-        def new_prepare(self, *args, **kwargs):
-            if self.is_prepared:
-                return
-            original_prepare(self, *args, **kwargs)
-            self.is_prepared = True
-            return
-
-        cls.prepare = new_prepare
-
-        original_getitem = cls.__getitem__
-
-        def new_getitem(self, index):
-            if not self.is_loaded:
-                raise Exception("Dataset must be loaded "
-                                "before it can be used.")
-            return original_getitem(self, index)
-
-        cls.__getitem__ = new_getitem
-
-        original_len = cls.__len__
-
-        def new_len(self):
-            if not self.is_loaded:
-                raise Exception("Dataset must be loaded "
-                                "before it can be used.")
-            return original_len(self)
-
-        cls.__len__ = new_len
-
-    def __init__(self, prepare: bool = False,
-                 load: bool = False,
-                 ) -> None:
+    def __init__(self, prepare: bool = False, load: bool = False) -> None:
         super().__init__()
         self.is_prepared: bool = False
         self.is_loaded: bool = False
