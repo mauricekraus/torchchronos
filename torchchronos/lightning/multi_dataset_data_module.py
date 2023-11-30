@@ -1,69 +1,62 @@
-import torch
-from torch.utils.data import Dataset
-from torch.utils.data import DataLoader, random_split
-from lightning import LightningDataModule
-
-from ..datasets.prepareable_dataset import PreparedDataset
-from ..datasets.multidatasetdataset import (
-    MultiDatasetDataet,
-    DatasetFrequency,
-    ShuffleType
-)
+from typing import Sequence
+from torch.utils.data import Dataset, DataLoader, random_split, Subset
+import lightning as L
+import numpy as np
+from ..datasets.prepareable_dataset import PrepareableDataset
+from ..datasets.concat_dataset import ConcatDataset
 
 
-class MultiDatasetDataModule(LightningDataModule):
 
-    def __init__(self, datasets: list[Dataset]) -> None:
+class MultiDatasetDataModule(L.LightningDataModule):
+    def __init__(self, datasets: Sequence[Dataset]) -> None:
         super().__init__()
 
-        self.dataset = datasets
+        self._datasets: Sequence[Dataset]= datasets
+        self.dataset: ConcatDataset = ConcatDataset(self.datasets)
+
+    @property
+    def datasets(self) -> Sequence[Dataset]:
+        return self._datasets
 
     def prepare_data(self) -> None:
-        self.train_data = []
-        self.val_data = []
-        self.test_data = []
+        train_data_indices: list[Sequence[int]] = []
+        val_data_indices: list[Sequence[int]] = []
+        test_data_indices: list[Sequence[int]] = []
 
-        for dataset in self.dataset:
-            if isinstance(dataset, PreparedDataset):
+        length = 0
+        for dataset in self.datasets:
+            if isinstance(dataset, PrepareableDataset):
                 dataset.load()
 
-            train, val, test = random_split(
-                dataset,
-                [0.8, 0.1, 0.1])
+            
+            # train = [i for i in range(80) ]
+            # val = [i for i in range(80, 90)] 
+            # test = [i  for i in range(90, 100)]
 
-            self.train_data.append(train)
-            self.val_data.append(val)
-            self.test_data.append(test)
+            # train_data_indices.append(np.array(train) + length)	
+            # val_data_indices.append(np.array(val) + length)
+            # test_data_indices.append(np.array(test) + length)
 
-        # check if present
-        # if not create the datasets
-        train_data_set = MultiDatasetDataet(
-            self.train_data,
-            DatasetFrequency.ALL_EQUAL,
-            ShuffleType.DISABLED
-        )
-        val_data_set = MultiDatasetDataet(
-            self.val_data,
-            DatasetFrequency.ALL_EQUAL,
-            ShuffleType.DISABLED
-        )
-        test_data_set = MultiDatasetDataet(
-            self.test_data,
-            DatasetFrequency.ALL_EQUAL,
-            ShuffleType.DISABLED
-        )
+            train, val, test = random_split([i for i in range(len(dataset))], [0.8, 0.1, 0.1])
 
-        torch.save(train_data_set, "data/multi_datasets/train_data_set.pt")
-        torch.save(val_data_set, "data/multi_datasets/val_data_set.pt")
-        torch.save(test_data_set, "data/multi_datasets/test_data_set.pt")
+            train_data_indices.append(np.array(train.indices) + length) 
+            val_data_indices.append(np.array(val.indices) + length)
+            test_data_indices.append(np.array(test.indices) + length)
 
-    def setup(self, stage=None) -> None:
+            length += len(dataset)
+
+        self.train_indices = np.concatenate(train_data_indices)
+        self.val_indices = np.concatenate(val_data_indices)
+        self.test_indices = np.concatenate(test_data_indices)
+
+       
+    def setup(self, stage:str | None =None) -> None:
         if stage == "train":
-            return torch.load("data/multi_datasets/train_data_set.pt")
+            self.train_data = Subset(self.dataset, self.train_indices)
         elif stage == "val":
-            return torch.load("data/multi_datasets/val_data_set.pt")
+            self.val_data =  Subset(self.dataset, self.val_indices)
         elif stage == "test":
-            return torch.load("data/multi_datasets/test_data_set.pt")
+            self.test_data = Subset(self.dataset, self.test_indices)
 
     def train_dataloader(self) -> DataLoader:
         return DataLoader(dataset=self.train_data, batch_size=32, shuffle=True)
