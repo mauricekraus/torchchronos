@@ -5,7 +5,7 @@ from typing import Any
 import torch
 from torch import Tensor
 from torch.utils.data import Dataset
-
+import numpy as np
 
 class ConcatDataset(Dataset):
     def __init__(
@@ -40,22 +40,18 @@ class ConcatDataset(Dataset):
         self.total_length = sum(self.lengths)
 
         self.start_indices = [0]
-        for i in range(len(self.datasets) - 1):
-            self.start_indices.append(self.start_indices[-1] + self.lengths[i])
+        self.cumulative_lengths = np.cumsum([len(dataset) for dataset in self.datasets])
+
 
     def __getitem__(self, index: int) -> tuple[Any, Tensor]:
-        # Determine which dataset the item belongs to
-        dataset_index = next(
-            i for i, si in enumerate(self.start_indices) if index < si + self.lengths[i]
-        )
+        dataset_index = np.searchsorted(self.cumulative_lengths, index, side='right')
+        
+        if dataset_index > 0:
+            local_index = index - self.cumulative_lengths[dataset_index - 1]
+        else:
+            local_index = index
 
-        # Determine the index of the item in the dataset
-        item_index = index - self.start_indices[dataset_index]
-
-        # Return the item from the selected dataset
-        return self.datasets[dataset_index][item_index], torch.tensor(
-            dataset_index, dtype=torch.long
-        )
+        return self.datasets[dataset_index][local_index]
 
     def __len__(self) -> int:
         return self.total_length
