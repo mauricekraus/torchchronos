@@ -1,4 +1,4 @@
-from .ucr_uea import UCRUEADataModule
-from .tfc_pretrain import TFCPretrainDataModule
+# from .ucr_uea import UCRUEADataModule
+# from .tfc_pretrain import TFCPretrainDataModule
 
-__all__ = ["UCRUEADataModule", "TFCPretrainDataModule"]
+# __all__ = ["UCRUEADataModule", "TFCPretrainDataModule"]

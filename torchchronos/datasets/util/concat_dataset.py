@@ -2,10 +2,20 @@ import math
 from collections.abc import Sequence
 from typing import Any
 
-import torch
 from torch import Tensor
 from torch.utils.data import Dataset
 import numpy as np
+
+
+
+"""
+This class is for concatenating multiple datasets into one long one.
+There are two ways to use this class:
+    1. Concatenate multiple datasets into one long one.
+    2. Concatenate multiple datasets into one long one, but only use a fraction of each dataset.
+
+
+"""
 
 class ConcatDataset(Dataset):
     def __init__(
@@ -18,7 +28,7 @@ class ConcatDataset(Dataset):
             fractions: The fraction of each dataset to use. Must be between 0 and 1.
                 If it is an int, then the same fraction is used for all datasets.
         """
-
+        
         if not datasets:
             raise ValueError("The number of datasets must be greater than zero")
         if isinstance(fractions, float):
@@ -33,7 +43,7 @@ class ConcatDataset(Dataset):
         self.datasets = datasets
         self.fractions = fractions
 
-        #: The number of data points in each dataset
+        # The number of data points in each dataset
         self.lengths = [
             math.ceil(len(d) * p) for d, p in zip(self.datasets, self.fractions)
         ]
@@ -42,10 +52,9 @@ class ConcatDataset(Dataset):
         self.start_indices = [0]
         self.cumulative_lengths = np.cumsum([len(dataset) for dataset in self.datasets])
 
-
     def __getitem__(self, index: int) -> tuple[Any, Tensor]:
-        dataset_index = np.searchsorted(self.cumulative_lengths, index, side='right')
-        
+        dataset_index = np.searchsorted(self.cumulative_lengths, index, side="right")
+
         if dataset_index > 0:
             local_index = index - self.cumulative_lengths[dataset_index - 1]
         else:
