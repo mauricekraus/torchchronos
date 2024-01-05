@@ -37,7 +37,9 @@ class PrepareableDataset(ABC, Dataset):
 
     @abstractmethod
     def __getitem__(self, idx: int) -> torch.Tensor:
-        pass
+        if self.is_loaded is False:
+            raise NotLoadedError("Dataset must be loaded before it can be used.")
+
 
     @abstractmethod
     def __len__(self) -> int:
@@ -55,10 +57,17 @@ class PrepareableDataset(ABC, Dataset):
 
     def load(self) -> None:
         if self.is_prepared is False:
-            raise Exception("Dataset must be prepared before it can be loaded.")
+            raise NotPreparedError("Dataset must be prepared before it can be loaded.")
         self._load()
         self.is_loaded = True
 
     @abstractmethod
     def _load(self) -> None:
         pass
+
+
+class NotLoadedError(Exception):
+    pass
+
+class NotPreparedError(Exception):
+    pass
