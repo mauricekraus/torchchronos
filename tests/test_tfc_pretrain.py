@@ -1,5 +1,5 @@
 from torchchronos.typing import DatasetSplit
-from torchchronos.datasets import TFCPretrainDataset
+from torchchronos.datasets.util import TFCPretrainDataset
 from torchchronos.lightning import TFCPretrainDataModule
 from torchchronos.transforms import PadFront
 

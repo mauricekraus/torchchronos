@@ -1,15 +1,14 @@
-from typing import Sequence
+from typing import Sequence, Type
 from enum import Enum, auto
-from torch.utils.data import Dataset, DataLoader, random_split, Subset
+from torch.utils.data import Dataset, DataLoader, random_split, Subset, Sampler, WeightedRandomSampler
 import lightning as L
 import numpy as np
-from ..datasets.prepareable_dataset import PrepareableDataset
-from ..datasets.concat_dataset import ConcatDataset
+from ..datasets.util.prepareable_dataset import PrepareableDataset
+from ..datasets.util.concat_dataset import ConcatDataset
 
 
 class DatasetFrequency(Enum):
     """The relative frequency of a dataset in a collection of multiple ones."""
-
     ALL_EQUAL = auto()
     PROPORTIONAL_TO_SAMPLES = auto()
     ALL_TYPES_EQUAL_PROPORTIONAL_TO_SAMPLES = auto()
@@ -17,7 +16,6 @@ class DatasetFrequency(Enum):
 
 class ShuffleType(Enum):
     """The relative frequency of a dataset in a collection of multiple ones."""
-
     # Never shuffle, go sequentially through dataset list and content each
     DISABLED = auto()
     # shuffle within dataset, but go sequentially through dataset list
@@ -38,48 +36,73 @@ class MultiDatasetDataModule(L.LightningDataModule):
     ) -> None:
         super().__init__()
 
-        self.train: Sequence[Dataset] = train
+        self.train: Sequence[Dataset] = train 
         self.val: Sequence[Dataset] | float = val
-        self.test: Sequence[Dataset] = test
+        self.test: Sequence[Dataset] = test 
         self.batch_size: int = batch_size
-        self._shuffle = True if self.train_shuffle_type == ShuffleType.ACROSS_DATASETS else False
+        self.shuffle_type: ShuffleType = shuffle_type
+        self._shuffle = True if shuffle_type == ShuffleType.ACROSS_DATASETS else False
+        self.sampling: DatasetFrequency = sampling
 
-        self.train_datasets: ConcatDataset | None = None
-        self.val_datasets: ConcatDataset | None = None
-        self.test_datasets: ConcatDataset | None = None
+        self.train_dataset: ConcatDataset | None = None
+        self.train_weights: Sequence[float] | None = None
+
+        self.val_dataset: ConcatDataset | None = None
+        self.val_weights: Sequence[float] | None = None
+
+        self.test_dataset: ConcatDataset | None = None
+        self.test_weights: Sequence[float] | None = None
 
     @property
     def datasets(self) -> Sequence[Dataset]:
         return self._datasets
 
     def prepare_data(self) -> None:
-        for dataset in [*self.train, *self.val, *self.test]:
+
+        val = [] if isinstance(self.val, float) else self.val
+        for dataset in (self.train + val + self.test):
+            try: 
+                dataset.domain
+            except AttributeError as e:
+                raise AttributeError(f"Dataset {dataset} has no attribute 'domain'. "
+                                     "Please add the attribute to the class") from e
+        for dataset in (self.train + val + self.test):
             if isinstance(dataset, PrepareableDataset):
                 dataset.prepare()
+                
+                # Remove later
+                dataset.load()
 
 
     def setup(self, stage: str | None = None) -> None:
         if stage == "fit":
-            if isinstance(self.val, float) and self.val_datasets is not None:
+            if isinstance(self.val, float):
                 new_train: Sequence[Dataset] = []
                 new_val: Sequence[Dataset] = []
-                train_split = 1 - self.val_datasets
+                train_split_frequency = 1 - self.val
 
                 for dataset in self.train:
-                    train_split, val_split = random_split(dataset, [train_split, self.val])
+                    train_split, val_split = random_split(dataset, [float(train_split_frequency), float(self.val)])
                     new_train.append(train_split)
                     new_val.append(val_split)
 
-                self.train_datasets = ConcatDataset(self._shuffle(new_train))
-                self.val_datasets = ConcatDataset(self._shuffle(new_val))
+                self.train = new_train
+                self.val = new_val
+                
+                self.train_dataset = ConcatDataset(self._shuffle_data(new_train, self.shuffle_type))
+                self.val_dataset = ConcatDataset(self._shuffle_data(new_val, self.shuffle_type))
             else:
-                self.train_datasets = ConcatDataset(self._shuffle(new_train))
-                self.val_datasets = ConcatDataset(self._shuffle(new_val))
+                self.train_dataset = ConcatDataset(self._shuffle_data(self.train, self.shuffle_type))
+                self.val_dataset = ConcatDataset(self._shuffle_data(self.val, self.shuffle_type))
+
+            self.train_weights = self._get_frequency_weights(self.train, len(self.train_dataset))
+            self.val_weights = self._get_frequency_weights(self.val, len(self.val_dataset))
 
         elif stage == "test":
-            self.test_data = ConcatDataset(self._shuffle(self.test))
+            self.test_dataset = ConcatDataset(self.test, self.shuffle_type)
+            self.test_weights = self._get_frequency_weights(self.test, len(self.test_dataset))
 
-    def _shuffle(self, datasets: Sequence[Dataset], shuffle_type: ShuffleType) -> Sequence[Dataset]:
+    def _shuffle_data(self, datasets: Sequence[Dataset], shuffle_type: ShuffleType) -> Sequence[Dataset]:
         if shuffle_type == ShuffleType.DISABLED:
             return datasets
         elif shuffle_type == ShuffleType.WITHIN_DATASET:
@@ -87,12 +110,39 @@ class MultiDatasetDataModule(L.LightningDataModule):
         if self.self.train_shuffle_type == ShuffleType.ACROSS_DATASETS:
             return datasets
 
+    def _get_frequency_weights(self, datasets: Sequence[Dataset], dataset_length) -> Sequence[float]:
+        weights: Sequence[float] = []
+        if self.sampling == DatasetFrequency.ALL_EQUAL:
+            weights =  np.repeat(1 / dataset_length, dataset_length)
+        elif self.sampling == DatasetFrequency.PROPORTIONAL_TO_SAMPLES:
+            for dataset in datasets:
+                weights.append(np.repeat(1 / len(dataset), len(dataset)))
+            weights = np.concatenate(weights)
+        elif self.sampling == DatasetFrequency.ALL_TYPES_EQUAL_PROPORTIONAL_TO_SAMPLES:
+            # Todo: implement later
+            raise NotImplementedError
+            
+        return weights
+  
+    def _get_sampler(self, weights: Sequence[float], dataset) -> Sampler:
+        # prüfen auf self.frequency und dann ggf. RandomSampler zurückgeben
+        return WeightedRandomSampler(weights, len(dataset))
+
     def train_dataloader(self) -> DataLoader:
         
-        return DataLoader(dataset=self.train_dataset, batch_size=self.batch_size, shuffle=True)
+        return DataLoader(dataset=self.train,
+                          batch_size=self.batch_size,
+                          sampler=self._get_sampler(self.train_weights, self.train_dataset),
+                          shuffle=self._shuffle)
 
     def val_dataloader(self) -> DataLoader:
-        return DataLoader(dataset=self.val_dataset, batch_size=self.batch_size, shuffle=True)
+        return DataLoader(dataset=self.val,
+                          batch_size=self.batch_size,
+                          sampler=self._get_sampler(self.val_weights, self.val_dataset),
+                          shuffle=self._shuffle)
 
     def test_dataloader(self) -> DataLoader:
-        return DataLoader(dataset=self.test_dataset, batch_size=self.batch_size, shuffle=True)
+        return DataLoader(dataset=self.test,
+                          batch_size=self.batch_size,
+                          sampler=self._get_sampler(self.test_weights, self.test_dataset),
+                          shuffle=self._shuffle)

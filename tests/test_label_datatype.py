@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 from torchchronos.download import download_uea_ucr
 
-from torchchronos.datasets import UCRUEADataset
+from torchchronos.datasets.util import UCRUEADataset
 from tests.data_class import Dataset
 
 

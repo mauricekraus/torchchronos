@@ -1,11 +1,10 @@
 import math
 from pathlib import Path
-from typing import Literal
 from lightning import LightningDataModule
 
 from ..typing import DatasetSplit
 
-from ..datasets import UCRUEADataset
+from ..datasets.util import UCRUEADataset
 from ..download import download_uea_ucr
 from torch.utils.data import random_split, DataLoader
 

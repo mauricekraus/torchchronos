@@ -1,7 +1,7 @@
 import pytest
 from torchchronos.errors import MissingValueError
 from torchchronos.typing import DatasetSplit
-from torchchronos.datasets import UCRUEADataset
+from torchchronos.datasets.util import UCRUEADataset
 from torchchronos.download import download_uea_ucr
 import torch
 
