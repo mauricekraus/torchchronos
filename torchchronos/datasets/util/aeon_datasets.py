@@ -4,6 +4,7 @@ import numpy as np
 from aeon.datasets._data_loaders import load_classification
 
 from prepareable_dataset import PrepareableDataset
+from pathlib import Path
 
 """
 Classes for loading datasets from Aeon.
@@ -22,21 +23,26 @@ class AeonDataset(PrepareableDataset):
         load: bool = False,
         has_y = True,
         return_labels: bool = True,
+        use_cache: bool = True
     ) -> None:
-        super().__init__(prepare, load)
+        
 
-        # TODO: load meta if present
         self.name = name
         self.split = split
         if save_path is None:
-            # TODO: Path clase
-            self.save_path = f".cache/data/torchchronos/{name}" 
+            self.save_path = Path(".cache/data/torchchronos") / name
 
-        self._np_path = self.path + self.name + ".npy"
-        self._json_path = self.path + self.name + ".json"
-
+        self._np_path = self.path / self.name / ".npy"
+        self._json_path = self.path / self.name / ".json"
         self.meta_data: dict | None = None
 
+        if use_cache:
+            if os.path.exists(self.np_path) and os.path.exists(self.json_path):
+                self.meta_data = json.load(open(self.json_path, "r"))
+                self.is_prepared = True
+
+        super().__init__(prepare, load)
+        
         self.X: np.ndarray | None = None
         if has_y:
             self.y: np.ndarray | None = None
