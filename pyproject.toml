@@ -1,24 +1,44 @@
 [tool.poetry]
 name = "torchchronos"
 version = "0.0.3.post2"
-authors = ["Maurice Kraus <dev@mkraus.io>"]
+authors = ["Paul Rabich <78356939+PaulRabich@users.noreply.github.com>"]
 readme = "README.md"
 description = "PyTorch and Lightning compatible library that provides easy and flexible access to various time-series datasets for classification and regression tasks"
 license = "MIT"
 homepage = "https://github.com/mauricekraus/torchchronos"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
+python = ">3.11, <3.12"
 sktime = "^0.16.1"
 torch = ">=2.0.0, !=2.0.1"
 lightning = "^2.0.0"
 fastapi = { version = "^0.88.0" }
 uplink = "^0.9.7"
+aeon = "^0.6.0"
+
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
 pytest = "^7.2.2"
 ipykernel = "^6.25.1"
+numpy = "^1.21.2"
+ruff = "^0.1.11"
+
+
+[tool.ruff]
+# See https://docs.astral.sh/ruff/rules
+select = ["E", "F", "W", "I", "N", "D", "C90", "UP", "NPY"]
+line-length = 110  # Same as Black
+target-version = "py39"  # The lowest supported version
+
+
+[tool.ruff.pydocstyle]
+convention = "numpy"
+
+
+[tool.isort]
+profile = "black"
+
 
 [build-system]
 requires = ["poetry-core"]
