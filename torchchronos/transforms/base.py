@@ -1,30 +1,45 @@
+from abc import ABC, abstractmethod
 import torch
+from aeon.transformations.base import BaseTransformer
 
 
-class Transform:
-    def fit(self, ts: torch.Tensor) -> "Transform":
-        return self
+class Transform(ABC):
 
-    def __call__(self, ts: torch.Tensor) -> torch.Tensor:
-        raise NotImplementedError
+    def __init__(self):
+        self.is_fitted = False
 
+    def __call__(self, ts):
+        self.transform(ts)
+
+    @abstractmethod
     def __repr__(self) -> str:
-        raise NotImplementedError
+        pass
+    
+    @abstractmethod
+    def fit(self, time_series):
+        pass
+
+    @abstractmethod
+    def transform(self, time_series):
+        pass
 
 
 class Compose(Transform):
-    def __init__(self, transforms: list[Transform]):
+    def __init__(self, transforms: list[BaseTransformer | Transform]):
         self.transforms = transforms
 
     def fit(self, ts: torch.Tensor) -> Transform:
         for t in self.transforms:
             t.fit(ts)
+        self.is_fitted = True
         return self
 
-    def __call__(self, ts):
+    def transform(self, ts):
+        
         for t in self.transforms:
             ts = t(ts)
         return ts
+    
 
     def __repr__(self):
         format_string = self.__class__.__name__ + "("
