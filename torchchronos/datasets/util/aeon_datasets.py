@@ -7,26 +7,56 @@ from aeon.datasets.tsc_data_lists import multivariate, univariate
 from aeon.datasets.tser_data_lists import tser_all
 from aeon.datasets.tsf_data_lists import tsf_all
 
-
 from .prepareable_dataset import PrepareableDataset
 
 
 """
-Classes for loading datasets from Aeon.
-Regression, Classification classes needed.
-Use PretrainDataset as a template.
+This class is a wrapper around the datasets from the aeon library.
+It is used to make the datasets compatible with the torchchronos library and wrapps them into a PrepareableDataset.
+The datasets are downloaded and prepared when the prepare method is called.
+The datasets are loaded into memory when the load method is called.
+The labels are transformed from strings with arbitrary values to integers starting from 0.
+The meta_data dict contains the following keys:
+    - num_features: The number of features in the dataset.
+    - num_samples: The number of samples in the dataset.
+    - num_train_samples: The number of samples in the training set.
+    - num_test_samples: The number of samples in the test set.
+    - length: The length of the time series in the dataset.
+    - equal_samples_per_class: Whether the dataset has equal samples per class.
+    - labels: A dict that maps the labels to integers.
+    - num_classes: The number of classes in the dataset.
+and is loaded in the constructor, if the dataset is already prepared.
+
+It is possible to load all datasets that are available through the methods load_classification, load_regression and load_forecasting.
+The has_y parameter is used to indicate whether the dataset has labels or not. 
+The return_labels parameter is used to indicate whether the labels should be returned when the dataset is used.
+
+This class is mainly used to create simple Dataset classes that are used in the experiments. Some examples can be found in the datasets.datasets file.
 """
 
 
 class AeonDataset(PrepareableDataset):
+    """
+    A dataset class for handling Aeon datasets.
+
+    Args:
+        name (str): The name of the dataset.
+        split (str | None, optional): The split of the dataset ("train", "test" or None). Defaults to None.
+        save_path (str | None, optional): The path to save the dataset. Defaults to None.
+        prepare (bool, optional): Whether to prepare the dataset. Defaults to False.
+        load (bool, optional): Whether to load the dataset. Defaults to False.
+        has_y (bool, optional): Whether the dataset has labels. Defaults to True.
+        return_labels (bool, optional): Whether to return labels when accessing the dataset. Defaults to True.
+        use_cache (bool, optional): Whether to use the cached dataset. Defaults to True.
+    """ 
     def __init__(
         self,
         name: str,
         split: str | None = None,
-        save_path: str | None = None,
+        save_path: Path | None = None,
         prepare: bool = False,
         load: bool = False,
-        has_y = True,
+        has_y : bool = True,
         return_labels: bool = True,
         use_cache: bool = True
     ) -> None:
@@ -34,8 +64,9 @@ class AeonDataset(PrepareableDataset):
         self.name = name
         self.split = split
         if save_path is None:
-            self.save_path = Path(".cache/data/torchchronos") / name
+            save_path = Path(".cache/data/torchchronos")
 
+        self.save_path = save_path / name
         self._np_path = self.save_path / (self.name + ".npz")
         self._json_path = self.save_path / (self.name + ".json")
         self.meta_data: dict | None = None
@@ -113,9 +144,9 @@ class AeonDataset(PrepareableDataset):
         # 5. save it
         os.makedirs(self.save_path, exist_ok=True)
         if self.has_y:
-            np.savez_compressed(self._np_path, X_train=X_train, Y_train=Y_train, X_test=X_test, Y_test=Y_test)
+            np.savez(self._np_path, X_train=X_train, Y_train=Y_train, X_test=X_test, Y_test=Y_test)
         else:
-            np.savez_compressed(self._np_path, X_train=X_train, X_test=X_test)
+            np.savez(self._np_path, X_train=X_train, X_test=X_test)
         json.dump(meta_data, open(self._json_path, "w"))
 
         # 6. remove temp folder
