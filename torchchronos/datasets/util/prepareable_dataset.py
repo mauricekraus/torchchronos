@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import torch
 from torch.utils.data import Dataset
-from ...transforms.base import Compose
+from ...transforms.base import Transform
 
 """
 This class is for datasets that need to be prepared before they can be used.
@@ -27,12 +27,12 @@ This is because in the Superclass checks are done to make sure that the dataset 
 
 class PrepareableDataset(ABC, Dataset):
     def __init__(
-        self, prepare: bool = False, load: bool = False, transforms: Compose | None = None
+        self, prepare: bool = False, load: bool = False, transform: Transform | None = None
     ) -> None:
         super().__init__()
         self.is_prepared: bool = False
         self.is_loaded: bool = False
-        self.transforms = transforms
+        self.transform = transform
 
         if prepare:
             self.prepare()
@@ -44,12 +44,15 @@ class PrepareableDataset(ABC, Dataset):
     def __getitem__(self, idx: int) -> torch.Tensor:
         if self.is_loaded is False:
             raise NotLoadedError("Dataset must be loaded before it can be used.")
+        
 
     @abstractmethod
     def __len__(self) -> int:
         pass
 
     def prepare(self) -> None:
+        self.transform.fit()
+        
         if self.is_prepared:
             return
         self._prepare()

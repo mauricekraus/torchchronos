@@ -171,11 +171,8 @@ class AeonDataset(PrepareableDataset):
 
     def __getitem__(self, idx: int) -> tuple[np.ndarray, np.ndarray] | np.ndarray:
         super().__getitem__(idx)
-        if self.has_y:
-            if self.return_labels:
-                return self.X[idx], self.y[idx]
-            else:
-                return self.X[idx]
+        if self.has_y and self.return_labels:
+            return self.X[idx], self.y[idx]
         else:
             return self.X[idx]
 
