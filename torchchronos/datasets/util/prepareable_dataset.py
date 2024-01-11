@@ -27,32 +27,44 @@ This is because in the Superclass checks are done to make sure that the dataset 
 
 class PrepareableDataset(ABC, Dataset):
     def __init__(
-        self, prepare: bool = False, load: bool = False, transform: Transform | None = None
+        self,
+        transform: Transform | None = None,
+        domain: str | None = None,
+        has_y: bool = True,
     ) -> None:
         super().__init__()
         self.is_prepared: bool = False
         self.is_loaded: bool = False
         self.transform = transform
+        self.domain = domain
+        self.X = None
+        self.y = None
+        self.has_y = has_y
 
-        if prepare:
-            self.prepare()
-        if load:
-            self.prepare()
-            self.load()
 
-    @abstractmethod
     def __getitem__(self, idx: int) -> torch.Tensor:
         if self.is_loaded is False:
             raise NotLoadedError("Dataset must be loaded before it can be used.")
-        
+        time_series = self.getItem(idx)
+        if self.transform is not None:
+            if self.has_y:
+                transformed_time_series = self.transform(time_series, self.y[idx])
+            else:
+                transformed_time_series = self.transform(time_series)
+        return transformed_time_series
+
+    @abstractmethod
+    def getItem(self, idx: int) -> torch.Tensor:
+        pass
 
     @abstractmethod
     def __len__(self) -> int:
         pass
 
     def prepare(self) -> None:
-        self.transform.fit()
-        
+        if self.transform is not None:
+            self.transform.fit()
+
         if self.is_prepared:
             return
         self._prepare()
