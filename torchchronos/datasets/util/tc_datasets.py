@@ -1,19 +1,11 @@
-import os, json, shutil
+import os, json
 from pathlib import Path
 
 import numpy as np
-from aeon.datasets._data_loaders import (
-    load_classification,
-    load_regression,
-    load_forecasting,
-)
-from aeon.datasets.tsc_data_lists import multivariate, univariate
-from aeon.datasets.tser_data_lists import tser_all
-from aeon.datasets.tsf_data_lists import tsf_all
 
 from .prepareable_dataset import PrepareableDataset
-from ...transforms.base import Compose, Transform
-from ...transforms.transforms import TransformLabels
+from ...transforms.base import Transform
+from ... transforms.transforms import TransformLabels
 
 
 """
@@ -41,95 +33,113 @@ This class is mainly used to create simple Dataset classes that are used in the 
 """
 
 
+from pathlib import Path
+from typing import Callable, Dict, Optional
+
 class TCDataset(PrepareableDataset):
-    """
-    A dataset class for handling Aeon datasets.
-
-    Args:
-        name (str): The name of the dataset.
-        split (str | None, optional): The split of the dataset ("train", "test" or None). Defaults to None.
-        save_path (str | None, optional): The path to save the dataset. Defaults to None.
-        prepare (bool, optional): Whether to prepare the dataset. Defaults to False.
-        load (bool, optional): Whether to load the dataset. Defaults to False.
-        has_y (bool, optional): Whether the dataset has labels. Defaults to True.
-        return_labels (bool, optional): Whether to return labels when accessing the dataset. Defaults to True.
-        use_cache (bool, optional): Whether to use the cached dataset. Defaults to True.
-    """
-
     def __init__(
         self,
         name: str,
-        load_method: callable,
-        load_method_args: dict = {},
-        split: str | None = None,
-        save_path: Path | None = None,
+        load_method: Callable,
+        load_method_args: Dict = {},
+        split: Optional[str] = None,
+        save_path: Optional[Path] = None,
         has_y: bool = True,
         return_labels: bool = True,
-        pre_transform: Transform | None = None,
-        post_transform: Transform | None = None,
-        use_cache: bool = True,
+        pre_transform: Optional[Transform] = None,
+        post_transform: Optional[Transform] = None,
     ) -> None:
         self.name = name
         self.split = split
-        if save_path is None:
-            save_path = Path(".cache/data/torchchronos")
+        self.save_path = save_path or Path(".cache/data/torchchronos") / name
+        self._np_path = self.save_path / (name + ".npz")
+        self._json_path = self.save_path / (name + ".json")
+        self.meta_data: Optional[Dict] = None
+        self.is_prepared = False
 
-        self.save_path = save_path / name
-        self._np_path = self.save_path / (self.name + ".npz")
-        self._json_path = self.save_path / (self.name + ".json")
-        self.meta_data: dict | None = None
+        if self._is_dataset_prepared():
+            self._load_meta_data()
 
-        if os.path.exists(self._np_path) and os.path.exists(self._json_path):
-            self.meta_data = json.load(open(self._json_path, "r"))
-            self.is_prepared = True
+        super().__init__(transform=post_transform, has_y=has_y)
 
-        super().__init__(transform=post_transform)
-
-        self.X: np.ndarray | None = None
-        self.has_y: bool = has_y
-        if self.has_y:
-            self.y: np.ndarray | None = None
-            self.return_labels = return_labels
-
+        self.return_labels = return_labels
         self.load_method = load_method
         self.load_method_args = load_method_args
         self.pre_transform = pre_transform
         self.post_transform = post_transform
 
+    def _is_dataset_prepared(self) -> bool:
+        return os.path.exists(self._np_path) and os.path.exists(self._json_path)
+
+    def _load_meta_data(self) -> None:
+        self.meta_data = json.load(open(self._json_path, "r"))
+        self.is_prepared = True
+
     def _prepare(self) -> None:
-        # 1. Check if dataset is already downloaded
 
-        # 2. If not, download it
-        extract_path = f".cache/temp"
+        extract_path = ".cache/temp"
 
-        data = self.load_method(**self.load_method_args)
+        data = self._load_dataset()
         if self.has_y:
-            try:
-                X, Y, X_train, Y_train, X_test, Y_test = data
-            except ValueError:
-                raise ValueError(
-                    "The dataset does not have a train and test split, but has_y is set to True."
-                )
+            prepared_data = self._process_data_with_labels(data)
+        else:
+            prepared_data = self._process_data_without_labels(data)
+
+        self._create_metadata(data)
+
+        # 5. Save it
+        self._save_data(prepared_data)
+
+        # 6. Remove temp folder
+        # shutil.rmtree(extract_path)
+
+    def _load_dataset(self):
+        return self.load_method(**self.load_method_args)
+
+    def _process_data_with_labels(self, data):
+        # Process data with labels
+        try:
+            X, Y, X_train, Y_train, X_test, Y_test = data
+        except ValueError:
+            raise ValueError("The dataset does not have a train and test split, but has_y is set to True.")
+
+        if self.pre_transform is not None:
+            self.pre_transform.fit(X, Y)
+        X, Y = self._apply_pre_transform(X, Y)
+        X_train, Y_train = self._apply_pre_transform(X_train, Y_train)
+        X_test, Y_test = self._apply_pre_transform(X_test, Y_test)
+
+        return X, Y, X_train, Y_train, X_test, Y_test
+    
+    def _process_data_without_labels(self, data):
+        # Process data without labels
+        X, X_train, X_test = data
+        if self.pre_transform is not None:
+            self.pre_transform.fit(X)
+            X = self._apply_pre_transform(X)
+        X_train = self._apply_pre_transform(X_train)
+        X_test = self._apply_pre_transform(X_test)
+
+        return X, X_train, X_test
+
+    def _apply_pre_transform(self, X, Y=None):
+        # Apply pre-transform if specified
+        if self.has_y:
+            if self.pre_transform is not None:
+                X, Y = self.pre_transform.transform(X, Y)
+            return X, Y
+
+        else:
+            if self.pre_transform is not None:
+                X = self.pre_transform.transform(X)
+            return X
+
+    def _create_metadata(self, data):
+        # Create metadata
+        if self.has_y:
+            X, Y, X_train, Y_train, X_test, Y_test = data
         else:
             X, X_train, X_test = data
-
-        # 2.1 transform data
-        if self.pre_transform is not None:
-            if self.has_y:
-                self.pre_transform.fit(X, Y)
-                X, Y = self.pre_transform.transform(X, Y)
-            else:
-                self.pre_transform.fit(X)
-                X = self.pre_transform.transform(X)
-
-        # 4. create Metadata
-        # calculations if dataset has equal samples per class
-        if self.has_y:
-            unique_values, counts = np.unique(Y, return_counts=True)
-            if np.all(counts == counts[0]):
-                equal_samples_per_class = True
-            else:
-                equal_samples_per_class = False
 
         meta_data = {
             "num_features": X.shape[1],
@@ -137,26 +147,21 @@ class TCDataset(PrepareableDataset):
             "num_train_samples": X_train.shape[0],
             "num_test_samples": X_test.shape[0],
             "length": X.shape[2],
-            "equal_samples_per_class": equal_samples_per_class,
         }
 
         self.meta_data = meta_data
-        # 5. save it
-        os.makedirs(self.save_path, exist_ok=True)
-        if self.has_y:
-            np.savez(
-                self._np_path,
-                X_train=X_train,
-                Y_train=Y_train,
-                X_test=X_test,
-                Y_test=Y_test,
-            )
-        else:
-            np.savez(self._np_path, X_train=X_train, X_test=X_test)
-        json.dump(meta_data, open(self._json_path, "w"))
 
-        # 6. remove temp folder
-        # shutil.rmtree(extract_path)
+    def _save_data(self, data):
+        # Save data
+        os.makedirs(self.save_path, exist_ok=True)
+
+        if self.has_y:
+            X, Y, X_train, Y_train, X_test, Y_test = data
+            np.savez(self._np_path, X_train=X_train, Y_train=Y_train, X_test=X_test, Y_test=Y_test)
+        else:
+            X, X_train, X_test = data
+            np.savez(self._np_path, X_train=X_train, X_test=X_test)
+        json.dump(self.meta_data, open(self._json_path, "w"))
 
     def _load(self) -> None:
         data = np.load(self._np_path)
@@ -184,6 +189,7 @@ class TCDataset(PrepareableDataset):
         return self.meta_data["num_samples"]
 
 
+
 class ClassificationDataset(TCDataset):
     def __init__(
         self,
@@ -192,26 +198,22 @@ class ClassificationDataset(TCDataset):
         load_method_args: dict = {},
         split: str | None = None,
         save_path: Path | None = None,
-        prepare: bool = False,
-        load: bool = False,
         return_labels: bool = True,
         pre_transform: Transform | None = None,
         post_transform: Transform | None = None,
-        use_cache: bool = True,
     ) -> None:
+        
+        pre_transform = TransformLabels()
         super().__init__(
             name,
             load_method,
             load_method_args,
             split,
             save_path,
-            prepare,
-            load,
             True,
             return_labels,
             pre_transform,
             post_transform,
-            use_cache,
         )
 
 
@@ -223,11 +225,8 @@ class RegressionDataset(TCDataset):
         load_method_args: dict = {},
         split: str | None = None,
         save_path: Path | None = None,
-        prepare: bool = False,
-        load: bool = False,
         pre_transform: Transform | None = None,
         post_transform: Transform | None = None,
-        use_cache: bool = True,
     ) -> None:
         
         super().__init__(
@@ -236,13 +235,10 @@ class RegressionDataset(TCDataset):
             load_method_args,
             split,
             save_path,
-            prepare,
-            load,
             False,
             False,
             pre_transform,
             post_transform,
-            use_cache,
         )
 
 

@@ -23,9 +23,6 @@ class AeonClassificationDataset(ClassificationDataset):
         split: str | None = None,
         save_path: Path | None = None,
         prepare: bool = False,
-        load: bool = False,
-        return_labels: bool = True,
-        use_cache: bool = True,
         pre_transform: Transform | None = None,
         post_transform: Transform | None = None,
     ) -> None:
@@ -52,10 +49,6 @@ class AeonClassificationDataset(ClassificationDataset):
             load_method_args={},
             split=split,
             save_path=save_path,
-            prepare=prepare,
-            load=load,
-            return_labels=return_labels,
-            use_cache=use_cache,
             pre_transform=pre_transform,
             post_transform=post_transform,
         )
@@ -65,12 +58,8 @@ class AeonRegressionDataset(RegressionDataset):
     def __init__(
         self,
         name: str,
-        load_method: callable,
-        load_method_args: dict = {},
         split: str | None = None,
         save_path: Path | None = None,
-        prepare: bool = False,
-        load: bool = False,
         pre_transform: Transform | None = None,
         post_transform: Transform | None = None,
     ) -> None:
@@ -88,8 +77,6 @@ class AeonRegressionDataset(RegressionDataset):
             load_method=get_data,
             split=split,
             save_path=save_path,
-            prepare=prepare,
-            load=load,
             pre_transform=pre_transform,
             post_transform=post_transform,
         )

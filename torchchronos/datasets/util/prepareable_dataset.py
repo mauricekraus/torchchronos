@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
 import torch
 from torch.utils.data import Dataset
+import numpy as np
+
 from ...transforms.base import Transform
 
 """
@@ -37,9 +40,10 @@ class PrepareableDataset(ABC, Dataset):
         self.is_loaded: bool = False
         self.transform = transform
         self.domain = domain
-        self.X = None
-        self.y = None
+        self.X: Optional[np.ndarray] = None
         self.has_y = has_y
+        if self.has_y:
+            self.y: Optional[np.ndarray] = None
 
 
     def __getitem__(self, idx: int) -> torch.Tensor:
@@ -51,7 +55,8 @@ class PrepareableDataset(ABC, Dataset):
                 transformed_time_series = self.transform(time_series, self.y[idx])
             else:
                 transformed_time_series = self.transform(time_series)
-        return transformed_time_series
+            return transformed_time_series
+        return time_series
 
     @abstractmethod
     def getItem(self, idx: int) -> torch.Tensor:

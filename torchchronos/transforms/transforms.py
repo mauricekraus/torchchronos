@@ -18,7 +18,8 @@ class TransformLabels(Transform):
     def fit(self, time_series: np.ndarray, y = None) -> Transform:
         labels = np.unique(y)
         labels = np.sort(labels)
-        self.label_map = {label: i for i, label in enumerate(labels)}
+        self.label_map = {i: label for label, i in enumerate(labels)}
 
-    def transform(self, ts: np.ndarray, y) -> np.ndarray:
-        return ts, self.label_map[y]
+    def transform(self, time_series: np.ndarray, y) -> np.ndarray:
+        new_labels = np.array([self.label_map[label] for label in y])
+        return time_series, new_labels
