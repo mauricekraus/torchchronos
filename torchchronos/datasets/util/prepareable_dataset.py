@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Any
 
 import torch
 from torch.utils.data import Dataset
 import numpy as np
 
 from ...transforms.base import Transform
+from ...transforms.transforms import Identity
 
 """
 This class is for datasets that need to be prepared before they can be used.
@@ -31,45 +32,41 @@ This is because in the Superclass checks are done to make sure that the dataset 
 class PrepareableDataset(ABC, Dataset):
     def __init__(
         self,
-        transform: Transform | None = None,
+        transform: Transform = Identity(),
         domain: str | None = None,
-        has_y: bool = True,
     ) -> None:
         super().__init__()
         self.is_prepared: bool = False
         self.is_loaded: bool = False
         self.transform = transform
         self.domain = domain
-        self.X: Optional[np.ndarray] = None
-        self.has_y = has_y
-        if self.has_y:
-            self.y: Optional[np.ndarray] = None
+        self.data: Optional[np.ndarray] = None
+        self.targets: Optional[np.ndarray] = None
 
 
-    def __getitem__(self, idx: int) -> torch.Tensor:
+    def __getitem__(self, idx: int) -> Any:
         if self.is_loaded is False:
             raise NotLoadedError("Dataset must be loaded before it can be used.")
-        time_series = self.getItem(idx)
-        if self.transform is not None:
-            if self.has_y:
-                transformed_time_series = self.transform(time_series, self.y[idx])
-            else:
-                transformed_time_series = self.transform(time_series)
+        
+        time_series, target = self._get_item(idx)
+        print(self.transform)
+        transformed_time_series, target = self.transform.transform(time_series, target)
+
+        if target is None:
             return transformed_time_series
-        return time_series
+        
+        return transformed_time_series, target
+
 
     @abstractmethod
-    def getItem(self, idx: int) -> torch.Tensor:
+    def _get_item(self, idx: int) -> torch.Tensor:
         pass
 
     @abstractmethod
     def __len__(self) -> int:
         pass
 
-    def prepare(self) -> None:
-        if self.transform is not None:
-            self.transform.fit()
-
+    def prepare(self) -> None: # tauschen
         if self.is_prepared:
             return
         self._prepare()
@@ -80,10 +77,13 @@ class PrepareableDataset(ABC, Dataset):
         pass
 
     def load(self) -> None:
+        
         if self.is_prepared is False:
             raise NotPreparedError("Dataset must be prepared before it can be loaded.")
         self._load()
         self.is_loaded = True
+
+        self.transform.fit(self.data, self.targets) # ToDo: Data not available
 
     @abstractmethod
     def _load(self) -> None:

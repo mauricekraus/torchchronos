@@ -5,7 +5,7 @@ import numpy as np
 
 from .prepareable_dataset import PrepareableDataset
 from ...transforms.base import Transform
-from ... transforms.transforms import TransformLabels
+from ...transforms.transforms import LabelTransform, Identity
 
 
 """
@@ -36,22 +36,20 @@ This class is mainly used to create simple Dataset classes that are used in the 
 from pathlib import Path
 from typing import Callable, Dict, Optional
 
-class TCDataset(PrepareableDataset):
+# TODO: CachedDataset?
+class CachedDataset(PrepareableDataset):
     def __init__(
         self,
         name: str,
-        load_method: Callable,
-        load_method_args: Dict = {},
         split: Optional[str] = None,
         save_path: Optional[Path] = None,
-        has_y: bool = True,
         return_labels: bool = True,
-        pre_transform: Optional[Transform] = None,
-        post_transform: Optional[Transform] = None,
+        pre_transform: Transform = Identity(),
+        post_transform: Transform = Identity()
     ) -> None:
         self.name = name
         self.split = split
-        self.save_path = save_path or Path(".cache/data/torchchronos") / name
+        self.save_path = (save_path or Path(".cache/torchchronos/data")) / name #TODO: save_path in cache_dir umbenennen
         self._np_path = self.save_path / (name + ".npz")
         self._json_path = self.save_path / (name + ".json")
         self.meta_data: Optional[Dict] = None
@@ -60,11 +58,9 @@ class TCDataset(PrepareableDataset):
         if self._is_dataset_prepared():
             self._load_meta_data()
 
-        super().__init__(transform=post_transform, has_y=has_y)
+        super().__init__(transform=post_transform)
 
         self.return_labels = return_labels
-        self.load_method = load_method
-        self.load_method_args = load_method_args
         self.pre_transform = pre_transform
         self.post_transform = post_transform
 
@@ -76,16 +72,11 @@ class TCDataset(PrepareableDataset):
         self.is_prepared = True
 
     def _prepare(self) -> None:
-
-        extract_path = ".cache/temp"
-
         data = self._load_dataset()
-        if self.has_y:
-            prepared_data = self._process_data_with_labels(data)
-        else:
-            prepared_data = self._process_data_without_labels(data)
 
-        self._create_metadata(data)
+        prepared_data = self._process_data(data)
+
+        self._create_metadata(prepared_data)
 
         # 5. Save it
         self._save_data(prepared_data)
@@ -94,53 +85,31 @@ class TCDataset(PrepareableDataset):
         # shutil.rmtree(extract_path)
 
     def _load_dataset(self):
-        return self.load_method(**self.load_method_args)
+        return self._get_data()
 
-    def _process_data_with_labels(self, data):
+    def _process_data(self, data):
         # Process data with labels
         try:
-            X, Y, X_train, Y_train, X_test, Y_test = data
+            X_train, Y_train, X_test, Y_test = data
         except ValueError:
-            raise ValueError("The dataset does not have a train and test split, but has_y is set to True.")
+            raise ValueError("The method _get_data must return 4 values: X_train, Y_train, X_test, Y_test"
+                             "If the dataset does not have targets, return None instead of Y_train and Y_test.")
 
-        if self.pre_transform is not None:
-            self.pre_transform.fit(X, Y)
-        X, Y = self._apply_pre_transform(X, Y)
-        X_train, Y_train = self._apply_pre_transform(X_train, Y_train)
-        X_test, Y_test = self._apply_pre_transform(X_test, Y_test)
+        X = np.concatenate((X_train, X_test), axis=0)
+        Y = np.concatenate((Y_train, Y_test), axis=0)
+
+        self.pre_transform.fit(X, Y)
+        X, Y = self.pre_transform.transform(X, Y)
+        X_train, Y_train = self.pre_transform.transform(X_train, Y_train)
+        X_test, Y_test = self.pre_transform.transform(X_test, Y_test)
 
         return X, Y, X_train, Y_train, X_test, Y_test
     
-    def _process_data_without_labels(self, data):
-        # Process data without labels
-        X, X_train, X_test = data
-        if self.pre_transform is not None:
-            self.pre_transform.fit(X)
-            X = self._apply_pre_transform(X)
-        X_train = self._apply_pre_transform(X_train)
-        X_test = self._apply_pre_transform(X_test)
-
-        return X, X_train, X_test
-
-    def _apply_pre_transform(self, X, Y=None):
-        # Apply pre-transform if specified
-        if self.has_y:
-            if self.pre_transform is not None:
-                X, Y = self.pre_transform.transform(X, Y)
-            return X, Y
-
-        else:
-            if self.pre_transform is not None:
-                X = self.pre_transform.transform(X)
-            return X
 
     def _create_metadata(self, data):
         # Create metadata
-        if self.has_y:
-            X, Y, X_train, Y_train, X_test, Y_test = data
-        else:
-            X, X_train, X_test = data
-
+        X, Y, X_train, Y_train, X_test, Y_test = data
+    
         meta_data = {
             "num_features": X.shape[1],
             "num_samples": X.shape[0],
@@ -152,45 +121,54 @@ class TCDataset(PrepareableDataset):
         self.meta_data = meta_data
 
     def _save_data(self, data):
+        X, Y, X_train, Y_train, X_test, Y_test = data
         # Save data
         os.makedirs(self.save_path, exist_ok=True)
 
-        if self.has_y:
-            X, Y, X_train, Y_train, X_test, Y_test = data
+        if Y is not None:
             np.savez(self._np_path, X_train=X_train, Y_train=Y_train, X_test=X_test, Y_test=Y_test)
         else:
-            X, X_train, X_test = data
             np.savez(self._np_path, X_train=X_train, X_test=X_test)
         json.dump(self.meta_data, open(self._json_path, "w"))
 
     def _load(self) -> None:
         data = np.load(self._np_path)
+        has_y = False
+
+        if "Y_train" in data.files and "Y_test" in data.files:
+            has_y = True
 
         if self.split == "train":
-            self.X = data["X_train"]
-            if self.has_y:
-                self.y = data["Y_train"]
+            self.data = data["X_train"]
+            if has_y:
+                self.targets = data["Y_train"]
         elif self.split == "test":
-            self.X = data["X_test"]
-            if self.has_y:
-                self.y = data["Y_test"]
+            self.data = data["X_test"]
+            if has_y:
+                self.targets = data["Y_test"]
         else:
-            self.X = np.concatenate((data["X_train"], data["X_test"]), axis=0)
-            if self.has_y:
-                self.y = np.concatenate((data["Y_train"], data["Y_test"]), axis=0)
+            self.data = np.concatenate((data["X_train"], data["X_test"]), axis=0)
+            if has_y:
+                self.targets = np.concatenate((data["Y_train"], data["Y_test"]), axis=0)
+        print(self.data.shape)
 
-    def getItem(self, idx: int) -> tuple[np.ndarray, np.ndarray] | np.ndarray:
-        if self.has_y and self.return_labels:
-            return self.X[idx], self.y[idx]
+    def _get_item(self, idx: int) -> tuple[np.ndarray, np.ndarray] | np.ndarray:
+        print(self.data[idx].shape)
+        if (self.targets is not None) and self.return_labels:
+            return self.data[idx], self.targets[idx]
         else:
-            return self.X[idx]
+            return self.data[idx], None
 
     def __len__(self) -> int:
         return self.meta_data["num_samples"]
+    
+    # TODO: Abstractmethod?
+    def _get_data():
+        pass
 
 
 
-class ClassificationDataset(TCDataset):
+class ClassificationDataset(CachedDataset):
     def __init__(
         self,
         name: str,
@@ -203,7 +181,7 @@ class ClassificationDataset(TCDataset):
         post_transform: Transform | None = None,
     ) -> None:
         
-        pre_transform = TransformLabels()
+        pre_transform = LabelTransform()
         super().__init__(
             name,
             load_method,
@@ -216,31 +194,3 @@ class ClassificationDataset(TCDataset):
             post_transform,
         )
 
-
-class RegressionDataset(TCDataset):
-    def __init__(
-        self,
-        name: str,
-        load_method: callable,
-        load_method_args: dict = {},
-        split: str | None = None,
-        save_path: Path | None = None,
-        pre_transform: Transform | None = None,
-        post_transform: Transform | None = None,
-    ) -> None:
-        
-        super().__init__(
-            name,
-            load_method,
-            load_method_args,
-            split,
-            save_path,
-            False,
-            False,
-            pre_transform,
-            post_transform,
-        )
-
-
-class ForecastingDataset(TCDataset):
-    pass

@@ -8,19 +8,22 @@ class Transform(ABC):
     def __init__(self):
         self.is_fitted = False
 
-    def __call__(self, ts):
-        self.transform(ts)
+    def __call__(self, ts, targets = None):
+        self.transform(ts, targets)
 
+    def __add__(self, other):
+        return Compose([self, other])
+    
     @abstractmethod
     def __repr__(self) -> str:
         pass
-    
+
     @abstractmethod
-    def fit(self, time_series):
+    def fit(self, time_series, targets = None):
         pass
 
     @abstractmethod
-    def transform(self, time_series):
+    def transform(self, time_series, targets = None):
         pass
 
 
@@ -32,17 +35,20 @@ class Compose(Transform):
                 assert hasattr(t, "fit") and callable(t.fit), "All transforms must have a fit method."
                 assert hasattr(t, "transform") and callable(t.transform), "All transforms must have a transform method."
 
-    def fit(self, ts: torch.Tensor) -> Transform:
-        for t in self.transforms:
-            t.fit(ts)
-        self.is_fitted = True
+    # TODO: return new instead of self
+    def __add__(self, other):
+        self.transforms.append(other)
         return self
-
-    def transform(self, ts):
-        
+    
+    def fit(self, ts: torch.Tensor, targets = None):
         for t in self.transforms:
-            ts = t(ts)
-        return ts
+            t.fit(ts, targets)
+        self.is_fitted = True
+
+    def transform(self, ts, targets = None):
+        for t in self.transforms:
+            ts, targets = t.transform(ts, targets)
+        return ts, targets
     
     def __repr__(self):
         format_string = self.__class__.__name__ + "("
