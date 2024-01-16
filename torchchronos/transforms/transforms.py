@@ -10,7 +10,7 @@ class Identity(Transform):
     def __init__(self) -> None:
         super().__init__()
 
-    def fit(self, time_series: np.ndarray, y = None) -> Transform:
+    def fit(self, time_series: np.ndarray, y = None) -> None:
         pass
 
     def transform(self, time_series: np.ndarray, y = None) -> np.ndarray:
@@ -59,7 +59,7 @@ class GlobalNormalize(Transform):
         self.std = np.std(time_series, axis = 0)
 
     def transform(self, time_series: np.ndarray, y = None) -> np.ndarray:
-        return (time_series - self.mean) / self.std
+        return (time_series - self.mean) / self.std, y
 
     def __repr__(self) -> str:
         return f"Normalize(mean={self.mean}, std={self.std})"

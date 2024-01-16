@@ -77,13 +77,12 @@ class PrepareableDataset(ABC, Dataset):
         pass
 
     def load(self) -> None:
-        
         if self.is_prepared is False:
             raise NotPreparedError("Dataset must be prepared before it can be loaded.")
         self._load()
         self.is_loaded = True
 
-        self.transform.fit(self.data, self.targets) # ToDo: Data not available
+        self.transform.fit(self.data, self.targets)
 
     @abstractmethod
     def _load(self) -> None:

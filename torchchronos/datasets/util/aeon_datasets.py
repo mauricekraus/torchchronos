@@ -1,15 +1,7 @@
-import os, json, shutil
+from typing import Optional
 from pathlib import Path
 
-import numpy as np
-from aeon.datasets._data_loaders import (
-    load_classification,
-    load_regression,
-    load_forecasting,
-)
-from aeon.datasets.tsc_data_lists import multivariate, univariate
-from aeon.datasets.tser_data_lists import tser_all
-from aeon.datasets.tsf_data_lists import tsf_all
+from aeon.datasets._data_loaders import load_classification
 
 from .cached_datasets import CachedDataset
 from ...transforms.base import Transform
@@ -20,10 +12,11 @@ class AeonClassificationDataset(CachedDataset):
     def __init__(
         self,
         name: str,
-        split: str | None = None,
-        save_path: Path | None = None,
+        split: Optional[str] = None,
+        save_path: Optional[Path] = None,
+        return_labels: bool = True,
         pre_transform: Transform  = Identity(),
-        post_transform: Transform  = Identity(),
+        post_transform: Transform  = Identity()
     ) -> None:
        
         label_transform = LabelTransform()
@@ -37,6 +30,7 @@ class AeonClassificationDataset(CachedDataset):
             name=name,
             split=split,
             save_path=save_path,
+            return_labels=return_labels,
             pre_transform=pre_transform,
             post_transform=post_transform,
         )

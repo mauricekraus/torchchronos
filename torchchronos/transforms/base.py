@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-import torch
+import numpy as np
 from aeon.transformations.base import BaseTransformer
 
 
@@ -19,7 +19,7 @@ class Transform(ABC):
         pass
 
     @abstractmethod
-    def fit(self, time_series, targets = None):
+    def fit(self, time_series, targets = None) -> None:
         pass
 
     @abstractmethod
@@ -35,17 +35,17 @@ class Compose(Transform):
                 assert hasattr(t, "fit") and callable(t.fit), "All transforms must have a fit method."
                 assert hasattr(t, "transform") and callable(t.transform), "All transforms must have a transform method."
 
-    # TODO: return new instead of self
     def __add__(self, other):
         self.transforms.append(other)
-        return self
+        new_compose = Compose(self.transforms.append(other))
+        return new_compose
     
-    def fit(self, ts: torch.Tensor, targets = None):
+    def fit(self, ts, targets = None) -> None:
         for t in self.transforms:
             t.fit(ts, targets)
         self.is_fitted = True
 
-    def transform(self, ts, targets = None):
+    def transform(self, ts, targets = None) -> tuple[np.ndarray, np.ndarray]:
         for t in self.transforms:
             ts, targets = t.transform(ts, targets)
         return ts, targets

@@ -1,5 +1,7 @@
-import os, json
+import os, json, hashlib, uuid
 from pathlib import Path
+from typing import Dict, Optional
+
 
 import numpy as np
 
@@ -33,10 +35,6 @@ This class is mainly used to create simple Dataset classes that are used in the 
 """
 
 
-from pathlib import Path
-from typing import Callable, Dict, Optional
-
-# TODO: CachedDataset?
 class CachedDataset(PrepareableDataset):
     def __init__(
         self,
@@ -45,30 +43,29 @@ class CachedDataset(PrepareableDataset):
         save_path: Optional[Path] = None,
         return_labels: bool = True,
         pre_transform: Transform = Identity(),
-        post_transform: Transform = Identity()
+        post_transform: Transform = Identity(),
     ) -> None:
         self.name = name
         self.split = split
-        self.save_path = (save_path or Path(".cache/torchchronos/data")) / name #TODO: save_path in cache_dir umbenennen
-        self._np_path = self.save_path / (name + ".npz")
-        self._json_path = self.save_path / (name + ".json")
+        self.return_labels = return_labels
+        self.pre_transform = pre_transform
+        self.post_transform = post_transform
+        self.cache_dir = (save_path or Path(".cache/torchchronos/data")) / name
+        self.file_name = self._generate_file_name()
+        self.np_path = self.cache_dir / (self.file_name + ".npz")
+        self.json_path = self.cache_dir / (self.file_name + ".json")
         self.meta_data: Optional[Dict] = None
-        self.is_prepared = False
 
         if self._is_dataset_prepared():
             self._load_meta_data()
 
         super().__init__(transform=post_transform)
 
-        self.return_labels = return_labels
-        self.pre_transform = pre_transform
-        self.post_transform = post_transform
-
     def _is_dataset_prepared(self) -> bool:
-        return os.path.exists(self._np_path) and os.path.exists(self._json_path)
+        return os.path.exists(self.np_path) and os.path.exists(self.json_path)
 
     def _load_meta_data(self) -> None:
-        self.meta_data = json.load(open(self._json_path, "r"))
+        self.meta_data = json.load(open(self.json_path, "r"))
         self.is_prepared = True
 
     def _prepare(self) -> None:
@@ -78,22 +75,35 @@ class CachedDataset(PrepareableDataset):
 
         self._create_metadata(prepared_data)
 
-        # 5. Save it
         self._save_data(prepared_data)
 
-        # 6. Remove temp folder
-        # shutil.rmtree(extract_path)
+    def _load_dataset(self) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        try:
+            X_train, Y_train, X_test, Y_test = self._get_data()
+        except ValueError:
+            raise ValueError(
+                "The method _get_data must return 4 values: X_train, Y_train, X_test, Y_test"
+                "If the dataset does not have targets, return None instead of Y_train and Y_test."
+            )
+        return X_test, Y_test, X_train, Y_train
 
-    def _load_dataset(self):
-        return self._get_data()
-
-    def _process_data(self, data):
-        # Process data with labels
+    def _process_data(
+        self, data
+    ) -> tuple[
+        np.ndarray,
+        Optional[np.ndarray],
+        np.ndarray,
+        Optional[np.ndarray],
+        np.ndarray,
+        Optional[np.ndarray],
+    ]:
         try:
             X_train, Y_train, X_test, Y_test = data
         except ValueError:
-            raise ValueError("The method _get_data must return 4 values: X_train, Y_train, X_test, Y_test"
-                             "If the dataset does not have targets, return None instead of Y_train and Y_test.")
+            raise ValueError(
+                "The method _get_data must return 4 values: X_train, Y_train, X_test, Y_test"
+                "If the dataset does not have targets, return None instead of Y_train and Y_test."
+            )
 
         X = np.concatenate((X_train, X_test), axis=0)
         Y = np.concatenate((Y_train, Y_test), axis=0)
@@ -104,12 +114,11 @@ class CachedDataset(PrepareableDataset):
         X_test, Y_test = self.pre_transform.transform(X_test, Y_test)
 
         return X, Y, X_train, Y_train, X_test, Y_test
-    
 
-    def _create_metadata(self, data):
-        # Create metadata
+    def _create_metadata(self, data) -> None:
         X, Y, X_train, Y_train, X_test, Y_test = data
-    
+
+        # TODO: Add more
         meta_data = {
             "num_features": X.shape[1],
             "num_samples": X.shape[0],
@@ -120,19 +129,36 @@ class CachedDataset(PrepareableDataset):
 
         self.meta_data = meta_data
 
-    def _save_data(self, data):
+    def _generate_file_name(self) -> str:
+        save_string = f"{self.name}_{self.split}_{repr(self.pre_transform)}"
+
+        sha1_hash = hashlib.sha1(save_string.encode("utf-8"))
+
+        hash_hex = sha1_hash.hexdigest()
+
+        file_uuid = uuid.UUID(hash_hex[:32])
+        split = self.split or "all"
+        file_name = f"{self.name}_{split}_{file_uuid}"
+        return file_name
+
+    def _save_data(self, data) -> None:
         X, Y, X_train, Y_train, X_test, Y_test = data
-        # Save data
-        os.makedirs(self.save_path, exist_ok=True)
+        os.makedirs(self.cache_dir, exist_ok=True)
 
         if Y is not None:
-            np.savez(self._np_path, X_train=X_train, Y_train=Y_train, X_test=X_test, Y_test=Y_test)
+            np.savez(
+                self.np_path,
+                X_train=X_train,
+                Y_train=Y_train,
+                X_test=X_test,
+                Y_test=Y_test,
+            )
         else:
-            np.savez(self._np_path, X_train=X_train, X_test=X_test)
-        json.dump(self.meta_data, open(self._json_path, "w"))
+            np.savez(self.np_path, X_train=X_train, X_test=X_test)
+        json.dump(self.meta_data, open(self.json_path, "w"))
 
     def _load(self) -> None:
-        data = np.load(self._np_path)
+        data = np.load(self.np_path)
         has_y = False
 
         if "Y_train" in data.files and "Y_test" in data.files:
@@ -150,10 +176,10 @@ class CachedDataset(PrepareableDataset):
             self.data = np.concatenate((data["X_train"], data["X_test"]), axis=0)
             if has_y:
                 self.targets = np.concatenate((data["Y_train"], data["Y_test"]), axis=0)
-        print(self.data.shape)
 
-    def _get_item(self, idx: int) -> tuple[np.ndarray, np.ndarray] | np.ndarray:
-        print(self.data[idx].shape)
+    def _get_item(
+        self, idx: int
+    ) -> tuple[np.ndarray, np.ndarray] | tuple[np.ndarray | None]:
         if (self.targets is not None) and self.return_labels:
             return self.data[idx], self.targets[idx]
         else:
@@ -161,36 +187,7 @@ class CachedDataset(PrepareableDataset):
 
     def __len__(self) -> int:
         return self.meta_data["num_samples"]
-    
+
     # TODO: Abstractmethod?
     def _get_data():
         pass
-
-
-
-class ClassificationDataset(CachedDataset):
-    def __init__(
-        self,
-        name: str,
-        load_method: callable,
-        load_method_args: dict = {},
-        split: str | None = None,
-        save_path: Path | None = None,
-        return_labels: bool = True,
-        pre_transform: Transform | None = None,
-        post_transform: Transform | None = None,
-    ) -> None:
-        
-        pre_transform = LabelTransform()
-        super().__init__(
-            name,
-            load_method,
-            load_method_args,
-            split,
-            save_path,
-            True,
-            return_labels,
-            pre_transform,
-            post_transform,
-        )
-
