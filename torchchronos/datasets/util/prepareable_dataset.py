@@ -49,7 +49,6 @@ class PrepareableDataset(ABC, Dataset):
             raise NotLoadedError("Dataset must be loaded before it can be used.")
         
         time_series, target = self._get_item(idx)
-        print(self.transform)
         transformed_time_series, target = self.transform.transform(time_series, target)
 
         if target is None:
@@ -66,7 +65,7 @@ class PrepareableDataset(ABC, Dataset):
     def __len__(self) -> int:
         pass
 
-    def prepare(self) -> None: # tauschen
+    def prepare(self) -> None:
         if self.is_prepared:
             return
         self._prepare()
@@ -82,7 +81,7 @@ class PrepareableDataset(ABC, Dataset):
         self._load()
         self.is_loaded = True
 
-        self.transform.fit(self.data, self.targets)
+        self.transform.fit(self.data, self.targets) #TODO: with whole dataset or only parts?
 
     @abstractmethod
     def _load(self) -> None:

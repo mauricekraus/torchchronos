@@ -1,5 +1,5 @@
 import numpy as np
-
+import torch
 from .base import Transform
 
 
@@ -54,11 +54,11 @@ class GlobalNormalize(Transform):
         self.mean = None
         self.std = None
 
-    def fit(self, time_series: np.ndarray, y = None) -> Transform:
-        self.mean = np.mean(time_series, axis = 0)
-        self.std = np.std(time_series, axis = 0)
+    def fit(self, time_series: torch.Tensor, y = None) -> None:
+        self.mean = torch.mean(time_series, axis = 0)
+        self.std = torch.std(time_series, axis = 0)
 
-    def transform(self, time_series: np.ndarray, y = None) -> np.ndarray:
+    def transform(self, time_series: torch.Tensor, y = None) -> tuple[np.ndarray, np.ndarray]:
         return (time_series - self.mean) / self.std, y
 
     def __repr__(self) -> str:

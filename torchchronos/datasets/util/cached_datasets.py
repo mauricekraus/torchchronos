@@ -1,7 +1,6 @@
 import os, json, hashlib, uuid
 from pathlib import Path
-from typing import Dict, Optional
-
+from typing import Dict, Optional, Any
 
 import numpy as np
 
@@ -48,13 +47,15 @@ class CachedDataset(PrepareableDataset):
         self.name = name
         self.split = split
         self.return_labels = return_labels
-        self.pre_transform = pre_transform
+        self.pre_transform = pre_transform  # TODO: Add to numpy at the end
         self.post_transform = post_transform
-        self.cache_dir = (save_path or Path(".cache/torchchronos/data")) / name
+        self.cache_dir = (
+            save_path or Path(".cache/torchchronos/data")
+        ) / name  # TODO: make caching private
         self.file_name = self._generate_file_name()
         self.np_path = self.cache_dir / (self.file_name + ".npz")
         self.json_path = self.cache_dir / (self.file_name + ".json")
-        self.meta_data: Optional[Dict] = None
+        self.meta_data: Optional[dict[str, Any]] = None
 
         if self._is_dataset_prepared():
             self._load_meta_data()
@@ -124,7 +125,9 @@ class CachedDataset(PrepareableDataset):
             "num_samples": X.shape[0],
             "num_train_samples": X_train.shape[0],
             "num_test_samples": X_test.shape[0],
-            "length": X.shape[2],
+            "length": X.shape[
+                2
+            ],  # TODO: Check if this is correct 1 or 2, depends on dimensionality
         }
 
         self.meta_data = meta_data
@@ -155,7 +158,9 @@ class CachedDataset(PrepareableDataset):
             )
         else:
             np.savez(self.np_path, X_train=X_train, X_test=X_test)
-        json.dump(self.meta_data, open(self.json_path, "w"))
+        json.dump(
+            self.meta_data, open(self.json_path, "w")
+        )  # TODO: close file after writing
 
     def _load(self) -> None:
         data = np.load(self.np_path)
@@ -179,7 +184,7 @@ class CachedDataset(PrepareableDataset):
 
     def _get_item(
         self, idx: int
-    ) -> tuple[np.ndarray, np.ndarray] | tuple[np.ndarray | None]:
+    ) -> tuple[np.ndarray, np.ndarray | None]:
         if (self.targets is not None) and self.return_labels:
             return self.data[idx], self.targets[idx]
         else:
