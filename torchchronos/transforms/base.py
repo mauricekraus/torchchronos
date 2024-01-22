@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
+import pickle
 import numpy as np
 from aeon.transformations.base import BaseTransformer
 
@@ -19,6 +21,26 @@ class Transform(ABC):
             self._invert_transform = self._invert()
             self._invert_transform._invert_transform = self
         return self._invert_transform
+
+    def save(self, name: str, path: Path | None = None):
+        if path is None:
+            path = Path(".cache/transforms/")
+        
+        path.mkdir(parents=True, exist_ok=True)
+        file_path = path / (name + ".pkl")
+
+        with open(file_path, "wb") as file:
+            pickle.dump(self, file)
+
+    def load(name: str, path: Path | None = None):
+        if path is None:
+            path = Path(".cache/transforms/")
+        
+        file_path = path / (name + ".pkl")
+
+        with open(file_path, "rb") as file:
+            transform = pickle.load(file)
+        return transform
 
     def fit_transform(self, ts, targets=None):
         self.fit(ts, targets)
