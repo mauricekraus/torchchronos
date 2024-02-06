@@ -38,18 +38,21 @@ class PrepareableDataset(ABC, Dataset):
         super().__init__()
         self.is_prepared: bool = False
         self.is_loaded: bool = False
-        self.transform = transform
+        self._transform = transform
         self.domain = domain
         self.data: Optional[np.ndarray] = None
         self.targets: Optional[np.ndarray] = None
 
+    @property
+    def transform(self) -> Transform:
+        return self._transform
 
     def __getitem__(self, idx: int) -> Any:
         if self.is_loaded is False:
             raise NotLoadedError("Dataset must be loaded before it can be used.")
         
         time_series, target = self._get_item(idx)
-        transformed_time_series, target = self.transform.transform(time_series, target)
+        transformed_time_series, target = self._transform.transform(time_series, target)
 
         if target is None:
             return transformed_time_series

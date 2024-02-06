@@ -86,7 +86,7 @@ class CachedDataset(PrepareableDataset):
                 "The method _get_data must return 4 values: X_train, Y_train, X_test, Y_test"
                 "If the dataset does not have targets, return None instead of Y_train and Y_test."
             )
-        return X_test, Y_test, X_train, Y_train
+        return X_train, Y_train, X_test, Y_test
 
     def _process_data(
         self, data

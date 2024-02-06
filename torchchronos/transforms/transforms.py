@@ -7,6 +7,23 @@ from .base import Transform, Compose
 This class transforms the labels of a dataset. It transforms arbitrary string/int labels to int labels form 0 to n_classes-1.
 """
 
+class Crop(Transform):
+    def __init__(self, start, end) -> None:
+        super().__init__(True)
+        self.start = start
+        self.end = end
+
+    def _fit(self, time_series, y=None) -> None:
+        pass
+
+    def _transform(self, time_series: np.ndarray, y=None) -> tuple[np.ndarray, np.ndarray]:
+        return time_series[:, :, self.start:self.end], y
+
+    def _invert(self) -> Transform:
+        return self
+
+    def __repr__(self) -> str:
+        return f"Crop(start={self.start}, end={self.end})"
 
 class Identity(Transform):
     def __init__(self, is_fitted=True) -> None:
@@ -31,12 +48,15 @@ class LabelTransform(Transform):
         self.label_map = label_map
 
     def __repr__(self) -> str:
+        if self.is_fitted:
+            return f"LabelTransform()"
         return f"TransformLabels(label_map={self.label_map})"
 
     def _fit(self, time_series: np.ndarray, y) -> None:
         labels = np.unique(y)
         labels = np.sort(labels)
         self.label_map = {i: label for label, i in enumerate(labels)}
+        print(self.label_map)
 
     def _transform(self, time_series: np.ndarray, y) -> tuple[np.ndarray, np.ndarray]:
         new_labels = np.array([self.label_map[label] for label in y])
@@ -54,16 +74,18 @@ class GlobalNormalize(Transform):
         self.std = None
 
     def _fit(self, time_series: torch.Tensor, y=None) -> None:
-        self.mean = torch.mean(time_series, axis=0)
-        self.std = torch.std(time_series, axis=0)
+        self.mean = torch.mean(time_series, 0, True)
+        self.std = torch.std(time_series, 0, True) + 1e-5
 
     def _transform(
-        self, time_series: torch.Tensor, y=None
-    ) -> tuple[np.ndarray, np.ndarray]:
-        return (time_series - self.mean) / self.std, y
+        self, time_series: torch.Tensor, y=None) -> tuple[np.ndarray, np.ndarray | None]:
+        time_series = (time_series - self.mean) / self.std
+        time_series[torch.isnan(time_series)] = 0
+        return time_series, y
 
     def __repr__(self) -> str:
-        return f"Normalize(mean={self.mean}, std={self.std})"
+        return "Normalize()"
+        #return f"Normalize(mean={self.mean.shape}, std={self.std.shape})"
 
     def _invert(self) -> Transform:
         if self.mean is None or self.std is None:
@@ -89,6 +111,8 @@ class Scale(Transform):
         return Scale(1 / self.scale)
 
     def __repr__(self) -> str:
+        if torch.is_tensor(self.scale):
+            return f"Scale(scale={self.scale.shape})"
         return f"Scale(scale={self.scale})"
 
 
@@ -106,6 +130,8 @@ class Shift(Transform):
         return time_series + self.shift, y
 
     def __repr__(self) -> str:
+        if torch.is_tensor(self.shift):
+            return f"Shift(shift={self.shift.shape})"
         return f"Shift(shift={self.shift})"
 
     def _invert(self) -> Transform:
@@ -123,7 +149,9 @@ class ToTorchTensor(Transform):
 
     def _transform(self, time_series: torch.Tensor, targets=None) -> torch.Tensor:
         targets = targets if targets is None else torch.tensor(targets)
-        return torch.tensor(time_series), targets
+        if torch.is_tensor(time_series):
+            return time_series, targets
+        return torch.tensor(time_series).float(), targets
 
     def _invert(self):
         return self # TODO: maybe raise error
