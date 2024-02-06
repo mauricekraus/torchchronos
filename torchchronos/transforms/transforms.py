@@ -137,9 +137,6 @@ class Shift(Transform):
     def _invert(self) -> Transform:
         return Shift(-self.shift)
     
-    
-    
-
 class ToTorchTensor(Transform):
     def __init__(self):
         super().__init__()
