@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Any
+from typing import Any, Optional
 
+import numpy as np
 import torch
 from torch.utils.data import Dataset
-import numpy as np
 
 from ...transforms.base_transforms import Transform
 from ...transforms.transforms import Identity
@@ -50,15 +50,14 @@ class PrepareableDataset(ABC, Dataset):
     def __getitem__(self, idx: int) -> Any:
         if self.is_loaded is False:
             raise NotLoadedError("Dataset must be loaded before it can be used.")
-        
+
         time_series, target = self._get_item(idx)
         transformed_time_series, target = self._transform.transform(time_series, target)
 
         if target is None:
             return transformed_time_series
-        
-        return transformed_time_series, target
 
+        return transformed_time_series, target
 
     @abstractmethod
     def _get_item(self, idx: int) -> torch.Tensor:
@@ -84,7 +83,9 @@ class PrepareableDataset(ABC, Dataset):
         self._load()
         self.is_loaded = True
 
-        self.transform.fit(self.data, self.targets) #TODO: with whole dataset or only parts?
+        self.transform.fit(
+            self.data, self.targets
+        )  # TODO: with whole dataset or only parts?
 
     @abstractmethod
     def _load(self) -> None:

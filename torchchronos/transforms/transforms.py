@@ -1,8 +1,7 @@
 import numpy as np
 import torch
-from .base_transforms import Transform, Compose
 
-
+from .base_transforms import Compose, Transform
 
 
 class Identity(Transform):
@@ -33,20 +32,22 @@ class GlobalNormalize(Transform):
         self.std = torch.std(time_series, 0, True) + 1e-5
 
     def _transform(
-        self, time_series: torch.Tensor, y=None) -> tuple[np.ndarray, np.ndarray | None]:
+        self, time_series: torch.Tensor, y=None
+    ) -> tuple[np.ndarray, np.ndarray | None]:
         time_series = (time_series - self.mean) / self.std
         time_series[torch.isnan(time_series)] = 0
         return time_series, y
 
     def __repr__(self) -> str:
         return "Normalize()"
-        #return f"Normalize(mean={self.mean.shape}, std={self.std.shape})"
+        # return f"Normalize(mean={self.mean.shape}, std={self.std.shape})"
 
     def _invert(self) -> Transform:
         if self.mean is None or self.std is None:
             raise RuntimeError("Cannot invert transform before fitting.")
 
         return Compose([Scale(self.std), Shift(self.mean)], is_fitted=True)
+
 
 class Scale(Transform):
     def __init__(self, scale: float) -> None:
@@ -68,7 +69,7 @@ class Scale(Transform):
         if torch.is_tensor(self.scale):
             return f"Scale(scale={self.scale.shape})"
         return f"Scale(scale={self.scale})"
-    
+
 
 class Shift(Transform):
     def __init__(self, shift: int) -> None:

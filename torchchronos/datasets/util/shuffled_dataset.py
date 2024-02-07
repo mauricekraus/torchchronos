@@ -1,13 +1,13 @@
 from collections.abc import Sequence
-from typing import Any
 
 import torch
 from torch.utils.data import Dataset, Subset
 
 """
-This class is to shuffle a dataset. 
+This class is to shuffle a dataset.
 It wrapps the Pytorch.Subset class, but it shuffles the indices before passing them to the Subset class.
 """
+
 
 class ShuffledDataset(Subset):
     def __init__(self, dataset: Dataset) -> None:

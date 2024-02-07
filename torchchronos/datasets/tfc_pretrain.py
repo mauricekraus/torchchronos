@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 
 from ..download import download_and_unzip_dataset
 from ..transforms import Transform
-from ..typing import DatasetSplit, AnyPath
+from ..typing import AnyPath, DatasetSplit
 
 
 class TFCPretrainDataset(Dataset):
@@ -32,7 +32,8 @@ class TFCPretrainDataset(Dataset):
         :class:`torch.FloatTensor` of shape ``(batch, sequence length, number of features)`` and the label is a
         :class:`torch.LongTensor` of shape ``(batch,)``.
 
-    References:
+    References
+    ----------
         .. [1]
             Self-Supervised Contrastive Pre-Training For Time Series via Time-Frequency Consistency
             Xiang Zhang, Ziyuan Zhao, Theodoros Tsiligkaridis, and Marinka Zitnik

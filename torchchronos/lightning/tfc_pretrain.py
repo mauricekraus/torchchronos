@@ -1,13 +1,13 @@
 from pathlib import Path
-from lightning import LightningDataModule
 
 from torch.utils.data import DataLoader
 
-from ..utils import swap_batch_seq_collate_fn
+from lightning import LightningDataModule
 
+from ..datasets.tfc_pretrain import TFCPretrainDataset, download_tfc_pretrain
 from ..transforms import Transform
 from ..typing import DatasetSplit
-from ..datasets.tfc_pretrain import TFCPretrainDataset, download_tfc_pretrain
+from ..utils import swap_batch_seq_collate_fn
 
 
 class TFCPretrainDataModule(LightningDataModule):

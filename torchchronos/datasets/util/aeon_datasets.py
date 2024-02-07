@@ -1,11 +1,12 @@
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 
 from aeon.datasets._data_loaders import load_classification
 
-from .cached_datasets import CachedDataset
 from ...transforms.base_transforms import Transform
-from ...transforms.transforms import LabelTransform, Identity
+from ...transforms.transforms import Identity
+from ...transforms.representation_transformations import LabelTransform
+from .cached_datasets import CachedDataset
 
 
 class AeonClassificationDataset(CachedDataset):
@@ -15,16 +16,15 @@ class AeonClassificationDataset(CachedDataset):
         split: Optional[str] = None,
         save_path: Optional[Path] = None,
         return_labels: bool = True,
-        pre_transform: Transform  = Identity(),
-        post_transform: Transform  = Identity()
+        pre_transform: Transform = Identity(),
+        post_transform: Transform = Identity(),
     ) -> None:
-       
         label_transform = LabelTransform()
         if pre_transform is None:
             pre_transform = label_transform
         else:
-           label_transform += pre_transform
-           pre_transform = label_transform
+            label_transform += pre_transform
+            pre_transform = label_transform
 
         super().__init__(
             name=name,
@@ -43,5 +43,3 @@ class AeonClassificationDataset(CachedDataset):
             name=self.name, split="test", return_metadata=False
         )
         return X_train, Y_train, X_test, Y_test
-
-

@@ -1,13 +1,15 @@
-import os, json, hashlib, uuid
+import hashlib
+import json
+import os
+import uuid
 from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Any, Optional
 
 import numpy as np
 
-from .prepareable_dataset import PrepareableDataset
 from ...transforms.base_transforms import Transform
-from ...transforms.transforms import LabelTransform, Identity
-
+from ...transforms.transforms import Identity
+from .prepareable_dataset import PrepareableDataset
 
 """
 This class is a wrapper around the datasets from the aeon library.
@@ -27,7 +29,7 @@ The meta_data dict contains the following keys:
 and is loaded in the constructor, if the dataset is already prepared.
 
 It is possible to load all datasets that are available through the methods load_classification, load_regression and load_forecasting.
-The has_y parameter is used to indicate whether the dataset has labels or not. 
+The has_y parameter is used to indicate whether the dataset has labels or not.
 The return_labels parameter is used to indicate whether the labels should be returned when the dataset is used.
 
 This class is mainly used to create simple Dataset classes that are used in the experiments. Some examples can be found in the datasets.datasets file.
@@ -66,7 +68,7 @@ class CachedDataset(PrepareableDataset):
         return os.path.exists(self.np_path) and os.path.exists(self.json_path)
 
     def _load_meta_data(self) -> None:
-        self.meta_data = json.load(open(self.json_path, "r"))
+        self.meta_data = json.load(open(self.json_path))
         self.is_prepared = True
 
     def _prepare(self) -> None:
@@ -182,9 +184,7 @@ class CachedDataset(PrepareableDataset):
             if has_y:
                 self.targets = np.concatenate((data["Y_train"], data["Y_test"]), axis=0)
 
-    def _get_item(
-        self, idx: int
-    ) -> tuple[np.ndarray, np.ndarray | None]:
+    def _get_item(self, idx: int) -> tuple[np.ndarray, np.ndarray | None]:
         if (self.targets is not None) and self.return_labels:
             return self.data[idx], self.targets[idx]
         else:

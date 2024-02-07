@@ -2,11 +2,9 @@ import math
 from collections.abc import Sequence
 from typing import Any
 
+import numpy as np
 from torch import Tensor
 from torch.utils.data import Dataset
-import numpy as np
-
-
 
 """
 This class is for concatenating multiple datasets into one long one.
@@ -16,6 +14,7 @@ There are two ways to use this class:
 
 
 """
+
 
 class ConcatDataset(Dataset):
     def __init__(
@@ -28,7 +27,6 @@ class ConcatDataset(Dataset):
             fractions: The fraction of each dataset to use. Must be between 0 and 1.
                 If it is an int, then the same fraction is used for all datasets.
         """
-        
         if not datasets:
             raise ValueError("The number of datasets must be greater than zero")
         if isinstance(fractions, float):

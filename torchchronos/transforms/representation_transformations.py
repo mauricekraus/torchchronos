@@ -7,6 +7,8 @@ from .base_transforms import Transform
 Representation transforms manipulate the representation of the data.
 Examples are LabelTransform, and converting from complex to polar and vice versa.
 """
+
+
 class LabelTransform(Transform):
     def __init__(self, label_map=None) -> None:
         super().__init__(False if label_map is None else True)
@@ -14,7 +16,7 @@ class LabelTransform(Transform):
 
     def __repr__(self) -> str:
         if self.is_fitted:
-            return f"LabelTransform()"
+            return "LabelTransform()"
         return f"TransformLabels(label_map={self.label_map})"
 
     def _fit(self, time_series: np.ndarray, y) -> None:
@@ -29,10 +31,9 @@ class LabelTransform(Transform):
     def _invert(self) -> Transform:
         label_map = {value: key for key, value in self.label_map.items()}
         return LabelTransform(label_map)
-    
+
 
 class ComplexToPolar(Transform):
-
     def __init__(self):
         super().__init__(True)
 
@@ -45,13 +46,13 @@ class ComplexToPolar(Transform):
 
         ts_stacked = torch.stack((r, polar), dim=1).squeeze()
         return ts_stacked.type(torch.float32), targets
-        
+
     def _invert(self):
         return PolarToComplex()
-    
+
     def __repr__(self) -> str:
         return f"{__class__.__name__}()"
-    
+
 
 class PolarToComplex(Transform):
     def __init__(self):
@@ -69,13 +70,14 @@ class PolarToComplex(Transform):
 
         reshaped_ts = ts_stacked.reshape(time_series.shape[0], -1, time_series.shape[2])
         return reshaped_ts.type(torch.cfloat), targets
-    
+
     def _invert(self):
         return ComplexToPolar()
-    
+
     def __repr__(self) -> str:
         return f"{__class__.__name__}()"
-    
+
+
 class CombineToComplex(Transform):
     def __init__(self):
         super().__init__(True)
@@ -84,17 +86,21 @@ class CombineToComplex(Transform):
         pass
 
     def _transform(self, time_series: torch.Tensor, targets=None) -> torch.Tensor:
-
-        samples_reshaped = time_series.reshape(time_series.shape[0], time_series.shape[1], -1, 2)
-        complex_samples = samples_reshaped[:, :, :, 0] + 1j * samples_reshaped[:, :, :, 1]
+        samples_reshaped = time_series.reshape(
+            time_series.shape[0], time_series.shape[1], -1, 2
+        )
+        complex_samples = (
+            samples_reshaped[:, :, :, 0] + 1j * samples_reshaped[:, :, :, 1]
+        )
         return complex_samples, targets
 
     def _invert(self):
         return SplitComplexToRealImag()
-    
+
     def __repr__(self) -> str:
         return f"CombineToComplex(inverse:{self.inverse})"
-    
+
+
 class SplitComplexToRealImag(Transform):
     def __init__(self):
         super().__init__(True)
@@ -111,9 +117,9 @@ class SplitComplexToRealImag(Transform):
         real = time_series.real
         imag = time_series.imag
         return torch.stack((real, imag), dim=1).squeeze(), targets
-    
+
     def _invert(self):
         return CombineToComplex()
-    
+
     def __repr__(self) -> str:
         return f"{__class__.__name__}()"

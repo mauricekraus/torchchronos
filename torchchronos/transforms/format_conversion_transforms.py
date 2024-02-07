@@ -1,10 +1,13 @@
 import torch
 
 from .base_transforms import Transform
+
 """
 Change format of the data.
 Examples are ToTorchTensor, and ToNumpyArray, change the datatype of the time_seies.
 """
+
+
 class ToTorchTensor(Transform):
     def __init__(self):
         super().__init__(True)
@@ -19,11 +22,11 @@ class ToTorchTensor(Transform):
         return torch.tensor(time_series).float(), targets
 
     def _invert(self):
-        return self # TODO: maybe raise error
-    
+        return self  # TODO: maybe raise error
+
     def __repr__(self) -> str:
         return "ToTorchTensor()"
-    
+
 
 class ToNumpyArray(Transform):
     def __init__(self):
@@ -36,11 +39,11 @@ class ToNumpyArray(Transform):
         raise NotImplementedError("Not yet implemented")
 
     def _invert(self):
-        return self # TODO: maybe raise error
-    
+        return self  # TODO: maybe raise error
+
     def __repr__(self) -> str:
         return f"{__class__.__name__}()"
-    
+
 
 class ChangeDataType(Transform):
     def __init__(self, dtype):
@@ -55,7 +58,7 @@ class ChangeDataType(Transform):
         return time_series.type(self.dtype), targets
 
     def _invert(self):
-        return self # TODO: maybe raise error
-    
+        return self  # TODO: maybe raise error
+
     def __repr__(self) -> str:
         return f"{__class__.__name__}(dtype={self.dtype})"

@@ -10,9 +10,15 @@ class EMGDataset(AeonDataset):
         load: bool = False,
         has_y: bool = True,
         return_labels: bool = True,
-        use_cache: bool = True
+        use_cache: bool = True,
     ) -> None:
-        super().__init__("NerveDamage", split, save_path, prepare, load, has_y, return_labels, use_cache)
-
-
-
+        super().__init__(
+            "NerveDamage",
+            split,
+            save_path,
+            prepare,
+            load,
+            has_y,
+            return_labels,
+            use_cache,
+        )

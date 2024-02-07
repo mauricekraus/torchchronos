@@ -1,7 +1,9 @@
 import torch
+
 from .base_transforms import Transform
 
-class FourierTransform(Transform): #TODO: add kwargs for fft
+
+class FourierTransform(Transform):  # TODO: add kwargs for fft
     def __init__(self):
         super().__init__(True)
 
@@ -14,10 +16,10 @@ class FourierTransform(Transform): #TODO: add kwargs for fft
 
     def _invert(self):
         return InverseFourierTransform()
-    
+
     def __repr__(self) -> str:
         return "FourierTransform()"
-    
+
 
 class InverseFourierTransform(Transform):
     def __init__(self):
@@ -32,6 +34,6 @@ class InverseFourierTransform(Transform):
 
     def _invert(self):
         return FourierTransform()
-    
+
     def __repr__(self) -> str:
         return "InverseFourierTransform()"

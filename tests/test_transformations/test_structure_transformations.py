@@ -1,7 +1,7 @@
-import torch
 import pytest
+import torch
 
-from torchchronos.transforms.structure_transforms import Crop, PadBack, PadFront, Filter
+from torchchronos.transforms.structure_transforms import Crop, Filter, PadBack, PadFront
 from torchchronos.transforms.transformation_exceptions import NoInverseError
 
 
@@ -42,6 +42,7 @@ def test_pad_front():
     assert torch.allclose(padded_data[:, :, 10:], data)
     assert torch.allclose(padded_data[:, :, :10], torch.zeros((10, 1, 10)))
 
+
 def test_crop_inverse():
     crop = Crop(10, 20)
 
@@ -67,6 +68,7 @@ def test_pad_front_inverse():
     assert inverse_data.shape == torch.Size([10, 1, 10])
     assert torch.allclose(inverse_data, data)
 
+
 def test_pad_back_inverse():
     data = torch.randn((10, 1, 10), dtype=torch.float32)
 
@@ -84,9 +86,12 @@ def test_pad_back_inverse():
     assert inverse_data.shape == torch.Size([10, 1, 10])
     assert torch.allclose(inverse_data, data)
 
+
 def test_filter():
     data = torch.randn((10, 1, 10), dtype=torch.float32)
-    targets = torch.tensor([0, 1, 0, 1, 0, 1, 0, 1, 0, 1], dtype=torch.float32).view(-1, 1)
+    targets = torch.tensor([0, 1, 0, 1, 0, 1, 0, 1, 0, 1], dtype=torch.float32).view(
+        -1, 1
+    )
 
     filter = Filter(lambda x, y: y[0] == 0)
 
@@ -99,7 +104,9 @@ def test_filter():
     assert torch.allclose(filtered_data, data[targets[:, 0] == 0])
     assert torch.allclose(filtered_targets, targets[targets[:, 0] == 0])
 
-    data = torch.tensor([[1, 0, 3], [1, 1, 1], [2, 4, 3],[3, 0, 0]], dtype=torch.float32).reshape(4, 1, 3)
+    data = torch.tensor(
+        [[1, 0, 3], [1, 1, 1], [2, 4, 3], [3, 0, 0]], dtype=torch.float32
+    ).reshape(4, 1, 3)
 
     filter = Filter(lambda x, y: torch.max(x) == 3)
 
