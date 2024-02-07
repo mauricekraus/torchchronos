@@ -5,7 +5,7 @@ from typing import Dict, Optional, Any
 import numpy as np
 
 from .prepareable_dataset import PrepareableDataset
-from ...transforms.base import Transform
+from ...transforms.base_transforms import Transform
 from ...transforms.transforms import LabelTransform, Identity
 
 

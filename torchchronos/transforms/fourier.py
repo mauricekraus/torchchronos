@@ -1,5 +1,5 @@
 import torch
-from .base import Transform
+from .base_transforms import Transform
 
 class FourierTransform(Transform): #TODO: add kwargs for fft
     def __init__(self):

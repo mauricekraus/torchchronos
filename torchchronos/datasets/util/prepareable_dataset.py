@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import Dataset
 import numpy as np
 
-from ...transforms.base import Transform
+from ...transforms.base_transforms import Transform
 from ...transforms.transforms import Identity
 
 """

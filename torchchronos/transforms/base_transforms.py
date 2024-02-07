@@ -1,21 +1,33 @@
 from abc import ABC, abstractmethod
+from typing import Any, overload, Union
 from pathlib import Path
 import pickle
-from typing import Any
+
 import torch
 import numpy as np
 from aeon.transformations.base import BaseTransformer
 
-
-# TODO: implement crop Transform, Dtype Transform, Reshape Transform
+# TODO: implement Dtype Transform, Reshape Transform, change from torch.tensor to torch.Tensor
 
 class Transform(ABC):
+    
     def __init__(self, is_fitted: bool = False):
         self.is_fitted = is_fitted
         self._invert_transform = None
 
-    def __call__(self, data:torch.tensor, y = None) -> Any:
-        return self.transform(data, y)
+    @overload
+    def __call__(self, data:torch.Tensor) -> torch.Tensor:
+        pass
+
+    @overload
+    def __call__ (self, data:torch.Tensor, targets:torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        pass
+    
+    def __call__(self, data:torch.Tensor, targets = None) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+        if targets is None:
+            time_series = self.transform(data)
+            return time_series
+        return self.transform(data, targets)
 
     def __add__(self, other):
         return Compose([self, other])
@@ -26,6 +38,9 @@ class Transform(ABC):
             self._invert_transform._invert_transform = self
             self._invert_transform.is_fitted = True
         return self._invert_transform
+
+    def __repr__(self) -> str:
+        return f"{__class__.__name__}()"
 
     def save(self, name: str, path: Path | None = None):
         if not self.is_fitted:
@@ -62,15 +77,22 @@ class Transform(ABC):
         self._fit(time_series, targets)
         self.is_fitted = True
 
-    def transform(self, time_series, targets=None, return_available_labels=False) -> tuple[np.ndarray, np.ndarray | None]:
+    @overload
+    def transform(self, time_series:torch.tensor) -> torch.tensor:
+        ...
+
+    @overload
+    def transform(self, time_series:torch.tensor, targets:torch.tensor) -> tuple[torch.tensor, torch.tensor]:
+        ...
+
+    def transform(self, time_series, targets=None) -> tuple[np.ndarray, np.ndarray | None]:
         if self.is_fitted is False:
             raise Exception("Transform must be fitted before it can be used.")
-        
-        ts_transformed, targets_transformed = self._transform(time_series, targets)
-        # if targets_transformed is None and return_available_labels is False:
-        #     return ts_transformed
 
-        return ts_transformed, targets_transformed
+        if targets is None:
+            ts_transformed, _ = self._transform(time_series)
+            return ts_transformed
+        return self._transform(time_series, targets)
 
     @abstractmethod
     def _fit(self, time_series, targets=None) -> None:
@@ -84,9 +106,6 @@ class Transform(ABC):
     def _invert(self):
         pass
 
-    @abstractmethod
-    def __repr__(self) -> str:
-        pass
 
 
 

@@ -4,7 +4,7 @@ from pathlib import Path
 from aeon.datasets._data_loaders import load_classification
 
 from .cached_datasets import CachedDataset
-from ...transforms.base import Transform
+from ...transforms.base_transforms import Transform
 from ...transforms.transforms import LabelTransform, Identity
 
 
