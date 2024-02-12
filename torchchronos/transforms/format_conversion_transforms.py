@@ -44,7 +44,7 @@ class ToNumpyArray(Transform):
     def __repr__(self) -> str:
         return f"{__class__.__name__}()"
 
-
+# TODO: change to To und dann entweder device oder dtype, wie bei torch.to(...)
 class ChangeDataType(Transform):
     def __init__(self, dtype):
         super().__init__(True)

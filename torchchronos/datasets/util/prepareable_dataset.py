@@ -47,17 +47,18 @@ class PrepareableDataset(ABC, Dataset):
     def transform(self) -> Transform:
         return self._transform
 
+
     def __getitem__(self, idx: int) -> Any:
         if self.is_loaded is False:
             raise NotLoadedError("Dataset must be loaded before it can be used.")
 
         time_series, target = self._get_item(idx)
-        transformed_time_series, target = self._transform.transform(time_series, target)
 
         if target is None:
-            return transformed_time_series
+            return self._transform.transform(time_series)
+        else:
+            return self._transform.transform(time_series, target)
 
-        return transformed_time_series, target
 
     @abstractmethod
     def _get_item(self, idx: int) -> torch.Tensor:

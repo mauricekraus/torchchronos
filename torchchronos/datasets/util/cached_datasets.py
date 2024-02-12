@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 import numpy as np
+import torch
 
 from ...transforms.base_transforms import Transform
 from ...transforms.transforms import Identity
@@ -183,6 +184,10 @@ class CachedDataset(PrepareableDataset):
             self.data = np.concatenate((data["X_train"], data["X_test"]), axis=0)
             if has_y:
                 self.targets = np.concatenate((data["Y_train"], data["Y_test"]), axis=0)
+
+        self.data = torch.from_numpy(self.data)
+        if has_y:
+            self.targets = torch.from_numpy(self.targets)
 
     def _get_item(self, idx: int) -> tuple[np.ndarray, np.ndarray | None]:
         if (self.targets is not None) and self.return_labels:

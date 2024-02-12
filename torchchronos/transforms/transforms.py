@@ -81,7 +81,7 @@ class Shift(Transform):
 
     def _transform(
         self, time_series: torch.Tensor, y=None
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[torch.Tensor, torch.Tensor | None]:
         return time_series + self.shift, y
 
     def __repr__(self) -> str:

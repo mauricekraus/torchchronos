@@ -5,8 +5,12 @@ from typing import overload, Optional
 
 import numpy as np
 import torch
+from torch.utils.data import Dataset, TensorDataset
 
-# TODO: implement Dtype Transform, Reshape Transform, change from torch.tensor to torch.Tensor
+class PreparableDataset:
+    pass
+
+# TODO: implement  Reshape Transform, MinMax Transform
 
 
 class Transform(ABC):
@@ -23,10 +27,18 @@ class Transform(ABC):
         self, time_series: torch.Tensor, targets: torch.Tensor
     ) -> tuple[torch.Tensor, torch.Tensor]:
         pass
+    
+    @overload 
+    def __call__(self, time_series: PreparableDataset, targets: None) -> PreparableDataset:
+        pass
 
     def __call__(
-        self, time_series: torch.Tensor, targets: Optional[torch.Tensor]=None
-    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+        self, time_series: PreparableDataset | torch.Tensor, targets: Optional[torch.Tensor]=None
+    ) -> PreparableDataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+
+        if isinstance(time_series, Dataset):
+            time_series = self.transform(time_series)
+            return time_series
         if targets is None:
             time_series = self.transform(time_series)
             return time_series
@@ -77,6 +89,7 @@ class Transform(ABC):
     def fit_transform(
         self, time_series:torch.Tensor, targets:Optional[torch.Tensor]=None
     ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+        
         self.fit(time_series, targets)
         if targets is None:
             time_series = self.transform(time_series)
@@ -94,7 +107,7 @@ class Transform(ABC):
         self.is_fitted = True
 
     @overload
-    def transform(self, time_series: torch.Tensor) -> torch.Tensor:
+    def transform(self, time_series: torch.Tensor, targets: None = None) -> torch.Tensor:
         ...
 
     @overload
@@ -103,12 +116,36 @@ class Transform(ABC):
     ) -> tuple[torch.Tensor, torch.Tensor]:
         ...
 
+    @overload
+    def transform(self, time_series: Dataset, targets: None) -> Dataset:
+        ... 
+
     def transform(
-        self, time_series: torch.Tensor, targets:Optional[torch.Tensor]=None
-    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+        self, time_series: Dataset | torch.Tensor, targets:Optional[torch.Tensor]=None
+    ) -> Dataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         if self.is_fitted is False:
             raise Exception("Transform must be fitted before it can be used.")
 
+        if isinstance(time_series, Dataset):
+            dataset = None
+            dataset = time_series[:]
+            print(len(dataset))
+            try:
+                dataset = time_series[:]
+            except:
+                # TODO: implement serielles durchgehen und Datensatz bauen
+                pass
+            if len(dataset) == 1:
+                ts_transformed, _ = self._transform(dataset)
+                return TensorDataset(ts_transformed)
+            elif len(dataset) == 2:
+                data, labels = dataset
+                ts_transformed, labels_transformed = self._transform(data, labels)
+                print(ts_transformed.shape, labels_transformed.shape)
+                return TensorDataset(ts_transformed, labels_transformed.reshape(-1, 1))
+            else:
+                raise Exception("Dataset must have 1 or 2 elements")
+            
         if targets is None:
             ts_transformed, _ = self._transform(time_series)
             return ts_transformed
@@ -128,7 +165,7 @@ class Transform(ABC):
 
     @overload
     @abstractmethod
-    def _transform(self, time_series: torch.Tensor) -> tuple[torch.Tensor, None]:
+    def _transform(self, time_series: torch.Tensor, targets: None = None) -> tuple[torch.Tensor, None]:
         ...
 
     @overload
@@ -163,17 +200,10 @@ class Compose(Transform):
     def __getitem__(self, index:int) -> Transform:
         return self.transforms[index]
 
-    @overload
-    def fit_transform(self, time_series: torch.Tensor) -> torch.Tensor:
-        ...
-    
-    @overload
-    def fit_transform(self, time_series: torch.Tensor, targets: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        ...
 
     def fit_transform(
-        self, time_series:torch.Tensor, targets:Optional[torch.Tensor]=None
-    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+        self, time_series, targets
+    ):
         self.fit(time_series, targets)
         if targets is None:
             time_series = self.transform(time_series)
@@ -202,19 +232,9 @@ class Compose(Transform):
             self.transforms[-1].fit(time_series, targets)
         self.is_fitted = True
 
-    @overload
-    def _transform(self, time_series: torch.Tensor) -> tuple[torch.Tensor, None]:
-        ...
 
-    @overload
-    def _transform(
-        self, time_series: torch.Tensor, targets: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor]:
-        ...
+    def _transform(self, time_series, targets = None):
 
-    def _transform(
-        self, time_series: torch.Tensor, targets:Optional[torch.Tensor] = None
-    ) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, None]:
         if targets is None:
             for t in self.transforms:
                 time_series = t.transform(time_series)
@@ -234,3 +254,6 @@ class Compose(Transform):
             format_string += f"    {t}"
         format_string += "\n)"
         return format_string
+
+
+

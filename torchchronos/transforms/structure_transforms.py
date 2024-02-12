@@ -17,6 +17,7 @@ class Crop(Transform):
         self.end = end
 
     def _fit(self, time_series, y=None) -> None:
+        #ToDO: Move checks to init
         if self.start < 0 or self.end < 0:
             raise ValueError("Start and end must be positive integers")
         if self.start >= self.end:
@@ -84,6 +85,16 @@ class Filter(Transform):
     def _fit(self, time_series, targets=None) -> None:
         pass
 
+
+    # TODO: Check this
+    """
+    indices = [
+        self.filter(x, y)
+        for x, y in zip(data, repeat(None) if taregt is None else target
+        ] 
+
+
+    """
     def _transform(self, time_series: torch.Tensor, targets=None) -> torch.Tensor:
         indecies = []
         if targets is None:
