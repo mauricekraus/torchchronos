@@ -16,7 +16,7 @@ class ToTorchTensor(Transform):
         pass
 
     def _transform(self, time_series: torch.Tensor, targets=None) -> torch.Tensor:
-        targets = targets if targets is None else torch.tensor(targets)
+        targets = None if targets is None else torch.tensor(targets)
         if torch.is_tensor(time_series):
             return time_series, targets
         return torch.tensor(time_series).float(), targets

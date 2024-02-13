@@ -10,7 +10,7 @@ The parameters of all new transforms have to be a tensor containint the data, an
 
 ## BaseDataset
 
-This is a simple implementation of the torch Datset. The main difference to the the class is having a `data` and a `targets` attribure.
+This is a simple implementation of the torch Datset. The main difference to the the class is having a `data` and a `targets` attribure. Mainly this differs in returning always a value for target. When no target array is present, in other words it is `None` the dataset returns `None` as value for targets. This behaviour is used in the different transforms and to ensure a equal behaviour.
 
 ## PrepareableDataset
 

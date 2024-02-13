@@ -14,24 +14,25 @@ class LabelTransform(Transform):
         super().__init__(False if label_map is None else True)
         self.label_map = label_map
 
-    def __repr__(self) -> str:
-        if self.is_fitted:
-            return "LabelTransform()"
-        return f"TransformLabels(label_map={self.label_map})"
-
-    def _fit(self, time_series: np.ndarray, y) -> None:
-        labels = np.unique(y)
+    def _fit(self, time_series: np.ndarray, targets: np.ndarray) -> None:
+        targets = targets.astype(np.int64)
+        labels = np.unique(targets)
         labels = np.sort(labels)
-        self.label_map = {i: label for label, i in enumerate(labels)}
+        self.label_map = dict([(i, label) for label, i in enumerate(labels)])
 
-    def _transform(self, time_series: np.ndarray, y) -> tuple[np.ndarray, np.ndarray]:
-        new_labels = np.array([self.label_map[label] for label in y])
-        return time_series, new_labels
+    def _transform(self, time_series: np.ndarray, targets) -> tuple[np.ndarray, np.ndarray]:
+        targets = targets.astype(np.int64)
+        new_targets = np.array([self.label_map[label] for label in targets], dtype=np.int64)
+        return time_series, new_targets
 
     def _invert(self) -> Transform:
         label_map = {value: key for key, value in self.label_map.items()}
         return LabelTransform(label_map)
 
+    def __repr__(self) -> str:
+            if self.is_fitted:
+                return "LabelTransform()"
+            return f"TransformLabels(label_map={self.label_map})"
 
 class ComplexToPolar(Transform):
     def __init__(self):
@@ -62,7 +63,6 @@ class PolarToComplex(Transform):
         pass
 
     def _transform(self, time_series: torch.Tensor, targets=None) -> torch.Tensor:
-        print(time_series.shape)
         r = time_series[:, 0, :]
         polar = time_series[:, 1, :]
 
@@ -109,14 +109,11 @@ class SplitComplexToRealImag(Transform):
         pass
 
     def _transform(self, time_series: torch.Tensor, targets=None) -> torch.Tensor:
-        # TODO: Old implementation, check if new works
-        # flattened_time_series = torch.view_as_real(time_series)
-        # flattened_time_series = (
-        # flattened_time_series.type(torch.float32).flatten(1).unsqueeze(1))
-        # return flattened_time_series, targets
-        real = time_series.real
-        imag = time_series.imag
-        return torch.stack((real, imag), dim=1).squeeze(), targets
+        flattened_time_series = torch.view_as_real(time_series)
+        flattened_time_series = (
+        flattened_time_series.type(torch.float32).flatten(1).unsqueeze(1))
+        return flattened_time_series, targets
+
 
     def _invert(self):
         return CombineToComplex()
