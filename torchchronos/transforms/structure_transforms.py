@@ -113,3 +113,65 @@ class Filter(Transform):
 
     def __repr__(self) -> str:
         return f"{__class__.__name__}()"
+
+
+class RemoveLabels(Transform):
+    def __init__(self):
+        super().__init__(True)
+
+    def _fit(self, time_series, targets=None) -> None:
+        pass
+
+    def _transform(self, time_series, targets=None) -> tuple[torch.Tensor, None]:
+        return time_series, None
+    
+    def _invert(self):
+        raise NoInverseError()
+    
+    def __repr__(self) -> str:
+        return f"{__class__.__name__}()"
+    
+
+class SlidingWindow(Transform):
+    def __init__(self, window_size, step_size):
+        super().__init__(True)
+        self.window_size = window_size
+        self.step_size = step_size
+
+    def _fit(self, time_series, targets=None) -> None:
+        pass
+
+    def _transform(self, time_series, targets=None) -> tuple[torch.Tensor, torch.Tensor]:
+        num_time_series, dimensions, time_steps = time_series.shape
+        num_segments = (time_steps - self.window_size) // self.step_size + 1
+
+        ts_segments = []
+        targets_segmented = []
+        for i in range(num_time_series):
+            current_time_series = time_series[i]
+
+            # Slide the window along the time series data
+            for j in range(num_segments):
+                start_index = j * self.step_size
+                end_index = start_index + self.window_size
+                ts_segment = current_time_series[:, start_index:end_index]
+                ts_segments.append(ts_segment.unsqueeze(0))
+                
+                if targets is not None:
+                    targets_segmented.append(targets[i])
+
+        # Concatenate the segments into a single tensor
+        ts_segments = torch.cat(ts_segments, dim=0)
+
+        if targets is None:
+            targets_segmented = None
+        else:
+            targets_segmented = torch.tensor(targets_segmented)
+
+        return ts_segments, targets_segmented
+
+    def _invert(self):
+        raise NoInverseError()
+
+    def __repr__(self) -> str:
+        return f"{__class__.__name__}(window_size={self.window_size}, step_size={self.step_size})"
