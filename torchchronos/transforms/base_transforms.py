@@ -5,7 +5,9 @@ from typing import overload, Optional
 
 import numpy as np
 import torch
-from torch.utils.data import Dataset, TensorDataset
+from torch.utils.data import Dataset
+
+from ..datasets.util.base_dataset import BaseDataset
 
 class PreparableDataset:
     pass
@@ -20,21 +22,19 @@ class Transform(ABC):
 
     @overload
     def __call__(self, time_series: torch.Tensor) -> torch.Tensor:
-        pass
+        ...
 
     @overload
-    def __call__(
-        self, time_series: torch.Tensor, targets: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor]:
-        pass
+    def __call__(self, time_series: torch.Tensor, targets: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        ...
     
     @overload 
-    def __call__(self, time_series: PreparableDataset, targets: None) -> PreparableDataset:
-        pass
+    def __call__(self, time_series: Dataset, targets: None) -> Dataset:
+        ...
 
     def __call__(
-        self, time_series: PreparableDataset | torch.Tensor, targets: Optional[torch.Tensor]=None
-    ) -> PreparableDataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+        self, time_series: Dataset | torch.Tensor, targets: Optional[torch.Tensor]=None
+    ) -> Dataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
 
         if isinstance(time_series, Dataset):
             time_series = self.transform(time_series)
@@ -100,6 +100,7 @@ class Transform(ABC):
             self.is_fitted = True
             return time_series, target
 
+    #TODO: Datasets can not be fit, with this implementation
     def fit(self, time_series:torch.Tensor, targets:Optional[torch.Tensor]=None) -> None:
         if self.is_fitted:
             return
@@ -111,48 +112,51 @@ class Transform(ABC):
         ...
 
     @overload
-    def transform(
-        self, time_series: torch.Tensor, targets: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor]:
+    def transform(self, time_series: torch.Tensor, targets: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         ...
 
     @overload
     def transform(self, time_series: Dataset, targets: None) -> Dataset:
         ... 
 
-    def transform(
-        self, time_series: Dataset | torch.Tensor, targets:Optional[torch.Tensor]=None
-    ) -> Dataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+    def transform(self, time_series: Dataset | torch.Tensor, targets:Optional[torch.Tensor]=None) -> Dataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         if self.is_fitted is False:
             raise Exception("Transform must be fitted before it can be used.")
 
         if isinstance(time_series, Dataset):
-            dataset = None
-            dataset = time_series[:]
-            print(len(dataset))
-            try:
-                dataset = time_series[:]
-            except:
-                # TODO: implement serielles durchgehen und Datensatz bauen
-                pass
-            if len(dataset) == 1:
-                ts_transformed, _ = self._transform(dataset)
-                return TensorDataset(ts_transformed)
-            elif len(dataset) == 2:
-                data, labels = dataset
-                ts_transformed, labels_transformed = self._transform(data, labels)
-                print(ts_transformed.shape, labels_transformed.shape)
-                return TensorDataset(ts_transformed, labels_transformed.reshape(-1, 1))
-            else:
-                raise Exception("Dataset must have 1 or 2 elements")
-            
+            if targets is not None:
+                raise RuntimeError("If tranforming a dataset, targets have to be None. Do not provide targets to the transform method!")
+            dataset_transformed = self._transform_dataset(time_series)
+            return dataset_transformed
         if targets is None:
-            ts_transformed, _ = self._transform(time_series)
+            ts_transformed, _ = self._transform(time_series, None)
             return ts_transformed
         else:
-            ts_transformed, labels_transformed = self._transform(time_series, targets)
-            return ts_transformed, labels_transformed
+            idk = self._transform(time_series, targets)
+            ts_transformed, targets_transformed = idk
 
+            # Mainly for the RemoveLabels Transform
+            if targets_transformed is None:
+                return ts_transformed
+            else:
+                return ts_transformed, targets_transformed
+
+
+    def _transform_dataset(self, dataset: Dataset) -> BaseDataset:
+        try:
+            data = dataset[:]
+            if isinstance(data, tuple) and len(data) == 2:
+                data, targets = data
+            else:
+                targets = None
+        except:
+            #TODO: implement for collecting the data with iterating over the dataset
+            pass
+        ts_transformed, targets_transformed = self._transform(data, targets)
+
+        return BaseDataset(ts_transformed, targets_transformed)
+        
+        
     @abstractmethod
     def __repr__(self) -> str:
         pass
@@ -234,15 +238,15 @@ class Compose(Transform):
 
 
     def _transform(self, time_series, targets = None):
-
-        if targets is None:
-            for t in self.transforms:
-                time_series = t.transform(time_series)
-            return time_series, None
-        else:
-            for t in self.transforms:
-                time_series, targets = t.transform(time_series, targets)
-            return time_series, targets
+        
+        for t in self.transforms:
+            ts_transformed = t.transform(time_series, targets)
+            if isinstance(ts_transformed, tuple):
+                time_series, targets = ts_transformed
+            else:
+                time_series, targets = ts_transformed, None
+        
+        return time_series, targets
 
     def _invert(self) -> Transform:
         return Compose([~t for t in self.transforms[::-1]])

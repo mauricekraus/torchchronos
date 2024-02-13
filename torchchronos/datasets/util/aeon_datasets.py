@@ -17,7 +17,7 @@ class AeonClassificationDataset(CachedDataset):
         save_path: Optional[Path] = None,
         return_labels: bool = True,
         pre_transform: Transform = Identity(),
-        post_transform: Transform = Identity(),
+        transform: Transform = Identity(),
     ) -> None:
         label_transform = LabelTransform()
         if pre_transform is None:
@@ -32,7 +32,7 @@ class AeonClassificationDataset(CachedDataset):
             save_path=save_path,
             return_labels=return_labels,
             pre_transform=pre_transform,
-            post_transform=post_transform,
+            transform=transform,
         )
 
     def _get_data(self):

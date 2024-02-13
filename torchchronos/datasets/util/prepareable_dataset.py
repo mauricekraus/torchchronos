@@ -3,8 +3,8 @@ from typing import Any, Optional
 
 import numpy as np
 import torch
-from torch.utils.data import Dataset
 
+from .base_dataset import BaseDataset
 from ...transforms.base_transforms import Transform
 from ...transforms.transforms import Identity
 
@@ -29,22 +29,21 @@ This is because in the Superclass checks are done to make sure that the dataset 
 """
 
 
-class PrepareableDataset(ABC, Dataset):
+class PrepareableDataset(ABC, BaseDataset):
     def __init__(
         self,
         transform: Transform = Identity(),
         domain: str | None = None,
     ) -> None:
-        super().__init__()
         self.is_prepared: bool = False
         self.is_loaded: bool = False
         self._transform = transform
         self.domain = domain
-        self.data: Optional[np.ndarray] = None
-        self.targets: Optional[np.ndarray] = None
+
+        super().__init__(None, None)
 
     @property
-    def transform(self) -> Transform:
+    def transforms(self) -> Transform:
         return self._transform
 
 
@@ -52,18 +51,14 @@ class PrepareableDataset(ABC, Dataset):
         if self.is_loaded is False:
             raise NotLoadedError("Dataset must be loaded before it can be used.")
 
-        time_series, target = self._get_item(idx)
-
-        if target is None:
-            return self._transform.transform(time_series)
+        if self.targets is None:
+            time_series = self.data[idx]
+            return self._transform.transform(time_series, None)
         else:
-            return self._transform.transform(time_series, target)
+            time_series, targets = self.data[idx], self.targets[idx]
+            return self._transform.transform(time_series, targets)
 
-
-    @abstractmethod
-    def _get_item(self, idx: int) -> torch.Tensor:
-        pass
-
+# TODO: entweder __len__ implementieren oder self.data und self.targets entfernen und alles in der Unterklasse machen
     @abstractmethod
     def __len__(self) -> int:
         pass
@@ -84,7 +79,7 @@ class PrepareableDataset(ABC, Dataset):
         self._load()
         self.is_loaded = True
 
-        self.transform.fit(
+        self.transforms.fit(
             self.data, self.targets
         )  # TODO: with whole dataset or only parts?
 

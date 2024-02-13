@@ -10,6 +10,7 @@ import torch
 
 from ...transforms.base_transforms import Transform
 from ...transforms.transforms import Identity
+from ...transforms.structure_transforms import RemoveLabels
 from .prepareable_dataset import PrepareableDataset
 
 """
@@ -45,13 +46,16 @@ class CachedDataset(PrepareableDataset):
         save_path: Optional[Path] = None,
         return_labels: bool = True,
         pre_transform: Transform = Identity(),
-        post_transform: Transform = Identity(),
+        transform: Transform = Identity(),
     ) -> None:
         self.name = name
         self.split = split
         self.return_labels = return_labels
         self.pre_transform = pre_transform  # TODO: Add to numpy at the end
-        self.post_transform = post_transform
+        if return_labels is False:
+            print("Add ReturnLabels()")
+            transform += RemoveLabels()
+            print(transform)
         self.cache_dir = (
             save_path or Path(".cache/torchchronos/data")
         ) / name  # TODO: make caching private
@@ -63,7 +67,7 @@ class CachedDataset(PrepareableDataset):
         if self._is_dataset_prepared():
             self._load_meta_data()
 
-        super().__init__(transform=post_transform)
+        super().__init__(transform=transform)
 
     def _is_dataset_prepared(self) -> bool:
         return os.path.exists(self.np_path) and os.path.exists(self.json_path)
@@ -189,11 +193,6 @@ class CachedDataset(PrepareableDataset):
         if has_y:
             self.targets = torch.from_numpy(self.targets)
 
-    def _get_item(self, idx: int) -> tuple[np.ndarray, np.ndarray | None]:
-        if (self.targets is not None) and self.return_labels:
-            return self.data[idx], self.targets[idx]
-        else:
-            return self.data[idx], None
 
     def __len__(self) -> int:
         return self.meta_data["num_samples"]

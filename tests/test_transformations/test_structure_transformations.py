@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from torchchronos.transforms.structure_transforms import Crop, Filter, PadBack, PadFront
+from torchchronos.transforms.structure_transforms import Crop, Filter, PadBack, PadFront, Split
 from torchchronos.transforms.transformation_exceptions import NoInverseError
 
 
@@ -114,3 +114,11 @@ def test_filter():
     filtered_data = filter(data)
 
     assert filtered_data.shape == torch.Size([2, 1, 3])
+
+def test_split():
+    data = torch.randn((10, 1, 100), dtype=torch.float32)
+    split = Split(10)
+
+    data = split.transform(data)
+    print(data.shape)
+    d
