@@ -9,7 +9,7 @@ import numpy as np
 import torch
 
 from ...transforms.base_transforms import Transform
-from ...transforms.transforms import Identity
+from ...transforms.basic_transforms import Identity
 from ...transforms.structure_transforms import RemoveLabels
 from .prepareable_dataset import PrepareableDataset
 

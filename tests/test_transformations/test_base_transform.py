@@ -6,7 +6,7 @@ from pathlib import Path
 from torchchronos.transforms.base_transforms import Transform, Compose
 from torchchronos.transforms.format_conversion_transforms import ToTorchTensor
 from torchchronos.transforms.structure_transforms import SlidingWindow, RemoveLabels
-from torchchronos.transforms.transforms import Shift
+from torchchronos.transforms.basic_transforms import Shift
 from torchchronos.datasets.util.aeon_datasets import AeonClassificationDataset
 from torchchronos.datasets.util.base_dataset import BaseDataset
 

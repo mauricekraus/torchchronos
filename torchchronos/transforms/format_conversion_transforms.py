@@ -1,6 +1,10 @@
+from typing import Optional
+
 import torch
+import numpy as np
 
 from .base_transforms import Transform
+from .transformation_exceptions import NoInverseError
 
 """
 Change format of the data.
@@ -12,53 +16,78 @@ class ToTorchTensor(Transform):
     def __init__(self):
         super().__init__(True)
 
-    def _fit(self, time_series, targets=None) -> None:
+    def _fit(
+        self, time_series:torch.Tensor, targets:Optional[torch.Tensor]= None
+        ) -> None:
         pass
 
-    def _transform(self, time_series: torch.Tensor, targets=None) -> torch.Tensor:
-        targets = None if targets is None else torch.tensor(targets)
-        if torch.is_tensor(time_series):
+    def _transform(
+        self, time_series: torch.Tensor, targets:Optional[torch.Tensor] = None
+    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
+        if (torch.is_tensor(time_series) and targets is None) or (torch.is_tensor(time_series) and torch.is_tensor(targets)):
             return time_series, targets
+        
+        if targets is None:
+            targets = None
+        elif isinstance(targets[0], str):
+            np_array = np.array(targets).astype(np.float32)
+            targets = torch.from_numpy(np_array).float()
+        else:
+            targets = torch.tensor(targets).float()
+        
         return torch.tensor(time_series).float(), targets
 
-    def _invert(self):
-        return self  # TODO: maybe raise error
+    def _invert(self) -> Transform:
+        raise NoInverseError()
 
     def __repr__(self) -> str:
-        return "ToTorchTensor()"
+        return f"{self.__class__.__name__}()"
 
 
 class ToNumpyArray(Transform):
     def __init__(self):
         super().__init__(True)
 
-    def _fit(self, time_series, targets=None) -> None:
+    def _fit(
+        self, time_series:torch.Tensor, targets:Optional[torch.Tensor]= None
+        ) -> None:
         pass
 
-    def _transform(self, time_series: torch.Tensor, targets=None) -> torch.Tensor:
-        raise NotImplementedError("Not yet implemented")
+    def _transform(
+        self, time_series: torch.Tensor, targets:Optional[torch.Tensor] = None
+    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
+        if targets is None:
+            return time_series.numpy(), None
+        else:
+            return time_series.numpy(), targets.numpy()
 
     def _invert(self):
-        return self  # TODO: maybe raise error
+        raise NoInverseError()
 
     def __repr__(self) -> str:
-        return f"{__class__.__name__}()"
+        return f"{self.__class__.__name__}()"
 
-# TODO: change to To und dann entweder device oder dtype, wie bei torch.to(...)
-class ChangeDataType(Transform):
-    def __init__(self, dtype):
+
+class To(Transform):
+    def __init__(self, torch_attribute):
         super().__init__(True)
-        # TODO: chech if dtype is valid and in available in pytorch
-        self.dtype = dtype
+        self.torch_attribute = torch_attribute
 
-    def _fit(self, time_series, targets=None) -> None:
+    def _fit(
+        self, time_series:torch.Tensor, targets:Optional[torch.Tensor]= None
+        ) -> None:
         pass
 
-    def _transform(self, time_series: torch.Tensor, targets=None) -> torch.Tensor:
-        return time_series.type(self.dtype), targets
+    def _transform(
+        self, time_series: torch.Tensor, targets:Optional[torch.Tensor] = None
+    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
+        if targets is None:
+            return time_series.to(self.torch_attribute), None
+        else:
+            return time_series.to(self.torch_attribute), targets.to(self.torch_attribute)
 
     def _invert(self):
-        return self  # TODO: maybe raise error
+        raise NoInverseError()
 
     def __repr__(self) -> str:
-        return f"{__class__.__name__}(dtype={self.dtype})"
+        return f"{self.__class__.__name__}(attribute={self.torch_attribute})"

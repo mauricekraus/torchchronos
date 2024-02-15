@@ -1,4 +1,5 @@
-import numpy as np
+from typing import Optional, Callable
+
 import torch
 
 from .base_transforms import Transform
@@ -11,12 +12,12 @@ Examples are cropping, and Padding.
 
 
 class Crop(Transform):
-    def __init__(self, start, end) -> None:
+    def __init__(self, start:int, end:int) -> None:
         super().__init__()
         self.start = start
         self.end = end
 
-    def _fit(self, time_series, y=None) -> None:
+    def _fit(self, time_series:torch.Tensor, targets:Optional[torch.Tensor]=None) -> None:
         #ToDO: Move checks to init
         if self.start < 0 or self.end < 0:
             raise ValueError("Start and end must be positive integers")
@@ -24,65 +25,80 @@ class Crop(Transform):
             raise ValueError("Start must be less than end")
         if self.end > time_series.shape[-1]:
             raise ValueError("End must be less than the length of the time series")
-
     def _transform(
-        self, time_series: np.ndarray, y=None
-    ) -> tuple[np.ndarray, np.ndarray]:
-        return time_series[:, :, self.start : self.end], y
+        self, time_series: torch.Tensor, targets:Optional[torch.Tensor] = None
+    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
+        return time_series[:, :, self.start : self.end], targets
 
     def _invert(self) -> Transform:
         raise NoInverseError("Crop transformation is not invertible")
-
+    
     def __repr__(self) -> str:
         return f"Crop(start={self.start}, end={self.end})"
 
 
 class PadFront(Transform):
-    def __init__(self, length):
+    def __init__(self, length:int) -> None:
         super().__init__()
         self.length = length
         self.time_series_length: int | None = None
 
-    def _fit(self, time_series, targets=None) -> None:
+    def _fit(self, time_series:torch.Tensor, targets:Optional[torch.Tensor]=None) -> None:
         self.time_series_length = time_series.shape[-1]
 
-    def _transform(self, ts, y=None):
-        zeros = torch.zeros((ts.shape[0], ts.shape[1], self.length))
-        return torch.cat([zeros, ts], dim=2), y
+    def _transform(
+        self, time_series: torch.Tensor, targets:Optional[torch.Tensor] = None
+    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
+        if self.time_series_length is None:
+            raise Exception("Fit must be called before transforming")
+        
+        zeros = torch.zeros((time_series.shape[0], time_series.shape[1], self.length))
+        return torch.cat([zeros, time_series], dim=2), targets
 
-    def _invert(self):
+    def _invert(self) -> Transform:
+        if self.time_series_length is None:
+            raise Exception("Fit must be called before inverting")
+        
         return Crop(self.length, self.time_series_length + self.length)
-
-    def __repr__(self):
-        return self.__class__.__name__ + f"(length={self.length})"
+    
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(length={self.length})"
 
 
 class PadBack(Transform):
-    def __init__(self, length):
+    def __init__(self, length:int) -> None:
         super().__init__()
         self.length = length
         self.time_series_length: int | None = None
 
-    def _fit(self, time_series, targets=None) -> None:
+    def _fit(self, time_series:torch.Tensor, targets:Optional[torch.Tensor]=None) -> None:
         self.time_series_length = time_series.shape[-1]
 
-    def _transform(self, ts, y=None):
-        zeros = torch.zeros((ts.shape[0], ts.shape[1], self.length))
-        return torch.cat([ts, zeros], dim=2), y
+    def _transform(
+        self, time_series: torch.Tensor, targets:Optional[torch.Tensor] = None
+    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
+        if self.time_series_length is None:
+            raise Exception("Fit must be called before transforming")
+        
+        zeros = torch.zeros((time_series.shape[0], time_series.shape[1], self.length))
+        return torch.cat([time_series, zeros], dim=2), targets
 
-    def _invert(self):
+    def _invert(self) -> Transform:
+        if self.time_series_length is None:
+            raise Exception("Fit must be called before inverting")
+        
         return Crop(0, self.time_series_length)
-
-    def __repr__(self):
-        return self.__class__.__name__ + f"(length={self.length})"
+    
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(length={self.length})"
 
 
 class Filter(Transform):
-    def __init__(self, filter: callable):
+    def __init__(self, filter: Callable) -> None:
         super().__init__(True)
-        self.filter: callable = filter
+        self.filter: Callable = filter
 
-    def _fit(self, time_series, targets=None) -> None:
+    def _fit(self, time_series:torch.Tensor, targets:Optional[torch.Tensor]=None) -> None:
         pass
 
 
@@ -95,7 +111,9 @@ class Filter(Transform):
 
 
     """
-    def _transform(self, time_series: torch.Tensor, targets=None) -> torch.Tensor:
+    def _transform(
+        self, time_series: torch.Tensor, targets:Optional[torch.Tensor] = None
+    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
         indecies = []
         if targets is None:
             for i in range(len(time_series)):
@@ -108,40 +126,45 @@ class Filter(Transform):
                     indecies.append(i)
             return time_series[indecies], targets[indecies]
 
-    def _invert(self):
+    def _invert(self) -> Transform:
         raise NoInverseError("Filter transformation is not invertible")
 
     def __repr__(self) -> str:
-        return f"{__class__.__name__}()"
+        return f"{self.__class__.__name__}()"
 
 
 class RemoveLabels(Transform):
     def __init__(self):
         super().__init__(True)
 
-    def _fit(self, time_series, targets=None) -> None:
+    def _fit(self, time_series:torch.Tensor, targets:Optional[torch.Tensor]=None) -> None:
         pass
 
-    def _transform(self, time_series, targets=None) -> tuple[torch.Tensor, None]:
+    def _transform(
+        self, time_series: torch.Tensor, targets:Optional[torch.Tensor] = None
+    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
         return time_series, None
     
-    def _invert(self):
+    def _invert(self) -> Transform:
         raise NoInverseError()
     
+    @classmethod
     def __repr__(self) -> str:
-        return f"{__class__.__name__}()"
+        return f"{self.__class__.__name__}()"
     
 
 class SlidingWindow(Transform):
-    def __init__(self, window_size, step_size):
+    def __init__(self, window_size:int, step_size:int) -> None:
         super().__init__(True)
         self.window_size = window_size
         self.step_size = step_size
 
-    def _fit(self, time_series, targets=None) -> None:
+    def _fit(self, time_series:torch.Tensor, targets:Optional[torch.Tensor]=None) -> None:
         pass
 
-    def _transform(self, time_series, targets=None) -> tuple[torch.Tensor, torch.Tensor]:
+    def _transform(
+        self, time_series: torch.Tensor, targets:Optional[torch.Tensor] = None
+    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
         num_time_series, dimensions, time_steps = time_series.shape
         num_segments = (time_steps - self.window_size) // self.step_size + 1
 
@@ -150,7 +173,6 @@ class SlidingWindow(Transform):
         for i in range(num_time_series):
             current_time_series = time_series[i]
 
-            # Slide the window along the time series data
             for j in range(num_segments):
                 start_index = j * self.step_size
                 end_index = start_index + self.window_size
@@ -160,18 +182,17 @@ class SlidingWindow(Transform):
                 if targets is not None:
                     targets_segmented.append(targets[i])
 
-        # Concatenate the segments into a single tensor
-        ts_segments = torch.cat(ts_segments, dim=0)
+        ts_tensor = torch.cat(ts_segments, dim=0)
 
         if targets is None:
-            targets_segmented = None
+            targets_tensor = None
         else:
-            targets_segmented = torch.tensor(targets_segmented)
+            targets_tensor = torch.tensor(targets_segmented)
 
-        return ts_segments, targets_segmented
+        return ts_tensor, targets_tensor
 
-    def _invert(self):
+    def _invert(self) -> Transform:
         raise NoInverseError()
-
+    
     def __repr__(self) -> str:
-        return f"{__class__.__name__}(window_size={self.window_size}, step_size={self.step_size})"
+        return f"{self.__class__.__name__}(window_size={self.window_size}, step_size={self.step_size})"

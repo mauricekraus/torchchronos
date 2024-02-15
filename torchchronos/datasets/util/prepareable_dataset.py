@@ -6,7 +6,7 @@ import torch
 
 from .base_dataset import BaseDataset
 from ...transforms.base_transforms import Transform
-from ...transforms.transforms import Identity
+from ...transforms.basic_transforms import Identity
 
 """
 This class is for datasets that need to be prepared before they can be used.

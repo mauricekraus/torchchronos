@@ -4,7 +4,7 @@ from typing import Optional
 from aeon.datasets._data_loaders import load_classification
 
 from ...transforms.base_transforms import Transform
-from ...transforms.transforms import Identity
+from ...transforms.basic_transforms import Identity
 from ...transforms.representation_transformations import LabelTransform
 from .cached_datasets import CachedDataset
 

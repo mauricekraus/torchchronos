@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import overload, Optional
 
-import numpy as np
 import torch
 from torch.utils.data import Dataset
 
@@ -60,6 +59,7 @@ class Transform(ABC):
         return self.invert()
 
     def invert(self) -> "Transform":
+        
         if self._invert_transform is None:
             self._invert_transform = self._invert()
             self._invert_transform._invert_transform = self
@@ -214,9 +214,7 @@ class Compose(Transform):
     def __getitem__(self, index:int) -> Transform:
         return self.transforms[index]
 
-    def _fit(
-            self, time_series:torch.Tensor, targets:Optional[torch.Tensor]=None
-            ) -> None:
+    def _fit(self, time_series:torch.Tensor, targets:Optional[torch.Tensor]=None) -> None:
         if self.transforms == []:
             return 
 
