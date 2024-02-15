@@ -31,7 +31,7 @@ class Transform(ABC):
         self._invert_transform: Optional["Transform"] = None
 
     @overload
-    def __call__(self, time_series: torch.Tensor, targets: None = None) -> torch.Tensor:
+    def __call__(self, time_series: torch.Tensor, targets: None = None) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         ...
 
     @overload
@@ -125,7 +125,7 @@ class Transform(ABC):
         self.is_fitted = True
 
     @overload
-    def transform(self, time_series: torch.Tensor, targets: None = None) -> torch.Tensor:
+    def transform(self, time_series: torch.Tensor, targets: None = None) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         ...
 
     @overload
@@ -147,16 +147,12 @@ class Transform(ABC):
                 raise RuntimeError("If tranforming a dataset, targets have to be None. Do not provide targets to the transform method!")
             dataset_transformed = self._transform_dataset(time_series)
             return dataset_transformed
-        if targets is None:
-            ts_transformed, _ = self._transform(time_series, None)
+    
+        ts_transformed, targets_transformed = self._transform(time_series, targets)
+        if targets_transformed is None:
             return ts_transformed
         else:
-            ts_transformed, targets_transformed = self._transform(time_series, targets)
-            # Mainly for the RemoveLabels Transform
-            if targets_transformed is None:
-                return ts_transformed
-            else:
-                return ts_transformed, targets_transformed
+            return ts_transformed, targets_transformed
 
 
     def _transform_dataset(self, dataset: Dataset) -> BaseDataset:
@@ -181,14 +177,14 @@ class Transform(ABC):
 
     @overload
     @abstractmethod
-    def _transform(self, time_series: torch.Tensor, targets: None = None) -> tuple[torch.Tensor, None]:
+    def _transform(self, time_series: torch.Tensor, targets: None = None) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
         ...
 
     @overload
     @abstractmethod
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
         ...
 
 
@@ -244,7 +240,7 @@ class Compose(Transform):
     ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
         
         for t in self.transforms:
-            ts_transformed = t.transform(time_series, targets) #
+            ts_transformed = t.transform(time_series, targets)
             if isinstance(ts_transformed, tuple):
                 time_series, targets = ts_transformed
             else:
