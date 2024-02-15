@@ -57,12 +57,15 @@ class Transform(ABC):
         return Compose([self, other])
 
     def __invert__(self) -> "Transform":
+        return self.invert()
+
+    def invert(self) -> "Transform":
         if self._invert_transform is None:
             self._invert_transform = self._invert()
             self._invert_transform._invert_transform = self
             self._invert_transform.is_fitted = True
         return self._invert_transform
-
+    
     def save(self, name: str, path: Optional[Path] = None) -> None:
         if not self.is_fitted:
             raise Exception("Transform must be fitted before it can be saved.")
@@ -153,7 +156,6 @@ class Transform(ABC):
             return ts_transformed
         else:
             return ts_transformed, targets_transformed
-
 
     def _transform_dataset(self, dataset: Dataset) -> BaseDataset:
         data, targets = get_data_from_dataset(dataset)
