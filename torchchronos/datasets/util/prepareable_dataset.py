@@ -46,17 +46,16 @@ class PrepareableDataset(ABC, BaseDataset):
     def transforms(self) -> Transform:
         return self._transform
 
-
     def __getitem__(self, idx: int) -> Any:
         if self.is_loaded is False:
             raise NotLoadedError("Dataset must be loaded before it can be used.")
 
         if self.targets is None:
-            time_series = self.data[idx]
-            return self._transform.transform(time_series, None)
+            time_series, targets = self.data[idx], None
         else:
             time_series, targets = self.data[idx], self.targets[idx]
-            return self._transform.transform(time_series, targets)
+            
+        return self.transforms.transform(time_series, targets)
 
 # TODO: entweder __len__ implementieren oder self.data und self.targets entfernen und alles in der Unterklasse machen
     @abstractmethod
