@@ -3,9 +3,8 @@ from typing import Optional
 
 from aeon.datasets._data_loaders import load_classification
 
-from ...transforms.base_transforms import Transform
-from ...transforms.basic_transforms import Identity
-from ...transforms.representation_transformations import LabelTransform
+from ...transforms import Transform, Compose, LabelTransform, Identity, ToTorchTensor
+
 from .cached_datasets import CachedDataset
 
 
@@ -19,7 +18,7 @@ class AeonClassificationDataset(CachedDataset):
         pre_transform: Transform = Identity(),
         transform: Transform = Identity(),
     ) -> None:
-        label_transform = LabelTransform()
+        label_transform = Compose([ToTorchTensor(), LabelTransform()])
         if pre_transform is None:
             pre_transform = label_transform
         else:

@@ -148,7 +148,6 @@ class RemoveLabels(Transform):
     def _invert(self) -> Transform:
         raise NoInverseError()
     
-    @classmethod
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}()"
     

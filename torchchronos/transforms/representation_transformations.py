@@ -36,7 +36,7 @@ class LabelTransform(Transform):
         if targets is None:
             raise ValueError("Targets cannot be None.")
         
-        new_targets = torch.tensor([self.label_map[label] for label in targets], dtype=torch.int64)
+        new_targets = torch.tensor([self.label_map[int(label)] for label in targets], dtype=torch.int64)
         return time_series, new_targets
 
     def _invert(self) -> Transform:

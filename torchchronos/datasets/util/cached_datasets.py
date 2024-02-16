@@ -53,9 +53,7 @@ class CachedDataset(PrepareableDataset):
         self.return_labels = return_labels
         self.pre_transform = pre_transform  # TODO: Add to numpy at the end
         if return_labels is False:
-            print("Add ReturnLabels()")
             transform += RemoveLabels()
-            print(transform)
         self.cache_dir = (
             save_path or Path(".cache/torchchronos/data")
         ) / name  # TODO: make caching private
