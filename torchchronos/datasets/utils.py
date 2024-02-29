@@ -5,11 +5,12 @@ import torch
 from torch.utils.data import Dataset
 
 
-def save_dataset(dataset: Dataset, name: str, path: Path = None) -> None:
+def save_dataset(dataset: Dataset, name: str, save_path: Path = None) -> None:
     has_targets = True if isinstance(dataset[0], tuple) else False
     data = dataset[0][0] if has_targets else dataset[0]
     targets = [dataset[0][1]] if has_targets else None
-
+    print(dataset[0][0].shape)
+    print(data.shape)
     for i in range(1, len(dataset)):
         if has_targets:
             data = torch.cat((data, dataset[i][0]), axis=0)
@@ -18,10 +19,11 @@ def save_dataset(dataset: Dataset, name: str, path: Path = None) -> None:
             data = torch.cat((data, dataset[i]), axis=0)
 
     data = data.numpy()
+    print(data.shape)
     if has_targets:
         targets = np.array(targets)
 
-    if path is None:
+    if save_path is None:
         save_path = Path(".cache/torchchronos/datasets")
 
     save_path.mkdir(parents=True, exist_ok=True)
