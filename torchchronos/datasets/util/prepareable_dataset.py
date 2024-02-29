@@ -3,6 +3,9 @@ from typing import Any, Optional
 
 import numpy as np
 import torch
+from torch.utils.data import Dataset
+
+#import torchchronos.transforms.base_transforms 
 
 from .base_dataset import BaseDataset
 from ...transforms.base_transforms import Transform
@@ -29,7 +32,7 @@ This is because in the Superclass checks are done to make sure that the dataset 
 """
 
 
-class PrepareableDataset(ABC, BaseDataset):
+class PrepareableDataset(ABC, Dataset):
     def __init__(
         self,
         transform: Transform = Identity(),
@@ -37,27 +40,32 @@ class PrepareableDataset(ABC, BaseDataset):
     ) -> None:
         self.is_prepared: bool = False
         self.is_loaded: bool = False
-        self._transform = transform
+        self._transform: list[Transform] = transform
         self.domain = domain
-
-        super().__init__(None, None)
 
     @property
     def transforms(self) -> Transform:
         return self._transform
 
     def __getitem__(self, idx: int) -> Any:
-        if self.is_loaded is False:
+        if self.is_prepared is False:
+            raise NotPreparedError("Dataset must be prepared before it can be used.")
+        elif self.is_loaded is False:
             raise NotLoadedError("Dataset must be loaded before it can be used.")
 
-        if self.targets is None:
-            time_series, targets = self.data[idx], None
+        time_series = self._get_item(idx)
+        if isinstance(time_series, tuple):
+            time_series, targets = time_series
         else:
-            time_series, targets = self.data[idx], self.targets[idx]
+            targets = None
             
         return self.transforms.transform(time_series, targets)
 
-# TODO: entweder __len__ implementieren oder self.data und self.targets entfernen und alles in der Unterklasse machen
+
+    @abstractmethod
+    def _get_item(self, idx: int) -> Any:
+        pass
+
     @abstractmethod
     def __len__(self) -> int:
         pass
@@ -80,7 +88,7 @@ class PrepareableDataset(ABC, BaseDataset):
 
         self.transforms.fit(
             self.data, self.targets
-        )  # TODO: with whole dataset or only parts?
+        )
 
     @abstractmethod
     def _load(self) -> None:

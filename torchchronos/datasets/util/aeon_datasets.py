@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Optional
 
+import torch
 from aeon.datasets._data_loaders import load_classification
 
 from ...transforms.base_transforms import Transform, Compose
@@ -8,40 +9,50 @@ from ...transforms.representation_transformations import LabelTransform
 from ...transforms.basic_transforms import Identity
 from ...transforms.format_conversion_transforms import ToTorchTensor
 
-from .cached_datasets import CachedDataset
+from .prepareable_dataset import PrepareableDataset
 
 
-class AeonClassificationDataset(CachedDataset):
+class AeonClassificationDataset(PrepareableDataset):
     def __init__(
         self,
         name: str,
         split: Optional[str] = None,
         save_path: Optional[Path] = None,
         return_labels: bool = True,
-        pre_transform: Transform = Identity(),
         transform: Transform = Identity(),
     ) -> None:
-        label_transform = Compose([ToTorchTensor(), LabelTransform()])
-        if pre_transform is None:
-            pre_transform = label_transform
-        else:
-            label_transform += pre_transform
-            pre_transform = label_transform
+        self.data: Optional[torch.Tensor] = None
+        self.targets: Optional[torch.Tensor] = None
+
+        self.name = name
+        self.split = split
+        self.save_path = save_path
 
         super().__init__(
-            name=name,
-            split=split,
-            save_path=save_path,
             return_labels=return_labels,
-            pre_transform=pre_transform,
             transform=transform,
         )
 
-    def _get_data(self):
-        X_train, Y_train = load_classification(
-            name=self.name, split="train", return_metadata=False
-        )
-        X_test, Y_test = load_classification(
-            name=self.name, split="test", return_metadata=False
-        )
-        return X_train, Y_train, X_test, Y_test
+    def _get_item(self, idx: int) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+        if self.return_labels is True:
+            return self.data[idx], self.targets[idx]
+        else:
+            return self.data[idx], None
+    
+    def __len__(self) -> int:
+        return len(self.data)
+    
+    def _prepare(self) -> None:
+        # replace with download, but not all datasets are downloadable with the method
+        load_classification(name=self.name, split=self.split, save_path=self.save_path)
+
+    def _load(self) -> None:
+        data, targets = load_classification(name=self.name, split=self.split, save_path=self.save_path)
+
+        transform = Compose([ToTorchTensor(), LabelTransform()])
+        transform.fit(data, targets)
+
+        self.data = transform.transform(data)
+        self.targets = transform.transform(targets)
+
+

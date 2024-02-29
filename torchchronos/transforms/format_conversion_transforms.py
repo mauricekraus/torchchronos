@@ -17,16 +17,18 @@ class ToTorchTensor(Transform):
         super().__init__(True)
 
     def _fit(
-        self, time_series:torch.Tensor, targets:Optional[torch.Tensor]= None
-        ) -> None:
+        self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None
+    ) -> None:
         pass
 
     def _transform(
-        self, time_series: torch.Tensor, targets:Optional[torch.Tensor] = None
+        self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None
     ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
-        if (torch.is_tensor(time_series) and targets is None) or (torch.is_tensor(time_series) and torch.is_tensor(targets)):
+        if (torch.is_tensor(time_series) and targets is None) or (
+            torch.is_tensor(time_series) and torch.is_tensor(targets)
+        ):
             return time_series, targets
-        
+
         if targets is None:
             targets = None
         elif isinstance(targets[0], str):
@@ -34,7 +36,7 @@ class ToTorchTensor(Transform):
             targets = torch.from_numpy(np_array).float()
         else:
             targets = torch.tensor(targets).float()
-        
+
         return torch.tensor(time_series).float(), targets
 
     def _invert(self) -> Transform:
@@ -49,12 +51,12 @@ class ToNumpyArray(Transform):
         super().__init__(True)
 
     def _fit(
-        self, time_series:torch.Tensor, targets:Optional[torch.Tensor]= None
-        ) -> None:
+        self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None
+    ) -> None:
         pass
 
     def _transform(
-        self, time_series: torch.Tensor, targets:Optional[torch.Tensor] = None
+        self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None
     ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
         if targets is None:
             return time_series.numpy(), None
@@ -74,17 +76,19 @@ class To(Transform):
         self.torch_attribute = torch_attribute
 
     def _fit(
-        self, time_series:torch.Tensor, targets:Optional[torch.Tensor]= None
-        ) -> None:
+        self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None
+    ) -> None:
         pass
 
     def _transform(
-        self, time_series: torch.Tensor, targets:Optional[torch.Tensor] = None
+        self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None
     ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
         if targets is None:
             return time_series.to(self.torch_attribute), None
         else:
-            return time_series.to(self.torch_attribute), targets.to(self.torch_attribute)
+            return time_series.to(self.torch_attribute), targets.to(
+                self.torch_attribute
+            )
 
     def _invert(self):
         raise NoInverseError()

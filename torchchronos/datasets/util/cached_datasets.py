@@ -8,6 +8,7 @@ from typing import Any, Optional
 import numpy as np
 import torch
 
+
 from ...transforms.base_transforms import Transform
 from ...transforms.basic_transforms import Identity
 from ...transforms.structure_transforms import RemoveLabels
@@ -42,37 +43,16 @@ class CachedDataset(PrepareableDataset):
     def __init__(
         self,
         name: str,
-        split: Optional[str] = None,
-        save_path: Optional[Path] = None,
+        path: Path,
         return_labels: bool = True,
-        pre_transform: Transform = Identity(),
         transform: Transform = Identity(),
     ) -> None:
         self.name = name
-        self.split = split
-        self.return_labels = return_labels
-        self.pre_transform = pre_transform  # TODO: Add to numpy at the end
-        if return_labels is False:
-            transform += RemoveLabels()
-        self.cache_dir = (
-            save_path or Path(".cache/torchchronos/data")
-        ) / name  # TODO: make caching private
-        self.file_name = self._generate_file_name()
-        self.np_path = self.cache_dir / (self.file_name + ".npz")
-        self.json_path = self.cache_dir / (self.file_name + ".json") # remove json file, replace with metadata property
-        self.meta_data: Optional[dict[str, Any]] = None
 
-        if self._is_dataset_prepared():
-            self._load_meta_data()
+        self.return_labels: bool = return_labels
+        self.path: Path = path
 
         super().__init__(transform=transform)
-
-    def _is_dataset_prepared(self) -> bool:
-        return os.path.exists(self.np_path) and os.path.exists(self.json_path)
-
-    def _load_meta_data(self) -> None:
-        self.meta_data = json.load(open(self.json_path))
-        self.is_prepared = True
 
     def _prepare(self) -> None:
         data = self._load_dataset()
@@ -93,9 +73,7 @@ class CachedDataset(PrepareableDataset):
             )
         return X_train, Y_train, X_test, Y_test
 
-    def _process_data(
-        self, data
-    ) -> tuple[
+    def _process_data(self, data) -> tuple[
         np.ndarray,
         Optional[np.ndarray],
         np.ndarray,
@@ -190,7 +168,6 @@ class CachedDataset(PrepareableDataset):
         self.data = torch.from_numpy(self.data)
         if has_y:
             self.targets = torch.from_numpy(self.targets)
-
 
     def __len__(self) -> int:
         return self.meta_data["num_samples"]
