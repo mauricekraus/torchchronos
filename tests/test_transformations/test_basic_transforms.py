@@ -68,7 +68,6 @@ def test_normalize():
 
     data = torch.tensor([[1,2,3], [4,5,6]]).to(torch.float32).reshape(2, 1, 3)
     transform.fit(data)
-    print(transform.std)
     assert torch.allclose(transform.mean, torch.tensor([2.5, 3.5, 4.5]).reshape(1, 3))
     assert torch.allclose(transform.std, torch.std(data, 0, True) + 1e-5)
 

@@ -1,7 +1,7 @@
 import torch
 import pytest
 
-from torchchronos.datasets.util.base_dataset import BaseDataset
+from torchchronos.datasets.base_dataset import BaseDataset
 
 def test_base_dataset():
     data = torch.randn(10, 1, 100)

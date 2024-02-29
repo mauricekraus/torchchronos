@@ -7,12 +7,12 @@ from torchchronos.transforms.base_transforms import Transform, Compose
 from torchchronos.transforms.format_conversion_transforms import ToTorchTensor
 from torchchronos.transforms.structure_transforms import SlidingWindow, RemoveLabels
 from torchchronos.transforms.basic_transforms import Shift
-from torchchronos.datasets.util.aeon_datasets import AeonClassificationDataset
-from torchchronos.datasets.util.base_dataset import BaseDataset
+from torchchronos.datasets.aeon_datasets import AeonClassificationDataset
+from torchchronos.datasets.base_dataset import BaseDataset
 
 transform = Shift(5)
 rm_labels = RemoveLabels()
-data = torch.randn(10, 1, 100)
+data = torch.randn(100, 1, 100)
 targets = torch.randint(0, 2, (100, 1))
 dataset = BaseDataset(data, targets)
 
@@ -50,6 +50,8 @@ def test_transform_call():
     data = torch.randn(10, 1, 100)
     targets = torch.randint(0, 2, (100, 1))
     dataset = AeonClassificationDataset(name="GunPoint")
+    dataset.prepare()
+    dataset.load()
     transform.fit(data)
 
     transformed_data = transform(data)
@@ -178,13 +180,13 @@ def test_compose_invert():
     
 def test_compose_example():
 
-    transform = Compose([ToTorchTensor(), SlidingWindow(10, 3), Shift(shift=1)])
-    transform.fit(dataset.data, dataset.targets)
-    transformed_dataset = transform(dataset)
-
     dataset = AeonClassificationDataset(name="GunPoint")
     dataset.prepare()
     dataset.load()
+
+    transform = Compose([ToTorchTensor(), SlidingWindow(10, 3), Shift(shift=1)])
+    transform.fit(dataset.data, dataset.targets)
+    transformed_dataset = transform(dataset)
 
     transform = Compose([ToTorchTensor(), RemoveLabels(), SlidingWindow(10, 3), Shift(shift=1)])
     transform.fit(dataset.data, dataset.targets)

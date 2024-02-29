@@ -6,7 +6,7 @@ from typing import overload, Optional
 import torch
 from torch.utils.data import Dataset
 
-from ..datasets.util.base_dataset import BaseDataset
+from ..datasets.base_dataset import BaseDataset
 
 
 # TODO: implement Reshape Transform, MinMax Transform

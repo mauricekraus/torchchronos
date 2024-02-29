@@ -1,11 +1,21 @@
 import torch
 import numpy as np
+from pathlib import Path
+from torchchronos.transforms import Compose, Shift
 from torchchronos.transforms.basic_transforms import Normalize
+from torchchronos.datasets.cached_datasets import CachedDataset
+from torchchronos.datasets.aeon_datasets import AeonClassificationDataset
+from torchchronos.datasets.utils import save_dataset
 
-data = torch.tensor([[1,2,3], [4,5,6]]).to(torch.float32).reshape(2, 1, 3)
+dataset = AeonClassificationDataset(name="GunPoint")
+dataset.prepare()
+dataset.load()
+transform = Compose([Normalize(), Shift(10)])
+transform.fit(dataset)
+transformed_dataset = transform(dataset)
+save_dataset(transformed_dataset, "test")
 
-transform = Normalize()
-
-transform.fit(data)
-print(transform.mean)
-print(transform.std)
+c = CachedDataset("test")
+c.prepare()
+c.load()
+print(c[:][0].shape)    

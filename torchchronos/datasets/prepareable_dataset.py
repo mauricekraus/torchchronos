@@ -8,8 +8,8 @@ from torch.utils.data import Dataset
 #import torchchronos.transforms.base_transforms 
 
 from .base_dataset import BaseDataset
-from ...transforms.base_transforms import Transform
-from ...transforms.basic_transforms import Identity
+from ..transforms.base_transforms import Transform
+from ..transforms.basic_transforms import Identity
 
 """
 This class is for datasets that need to be prepared before they can be used.

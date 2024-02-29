@@ -2,13 +2,13 @@ import torch
 import numpy as np
 
 from torchchronos.transforms.representation_transformations import LabelTransform, ComplexToPolar, PolarToComplex, CombineToComplex, SplitComplexToRealImag
-
+from torchchronos.transforms.format_conversion_transforms import ToTorchTensor
 
 def test_label_transform():
     transform = LabelTransform()
 
     data = torch.randn((10, 1, 10), dtype=torch.float32).numpy()
-    labels = np.array(["1", "5", "2", "1", "4", "1", "9", "0", "5", "1"])
+    labels = torch.tensor([1, 5, 2, 1, 4, 1, 9, 0, 5, 1])
 
     transform.fit(data, labels)
     data_transformed, labels_transformed = transform(data, labels)
@@ -18,7 +18,7 @@ def test_label_transform():
     assert np.allclose(labels_transformed, np.array([1, 4, 2, 1, 3, 1, 5, 0, 4, 1]))
 
     inverse_transform = ~transform
-    assert repr(inverse_transform) == "LabelTransform()"
+    assert isinstance(inverse_transform, LabelTransform)
     assert inverse_transform.label_map == {0: 0, 1: 1, 2: 2, 3: 4, 4: 5, 5: 9}
     
 
@@ -60,6 +60,5 @@ def test_split_complex_to_real_imag():
         expected = torch.tensor([[1,2,3,4],[5,4,3,2],[1,6,8,9]], dtype=torch.float32).reshape(3, 1, 4)
 
         data_split = transform.transform(complex_data)
-        print(data_split)
         assert torch.allclose(data_split, expected)
         

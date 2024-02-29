@@ -57,7 +57,6 @@ def test_pad_front_inverse():
 
     pad.fit(data)
     padded_data = pad(data)
-    print(padded_data.shape, pad.time_series_length)
 
     inverse = ~pad
     inverse_data = inverse(padded_data)
@@ -98,7 +97,6 @@ def test_filter():
     filter.fit(data, targets)
     filtered_data, filtered_targets = filter(data, targets)
 
-    print(filtered_data.shape, filtered_targets.shape)
     assert filtered_data.shape == torch.Size([5, 1, 10])
     assert filtered_targets.shape == torch.Size([5, 1])
     assert torch.allclose(filtered_data, data[targets[:, 0] == 0])

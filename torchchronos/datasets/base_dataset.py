@@ -1,6 +1,5 @@
 from typing import Optional
 import torch
-import numpy as np
 from torch.utils.data import Dataset
 
 
@@ -10,7 +9,7 @@ class BaseDataset(Dataset):
         if (targets is not None) and (len(data) != len(targets)):
             raise ValueError("Data and target should have the same length")
         self.data = data
-        self.targets = targets
+        self.targets = targets 
 
     def __getitem__(self, idx:int) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         if self.targets is None:
