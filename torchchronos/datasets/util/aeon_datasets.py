@@ -3,7 +3,10 @@ from typing import Optional
 
 from aeon.datasets._data_loaders import load_classification
 
-from ...transforms import Transform, Compose, LabelTransform, Identity, ToTorchTensor
+from ...transforms.base_transforms import Transform, Compose
+from ...transforms.representation_transformations import LabelTransform
+from ...transforms.basic_transforms import Identity
+from ...transforms.format_conversion_transforms import ToTorchTensor
 
 from .cached_datasets import CachedDataset
 

@@ -1,5 +1,6 @@
 from typing import Optional
 import torch
+import numpy as np
 from torch.utils.data import Dataset
 
 
@@ -11,12 +12,16 @@ class BaseDataset(Dataset):
         self.data = data
         self.targets = targets
 
-    def __getitem__(self, idx:int) -> tuple[torch.Tensor, torch.Tensor] | tuple[torch.Tensor, None]:
+    def __getitem__(self, idx:int) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         if self.targets is None:
-            return self.data[idx], None
+            return self.data[idx]
         else:
             return self.data[idx], self.targets[idx]
         
     def __len__(self) -> int:
         return len(self.data)
+        
+    def safe(self) -> None:
+        X_numpy = self.data.numpy()
+        Y_numpy = self.targets.numpy() if self.targets is not None else None
         

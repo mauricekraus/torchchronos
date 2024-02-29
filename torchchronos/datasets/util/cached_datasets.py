@@ -59,7 +59,7 @@ class CachedDataset(PrepareableDataset):
         ) / name  # TODO: make caching private
         self.file_name = self._generate_file_name()
         self.np_path = self.cache_dir / (self.file_name + ".npz")
-        self.json_path = self.cache_dir / (self.file_name + ".json")
+        self.json_path = self.cache_dir / (self.file_name + ".json") # remove json file, replace with metadata property
         self.meta_data: Optional[dict[str, Any]] = None
 
         if self._is_dataset_prepared():
