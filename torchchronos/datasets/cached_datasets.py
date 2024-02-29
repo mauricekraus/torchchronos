@@ -1,18 +1,12 @@
-import hashlib
-import json
-import os
-import uuid
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
-import torch
-
 
 from ..transforms.base_transforms import Transform
 from ..transforms.basic_transforms import Identity
-from ..transforms.structure_transforms import RemoveLabels
-#from .prepareable_dataset import PrepareableDataset
+
+# from .prepareable_dataset import PrepareableDataset
 from . import prepareable_dataset as pd
 
 
@@ -32,32 +26,32 @@ class CachedDataset(pd.PrepareableDataset):
         super().__init__(transform=transform)
 
     def _get_data(self):
-        data_dict = np.load(self.path / f"{self.name}.npz",  mmap_mode='r')
+        data_dict = np.load(self.path / f"{self.name}.npz", mmap_mode="r")
         data = data_dict["data"]
         if "targets" in data_dict.files:
             targets = data_dict["targets"]
             return data, targets
         else:
             return data
-    
+
     def _prepare(self) -> None:
         if not self.path.exists():
             raise FileNotFoundError
-        
+
         data, targets = self._get_data()
         # TODO: Maybe more checks on the data?
 
     def _load(self) -> None:
-       self.data, self.targets = self._get_data()
+        self.data, self.targets = self._get_data()
 
     def _get_item(self, index: int) -> Any:
         if self.return_labels:
             return self.data[index], self.targets[index]
         else:
             return self.data[index], None
+
     def __len__(self) -> int:
         if not self.is_loaded:
             raise Exception
-        
-        return len(self.data)
 
+        return len(self.data)

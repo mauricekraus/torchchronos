@@ -4,11 +4,10 @@ from typing import Optional
 import torch
 from aeon.datasets._data_loaders import load_classification
 
-from ..transforms.base_transforms import Transform, Compose
-from ..transforms.representation_transformations import LabelTransform
+from ..transforms.base_transforms import Compose, Transform
 from ..transforms.basic_transforms import Identity
 from ..transforms.format_conversion_transforms import ToTorchTensor
-
+from ..transforms.representation_transformations import LabelTransform
 from .prepareable_dataset import PrepareableDataset
 
 
@@ -38,19 +37,22 @@ class AeonClassificationDataset(PrepareableDataset):
             return self.data[idx], self.targets[idx]
         else:
             return self.data[idx]
-    
+
     def __len__(self) -> int:
         return len(self.data)
-    
+
     def _prepare(self) -> None:
         # replace with download, but not all datasets are downloadable with the method
-        load_classification(name=self.name, split=self.split, extract_path=self.save_path)
+        load_classification(
+            name=self.name, split=self.split, extract_path=self.save_path
+        )
 
     def _load(self) -> None:
-        data, targets = load_classification(name=self.name, split=self.split, extract_path=self.save_path)
+        data, targets = load_classification(
+            name=self.name, split=self.split, extract_path=self.save_path
+        )
 
         transform = Compose([ToTorchTensor(), LabelTransform()])
         transform.fit(data, targets)
 
         self.data, self.targets = transform.transform(data, targets)
-

@@ -1,7 +1,9 @@
 from pathlib import Path
-from torch.utils.data import Dataset
-import torch
+
 import numpy as np
+import torch
+from torch.utils.data import Dataset
+
 
 def save_dataset(dataset: Dataset, name: str, path: Path = None) -> None:
     has_targets = True if isinstance(dataset[0], tuple) else False
@@ -20,7 +22,7 @@ def save_dataset(dataset: Dataset, name: str, path: Path = None) -> None:
         targets = np.array(targets)
 
     if path is None:
-        save_path = Path(".cache/torchchronos/datasets") 
+        save_path = Path(".cache/torchchronos/datasets")
 
     save_path.mkdir(parents=True, exist_ok=True)
 
@@ -29,6 +31,7 @@ def save_dataset(dataset: Dataset, name: str, path: Path = None) -> None:
             np.savez(f, data=data, targets=targets)
         else:
             np.savez(f, data=data)
+
 
 def get_meta_data(dataset: Dataset) -> dict:
     meta_data = {}
@@ -40,4 +43,3 @@ def get_meta_data(dataset: Dataset) -> dict:
     else:
         meta_data["data_shape"] = dataset[0].shape
     return meta_data
-        

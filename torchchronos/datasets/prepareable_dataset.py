@@ -1,15 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Any
 
-import numpy as np
-import torch
 from torch.utils.data import Dataset
 
-#import torchchronos.transforms.base_transforms 
-
-from .base_dataset import BaseDataset
 from ..transforms.base_transforms import Transform
 from ..transforms.basic_transforms import Identity
+
+# import torchchronos.transforms.base_transforms
 
 """
 This class is for datasets that need to be prepared before they can be used.
@@ -28,7 +25,8 @@ To use this class, you have to inherit from it and implement the following metho
     - __getitem__
     - __len__
 _prepare, and _load are called from load and prepare in the Superclass and should not be called directly.
-This is because in the Superclass checks are done to make sure that the dataset is not prepared or loaded twice.
+This is because in the Superclass checks are done to
+make sure that the dataset is not prepared or loaded twice.
 """
 
 
@@ -58,9 +56,8 @@ class PrepareableDataset(ABC, Dataset):
             time_series, targets = time_series
         else:
             targets = None
-            
-        return self.transforms.transform(time_series, targets)
 
+        return self.transforms.transform(time_series, targets)
 
     @abstractmethod
     def _get_item(self, idx: int) -> Any:
@@ -86,9 +83,7 @@ class PrepareableDataset(ABC, Dataset):
         self._load()
         self.is_loaded = True
 
-        self.transforms.fit(
-            self.data, self.targets
-        )
+        self.transforms.fit(self.data, self.targets)
 
     @abstractmethod
     def _load(self) -> None:
