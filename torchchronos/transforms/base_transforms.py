@@ -177,14 +177,6 @@ class Transform(ABC):
     def _fit(self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None) -> None:
         pass
 
-    @overload
-    def _transform(self, time_series: torch.Tensor, targets: None = None) -> tuple[torch.Tensor, None]: ...
-
-    @overload
-    def _transform(
-        self, time_series: torch.Tensor, targets: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor]: ...
-
     @abstractmethod
     def _transform(
         self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None
@@ -227,7 +219,7 @@ class Compose(Transform):
 
     def _transform(
         self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None
-    ) -> tuple[torch.Tensor, None] | tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
 
         if targets is None:
             for t in self.transforms:
