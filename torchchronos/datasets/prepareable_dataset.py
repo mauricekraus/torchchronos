@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Optional
 
 from torch.utils.data import Dataset
 
@@ -11,12 +11,12 @@ class PrepareableDataset(ABC, Dataset):
     def __init__(
         self,
         transform: Transform = Identity(),
-        domain: str | None = None,
+        domain: Optional[str] = None,
     ) -> None:
         self.is_prepared: bool = False
         self.is_loaded: bool = False
         self._transform: list[Transform] = transform
-        self.domain = domain
+        self.domain: Optional[str] = domain
 
     @property
     def transforms(self) -> Transform:
@@ -61,9 +61,14 @@ class PrepareableDataset(ABC, Dataset):
         if self.is_prepared is False:
             raise NotPreparedError("Dataset must be prepared before it can be loaded.")
         self._load()
-        self.is_loaded = True
 
-        self.transforms.fit(self.data, self.targets)
+        if self.transforms.is_fitted is False:
+            raise ValueError(
+                "The transform must be fitted before the dataset can be used."
+                " This has to be done in the inherited class."
+            )
+
+        self.is_loaded = True
 
     @abstractmethod
     def _load(self) -> None:
