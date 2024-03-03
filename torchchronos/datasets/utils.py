@@ -1,16 +1,15 @@
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import torch
 from torch.utils.data import Dataset
 
 
-def save_dataset(dataset: Dataset, name: str, save_path: Path = None) -> None:
+def save_dataset(dataset: Dataset, name: str, save_path: Optional[Path] = None) -> None:
     has_targets = True if isinstance(dataset[0], tuple) else False
-    data = dataset[0][0] if has_targets else dataset[0]
-    targets = [dataset[0][1]] if has_targets else None
-    print(dataset[0][0].shape)
-    print(data.shape)
+    data: torch.Tensor = dataset[0][0] if has_targets else dataset[0]
+    targets: Optional[list[int]] = [dataset[0][1]] if has_targets else None
     for i in range(1, len(dataset)):
         if has_targets:
             data = torch.cat((data, dataset[i][0]), axis=0)
@@ -19,7 +18,6 @@ def save_dataset(dataset: Dataset, name: str, save_path: Path = None) -> None:
             data = torch.cat((data, dataset[i]), axis=0)
 
     data = data.numpy()
-    print(data.shape)
     if has_targets:
         targets = np.array(targets)
 

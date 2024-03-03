@@ -5,6 +5,7 @@ from typing import overload, Optional
 
 import torch
 from torch.utils.data import Dataset
+import dill
 
 from ..datasets.base_dataset import BaseDataset
 
@@ -73,7 +74,7 @@ class Transform(ABC):
         file_path = path / (name + ".pkl")
 
         with open(file_path, "wb") as file:
-            pickle.dump(self, file)
+            dill.dump(self, file)
 
     @staticmethod
     def load(name: str, path: Optional[Path] = None):
