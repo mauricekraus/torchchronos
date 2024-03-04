@@ -226,14 +226,12 @@ class Compose(Transform):
             for t in self.transforms:
                 time_series = t.transform(time_series)
             return time_series, None
-        elif isinstance(targets, torch.Tensor):
+        else:
             for t in self.transforms:
                 ts_transformed = t.transform(time_series, targets)
                 time_series, targets = ts_transformed
 
             return time_series, targets
-        else:
-            raise TypeError("Targets must be a tensor or None")
 
     def _invert(self) -> Transform:
         return Compose([~t for t in self.transforms[::-1]])

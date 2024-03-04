@@ -15,11 +15,11 @@ def test_prepare():
         dataset.load()
         save_dataset(dataset, "test_dataset", Path(tmpdirname))
 
-        dataset = CachedDataset(name="wrong_file", path=tmpdirname)
+        dataset = CachedDataset(name="wrong_file", save_path=tmpdirname)
         with pytest.raises(FileNotFoundError):
             dataset.prepare()
 
-        dataset = CachedDataset(name="test_dataset", path=tmpdirname)
+        dataset = CachedDataset(name="test_dataset", save_path=tmpdirname)
         assert not dataset.is_prepared
         dataset.prepare()
         assert dataset.is_prepared
@@ -32,7 +32,7 @@ def test_load():
         dataset.load()
         save_dataset(dataset, "test_dataset", Path(tmpdirname))
 
-        cached_dataset = CachedDataset(name="test_dataset", path=tmpdirname)
+        cached_dataset = CachedDataset(name="test_dataset", save_path=tmpdirname)
         cached_dataset.prepare()
         assert not cached_dataset.is_loaded
         cached_dataset.load()

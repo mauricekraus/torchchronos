@@ -5,10 +5,7 @@ import torch
 import numpy as np
 from aeon.datasets._data_loaders import load_classification
 
-from ..transforms.base_transforms import Compose, Transform
-from ..transforms.basic_transforms import Identity
-from ..transforms.format_conversion_transforms import ToTorchTensor
-from ..transforms.representation_transformations import LabelTransform
+from ..transforms import Compose, Transform, Identity, ToTorchTensor, LabelTransform
 from .prepareable_dataset import PrepareableDataset
 
 
@@ -70,4 +67,4 @@ class AeonClassificationDataset(PrepareableDataset):
         transform: Compose = Compose([ToTorchTensor(), LabelTransform()])
         transform.fit(data, targets)
 
-        self.data, self.targets = transform.transform(data, targets)
+        self.data, self.targets = transform(data, targets)
