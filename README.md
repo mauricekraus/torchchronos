@@ -93,3 +93,13 @@ The following features are planned for future releases of torchchronos:
   - Missing value imputation
 
 If you have any feature requests or suggestions, please open an issue on our GitHub page.
+
+## Docs
+
+TODO
+
+```shell
+poetry install --with dev,doc
+cd doc
+make html
+```
