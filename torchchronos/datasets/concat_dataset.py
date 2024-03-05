@@ -17,15 +17,20 @@ There are two ways to use this class:
 
 
 class ConcatDataset(Dataset):
-    def __init__(
-        self, datasets: list[Dataset], fractions: float | Sequence[float] = 1.0
-    ) -> None:
+    def __init__(self, datasets: list[Dataset], fractions: float | Sequence[float] = 1.0) -> None:
         """A dataset that concatenates multiple datasets into one long one.
 
         Args:
-            datasets: The datasets to concatenate
-            fractions: The fraction of each dataset to use. Must be between 0 and 1.
-                If it is an int, then the same fraction is used for all datasets.
+            datasets (list[Dataset]): The datasets to concatenate.
+            fractions (float | Sequence[float], optional): The fraction of each dataset to use.
+                Must be between 0 and 1. If it is a float, the same fraction is used for all datasets.
+                If it is a sequence of floats, each dataset can have a different fraction.
+                Defaults to 1.0.
+
+        Raises:
+            ValueError: If the number of datasets is zero.
+            ValueError: If the number of datasets does not match the number of fractions.
+
         """
         if not datasets:
             raise ValueError("The number of datasets must be greater than zero")
@@ -42,15 +47,21 @@ class ConcatDataset(Dataset):
         self.fractions = fractions
 
         # The number of data points in each dataset
-        self.lengths = [
-            math.ceil(len(d) * p) for d, p in zip(self.datasets, self.fractions)
-        ]
+        self.lengths = [math.ceil(len(d) * p) for d, p in zip(self.datasets, self.fractions)]
         self.total_length = sum(self.lengths)
 
         self.start_indices = [0]
         self.cumulative_lengths = np.cumsum([len(dataset) for dataset in self.datasets])
 
     def __getitem__(self, index: int) -> tuple[Any, Tensor]:
+        """Get an item from the concatenated dataset.
+
+        Args:
+            index (int): The index of the item to retrieve.
+
+        Returns:
+            tuple[Any, Tensor]: The item from the dataset at the given index.
+        """
         dataset_index = np.searchsorted(self.cumulative_lengths, index, side="right")
 
         if dataset_index > 0:
@@ -61,4 +72,9 @@ class ConcatDataset(Dataset):
         return self.datasets[dataset_index][local_index]
 
     def __len__(self) -> int:
+        """Get the total length of the concatenated dataset.
+
+        Returns:
+            int: The total length of the concatenated dataset.
+        """
         return self.total_length
