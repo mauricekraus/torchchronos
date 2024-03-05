@@ -3,14 +3,15 @@ import torch
 
 from torchchronos.datasets.prepareable_dataset import PrepareableDataset, NotPreparedError, NotLoadedError
 from torchchronos.datasets.aeon_datasets import AeonClassificationDataset
-from torchchronos.transforms import Shift
+from torchchronos.transforms.basic_transforms import Shift
+
 
 def test_prepareable_dataset_exceptions():
     dataset = AeonClassificationDataset(name="GunPoint")
 
     with pytest.raises(NotPreparedError):
         dataset[0]
-    
+
     with pytest.raises(NotPreparedError):
         dataset.load()
 
@@ -21,11 +22,13 @@ def test_prepareable_dataset_exceptions():
 
     dataset.load()
 
+
 def test_prepare():
     dataset = AeonClassificationDataset(name="GunPoint")
     assert dataset.is_prepared is False
     dataset.prepare()
     assert dataset.is_prepared is True
+
 
 def test_load():
     dataset = AeonClassificationDataset(name="GunPoint")
@@ -33,6 +36,7 @@ def test_load():
     dataset.prepare()
     dataset.load()
     assert dataset.is_loaded is True
+
 
 def test_transforms():
     dataset = AeonClassificationDataset(name="GunPoint")

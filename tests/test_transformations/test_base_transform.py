@@ -5,7 +5,7 @@ from pathlib import Path
 
 from torchchronos.transforms.base_transforms import Transform, Compose
 from torchchronos.transforms.format_conversion_transforms import ToTorchTensor
-from torchchronos.transforms.structure_transforms import SlidingWindow, RemoveLabels
+from torchchronos.transforms.structure_transforms import SlidingWindow
 from torchchronos.transforms.basic_transforms import Shift, Scale
 from torchchronos.datasets.aeon_datasets import AeonClassificationDataset
 from torchchronos.datasets.base_dataset import BaseDataset
@@ -136,13 +136,13 @@ def test_save_load():
 
 
 def test_compose_init():
-    transform = Compose([Shift(5), RemoveLabels()])
+    transform = Compose([Shift(5), Shift(15)])
     assert len(transform.transforms) == 2
 
 
 def test_compose_add():
     transform = Compose([Shift(5)])
-    new_transform = transform + RemoveLabels()
+    new_transform = transform + Shift(15)
 
     assert transform == transform
     assert type(new_transform) == Compose

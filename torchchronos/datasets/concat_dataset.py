@@ -1,12 +1,32 @@
 """Class for concatinating multiple datasets."""
 
 import math
+from enum import Enum, auto
 from collections.abc import Sequence
 from typing import Any
 
 import numpy as np
 from torch import Tensor
 from torch.utils.data import Dataset
+
+
+class DatasetFrequency(Enum):
+    """The relative frequency of a dataset in a collection of multiple ones."""
+
+    ALL_EQUAL = auto()
+    PROPORTIONAL_TO_SAMPLES = auto()
+    ALL_TYPES_EQUAL_PROPORTIONAL_TO_SAMPLES = auto()
+
+
+class ShuffleType(Enum):
+    """The relative frequency of a dataset in a collection of multiple ones."""
+
+    # Never shuffle, go sequentially through dataset list and content each
+    DISABLED = auto()
+    # shuffle within dataset, but go sequentially through dataset list
+    WITHIN_DATASET = auto()
+    # shuffle within datasets and across datasets
+    ACROSS_DATASETS = auto()
 
 
 class ConcatDataset(Dataset):
