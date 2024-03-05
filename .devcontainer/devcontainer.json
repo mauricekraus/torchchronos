@@ -14,7 +14,7 @@
 			]
 		}
 	},
-	"postCreateCommand": "poetry install",
+	"postCreateCommand": "poetry install --with dev,doc",
 	"features": {
 		"ghcr.io/devcontainers-contrib/features/poetry:2": {}
 	},

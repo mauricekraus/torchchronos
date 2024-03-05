@@ -1,3 +1,7 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "torchchronos"
 version = "0.0.3.post2"
@@ -17,8 +21,6 @@ uplink = "^0.9.7"
 aeon = "^0.6.0"
 dill = "^0.3.8"
 
-
-
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
 pytest = "^7.2.2"
@@ -27,13 +29,15 @@ numpy = "^1.21.2"
 ruff = "^0.1.11"
 mypy = "^1.8.0"
 
+[tool.poetry.group.doc.dependencies]
+sphinx = "^7.2.6"
+sphinx_rtd_theme = "^2.0.0"
 
 [tool.ruff]
 # See https://docs.astral.sh/ruff/rules
 select = ["E", "F", "W", "I", "N", "D", "C90", "UP", "NPY"]
 line-length = 110  # Same as Black
 target-version = "py310"  # The lowest supported version
-
 
 [tool.ruff.pydocstyle]
 convention = "numpy"
@@ -45,7 +49,8 @@ target-version = ['py310']
 [tool.isort]
 profile = "black"
 
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.pytest]
+testpaths = [
+    "tests",
+    "torchchronos",
+]
