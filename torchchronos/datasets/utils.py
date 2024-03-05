@@ -1,15 +1,28 @@
+"""Collection of util functions for datasets."""
+
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import torch
 from torch.utils.data import Dataset
 
 
-def save_dataset(dataset: Dataset, name: str, save_path: Optional[Path] = None) -> None:
+def save_dataset(dataset: Dataset, name: str, save_path: Path | None = None) -> None:
+    """
+    Save a dataset to a file.
+
+    Args:
+        dataset (Dataset): The dataset to save.
+        name (str): The name of the file.
+        save_path (Path, optional): The path to save the file to. Defaults to None.
+
+    Returns
+    -------
+    None
+    """
     has_targets = True if isinstance(dataset[0], tuple) else False
     data: torch.Tensor = dataset[0][0] if has_targets else dataset[0]
-    targets: Optional[list[int]] = [dataset[0][1]] if has_targets else None
+    targets: list[int] | None = [dataset[0][1]] if has_targets else None
     for i in range(1, len(dataset)):
         if has_targets:
             data = torch.cat((data, dataset[i][0]), axis=0)
@@ -34,6 +47,16 @@ def save_dataset(dataset: Dataset, name: str, save_path: Optional[Path] = None) 
 
 
 def get_meta_data(dataset: Dataset) -> dict:
+    """
+    Get the meta data of a dataset.
+
+    Args:
+        dataset (Dataset): The dataset to get the meta data from.
+
+    Returns
+    -------
+    dict: The meta data of the dataset.
+    """
     meta_data = {}
     meta_data["length"] = len(dataset)
     has_targets = True if isinstance(dataset[0], tuple) else False

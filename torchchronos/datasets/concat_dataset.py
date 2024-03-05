@@ -1,3 +1,5 @@
+"""Class for concatinating multiple datasets."""
+
 import math
 from collections.abc import Sequence
 from typing import Any
@@ -6,19 +8,13 @@ import numpy as np
 from torch import Tensor
 from torch.utils.data import Dataset
 
-"""
-This class is for concatenating multiple datasets into one long one.
-There are two ways to use this class:
-    1. Concatenate multiple datasets into one long one.
-    2. Concatenate multiple datasets into one long one, but only use a fraction of each dataset.
-
-
-"""
-
 
 class ConcatDataset(Dataset):
+    """Class for concatenating multiple datasets into one long one."""
+
     def __init__(self, datasets: list[Dataset], fractions: float | Sequence[float] = 1.0) -> None:
-        """A dataset that concatenates multiple datasets into one long one.
+        """
+        Initialize a new instance of the ConcatDataset class.
 
         Args:
             datasets (list[Dataset]): The datasets to concatenate.
@@ -27,7 +23,8 @@ class ConcatDataset(Dataset):
                 If it is a sequence of floats, each dataset can have a different fraction.
                 Defaults to 1.0.
 
-        Raises:
+        Raises
+        ------
             ValueError: If the number of datasets is zero.
             ValueError: If the number of datasets does not match the number of fractions.
 
@@ -59,7 +56,8 @@ class ConcatDataset(Dataset):
         Args:
             index (int): The index of the item to retrieve.
 
-        Returns:
+        Returns
+        -------
             tuple[Any, Tensor]: The item from the dataset at the given index.
         """
         dataset_index = np.searchsorted(self.cumulative_lengths, index, side="right")
@@ -74,7 +72,8 @@ class ConcatDataset(Dataset):
     def __len__(self) -> int:
         """Get the total length of the concatenated dataset.
 
-        Returns:
+        Returns
+        -------
             int: The total length of the concatenated dataset.
         """
         return self.total_length

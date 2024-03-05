@@ -1,8 +1,9 @@
-from pathlib import Path
-from typing import Optional
+"""Class for using the USR datasets from the Aeon library."""
 
-import torch
+from pathlib import Path
+
 import numpy as np
+import torch
 from aeon.datasets._data_loaders import load_classification
 
 from ..transforms import base_transforms as bt
@@ -25,13 +26,13 @@ class AeonClassificationDataset(PrepareableDataset):
     def __init__(
         self,
         name: str,
-        split: Optional[str] = None,
+        split: str | None = None,
         path: Path | str | None = None,
         return_labels: bool = True,
         transform: bt.Transform = Identity(),
     ) -> None:
         """
-        Initializes a new instance of the AeonClassificationDataset class.
+        Initialize a new instance of the AeonClassificationDataset class.
 
         Args:
             name (str): The name of the dataset.
@@ -40,15 +41,16 @@ class AeonClassificationDataset(PrepareableDataset):
             return_labels (bool, optional): Whether to return labels along with the data. Defaults to True.
             transform (Transform, optional): The data transformation to apply. Defaults to Identity().
 
-        Raises:
+        Raises
+        ------
             TypeError: If the `path` argument is not of type `str`, `Path` or 'None'.
         """
-        self.data: Optional[torch.Tensor] = None
-        self.targets: Optional[torch.Tensor] = None
+        self.data: torch.Tensor | None = None
+        self.targets: torch.Tensor | None = None
 
         self.name: str = name
-        self.split: Optional[str] = split
-        self.save_path: Optional[Path]
+        self.split: str | None = split
+        self.save_path: Path | None = None
         if path is None:
             self.save_path = None
         elif isinstance(path, str):
@@ -71,11 +73,13 @@ class AeonClassificationDataset(PrepareableDataset):
         Args:
             idx (int): The index of the item to retrieve.
 
-        Returns:
+        Returns
+        -------
             torch.Tensor: The item of the datset, without the label
             tuple[torch.Tensor, torch.Tensor]: The data item or a tuple of data and labels.
 
-        Raises:
+        Raises
+        ------
             ValueError: If the data is not loaded or the targets are not loaded.
         """
         if self.data is None:
@@ -92,9 +96,12 @@ class AeonClassificationDataset(PrepareableDataset):
         """
         Get the length of the dataset.
 
-        Returns:
+        Returns
+        -------
             int: The length of the dataset.
-        Raises:
+
+        Raises
+        ------
             ValueError: If the data is not loaded.
         """
         if self.data is None:
@@ -103,16 +110,12 @@ class AeonClassificationDataset(PrepareableDataset):
         return len(self.data)
 
     def _prepare(self) -> None:
-        """
-        Prepare the dataset by downloading and extracting it.
-        """
+        """Prepare the dataset by downloading and extracting it."""
         # replace with download, but not all datasets are downloadable with the method
         load_classification(name=self.name, split=self.split, extract_path=self.save_path)
 
     def _load(self) -> None:
-        """
-        Load the dataset and fit the self.transform object to the data and targets.
-        """
+        """Load the dataset and fit the self.transform object to the data and targets."""
         data: np.ndarray
         targets: np.ndarray
         data, targets = load_classification(name=self.name, split=self.split, extract_path=self.save_path)

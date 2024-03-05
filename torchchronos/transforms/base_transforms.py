@@ -1,19 +1,33 @@
+"""Base class for all transforms in the TorchChronos library.
+
+This module provides the Tranform class and a class for composing multiple transforms.
+"""
+
 import pickle
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import overload, Optional
+from typing import overload
 
+import dill
 import torch
 from torch.utils.data import Dataset
-import dill
 
 from ..datasets.base_dataset import BaseDataset
-
 
 # TODO: implement Reshape Transform, MinMax Transform
 
 
-def get_data_from_dataset(dataset: Dataset) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
+def get_data_from_dataset(dataset: Dataset) -> tuple[torch.Tensor, torch.Tensor | None]:
+    """
+    Get the data and targets from a dataset.
+
+    Args:
+        dataset (Dataset): The input dataset.
+
+    Returns
+    -------
+    tuple[torch.Tensor, torch.Tensor | None]: The data and targets from the dataset.
+    """
     data = dataset[:]
     if isinstance(data, tuple) and len(data) == 2:
         data, targets = data
@@ -41,7 +55,7 @@ class Transform(ABC):
             is_fitted (bool, optional): Indicates whether the transform is fitted or not. Defaults to False.
         """
         self.is_fitted = is_fitted
-        self._invert_transform: Optional["Transform"] = None
+        self._invert_transform: "Transform" | None = None
 
     @overload
     def __call__(self, time_series: torch.Tensor) -> torch.Tensor: ...
@@ -55,21 +69,24 @@ class Transform(ABC):
     def __call__(self, time_series: Dataset) -> Dataset: ...
 
     def __call__(
-        self, time_series: Dataset | torch.Tensor, targets: Optional[torch.Tensor] = None
+        self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None
     ) -> BaseDataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         """
         Apply the transformation to the input time series and targets (if provided).
 
         Args:
             time_series (Dataset | torch.Tensor): The input time series data.
-            targets (torch.Tensor, optional): The target values associated with the time series data. Has to be None if time_series is a Dataset.
+            targets (torch.Tensor, optional): The target values associated with the time series data.
+                                            Has to be None if time_series is a Dataset.
 
-        Returns:
+        Returns
+        -------
             BaseDataset: If a dataset is provided.
             torch.Tensor: If only the time series is provided.
             tuple[torch.Tensor, torch.Tensor]: If both the time series and targets are provided.
 
-        Raises:
+        Raises
+        ------
             AssertionError: If `targets` is provided but `time_series` is an instance of `Dataset`.
         """
         if targets is None:
@@ -80,20 +97,39 @@ class Transform(ABC):
             return self.transform(time_series, targets)
 
     def __add__(self, other: "Transform") -> "Compose":
+        """
+        Add a transform to the composition.
+
+        Args:
+            other (Transform): The transform to be added.
+
+        Returns
+        -------
+        Compose: A new composition with the added transform.
+        """
         return Compose([self, other])
 
     def __invert__(self) -> "Transform":
+        """
+        Invert the transform.
+
+        Returns
+        -------
+        Transform: The inverted transform.
+        """
         return self.invert()
 
     def invert(self) -> "Transform":
         """
-        Returns the inverted transform.
+        Return the inverted transform.
 
         If the inverted transform has not been computed yet, it is computed and stored for future use.
         The inverted transform is computed by calling the `_invert` method of the current transform object.
-        The computed inverted transform is then stored in the `_invert_transform` attribute of the current transform object.
+        The computed inverted transform is then stored in the `_invert_transform` attribute
+            of the current transform object.
 
-        Returns:
+        Returns
+        -------
             Transform: The inverted transform.
 
         """
@@ -103,18 +139,21 @@ class Transform(ABC):
             self._invert_transform.is_fitted = True
         return self._invert_transform
 
-    def save(self, name: str, path: Optional[Path] = None) -> None:
+    def save(self, name: str, path: Path | None = None) -> None:
         """
         Save the fitted transform object to a file.
 
         Args:
             name (str): The name of the saved file.
-            path (Path, optional): The path where the file will be saved. If not provided, the default path is ".cache/torchchronos/transforms".
+            path (Path, optional): The path where the file will be saved.
+                                    Default path is ".cache/torchchronos/transforms".
 
-        Returns:
+        Returns
+        -------
             None
 
-        Raises:
+        Raises
+        ------
             Exception: If the transform is not fitted before saving.
 
         """
@@ -131,18 +170,20 @@ class Transform(ABC):
             dill.dump(self, file)
 
     @staticmethod
-    def load(name: str, path: Optional[Path] = None):
+    def load(name: str, path: Path | None = None):
         """
         Load a transform object from a pickle file.
 
         Args:
             name (str): The name of the transform object.
-            path (Path, optional): The path to the directory containing the pickle file. If not provided, the default path is used.
+            path (Path, optional): The path to the directory containing the pickle file. Default path is used.
 
-        Returns:
+        Returns
+        -------
             The loaded transform object.
 
-        Raises:
+        Raises
+        ------
             FileNotFoundError: If the specified pickle file does not exist.
             pickle.UnpicklingError: If there is an error while unpickling the transform object.
         """
@@ -167,17 +208,18 @@ class Transform(ABC):
     def fit_transform(self, time_series: Dataset) -> BaseDataset: ...
 
     def fit_transform(
-        self, time_series: Dataset | torch.Tensor, targets: Optional[torch.Tensor] = None
+        self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None
     ) -> BaseDataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         """
-        Fits the transform to the given time series and targets (if provided),
-        and then applies the transformation to the time series.
+        Fits and transforms the input time series and optional targets.
 
         Args:
             time_series (Dataset | torch.Tensor): The input time series data.
-            targets (torch.Tensor, optional): The target values associated with the time series. Has to be None if time_series is a Dataset.
+            targets (torch.Tensor, optional): The target values associated with the time series.
+                        Has to be None if time_series is a Dataset.
 
-        Returns:
+        Returns
+        -------
             BaseDataset: If a dataset is provided.
             torch.Tensor: If only the time series is provided.
             tuple[torch.Tensor, torch.Tensor]: If both the time series and targets are provided.
@@ -194,15 +236,17 @@ class Transform(ABC):
             self.is_fitted = True
             return ts_transformed, targets_transformed
 
-    def fit(self, time_series: Dataset | torch.Tensor, targets: Optional[torch.Tensor] = None) -> None:
+    def fit(self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """
         Fits the transform to the given time series data.
 
         Args:
             time_series (Dataset | torch.Tensor): The input time series data to fit the transform on.
-            targets (torch.Tensor, optional): The target values associated with the time series data. Has to be None if time_series is a Dataset.
+            targets (torch.Tensor, optional): The target values associated with the time series data.
+                        Has to be None if time_series is a Dataset.
 
-        Returns:
+        Returns
+        -------
             None
         """
         if self.is_fitted:
@@ -226,21 +270,23 @@ class Transform(ABC):
     def transform(self, time_series: Dataset) -> BaseDataset: ...
 
     def transform(
-        self, time_series: Dataset | torch.Tensor, targets: Optional[torch.Tensor] = None
+        self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None
     ) -> BaseDataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         """
-        Applies the transformation to the given time series data and optional targets.
+        Apply the transformation to the given time series data and optional targets.
 
         Args:
             time_series (Dataset | torch.Tensor): The input time series data to be transformed.
             targets (torch.Tensor, optional): The optional targets associated with the time series data.
 
-        Returns:
+        Returns
+        -------
             BaseDataset: If a dataset is provided.
             torch.Tensor: If only the time series is provided.
             tuple[torch.Tensor, torch.Tensor]: If both the time series and targets are provided.
 
-        Raises:
+        Raises
+        ------
             Exception: If the transform has not been fitted before it is used.
             RuntimeError: If transforming a dataset and targets are provided.
 
@@ -251,7 +297,8 @@ class Transform(ABC):
         if isinstance(time_series, Dataset):
             if targets is not None:
                 raise RuntimeError(
-                    "If transforming a dataset, targets have to be None. Do not provide targets to the transform method!"
+                    "If transforming a dataset, targets have to be None. "
+                    "Do not provide targets to the transform method!"
                 )
             dataset_transformed = self._transform_dataset(time_series)
             return dataset_transformed
@@ -282,13 +329,14 @@ class Transform(ABC):
         """
         Abstract method for a string representation of the transform.
 
-        Returns:
+        Returns
+        -------
             str: The string representation of the object.
         """
         pass
 
     @abstractmethod
-    def _fit(self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """
         Abstract method for fitting the transform to the given time series data.
 
@@ -296,15 +344,16 @@ class Transform(ABC):
             time_series (torch.Tensor): The input time series data.
             targets (torch.Tensor, optional): The target values associated with the time series data.
 
-        Returns:
+        Returns
+        -------
             None
         """
         pass
 
     @abstractmethod
     def _transform(
-        self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None
-    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> tuple[torch.Tensor, torch.Tensor | None]:
         """
         Abstract method for performing a transformation on the input time series data.
 
@@ -313,7 +362,8 @@ class Transform(ABC):
             targets (torch.Tensor, optional): The target values associated with the time series.
                 Defaults to None.
 
-        Returns:
+        Returns
+        -------
             tuple[torch.Tensor, None]: If only a time series is provided.
             tuple[torch.Tensor, torch.Tensor]: If both the time series and targets are provided.
         """
@@ -326,7 +376,8 @@ class Transform(ABC):
 
         This method should be implemented by subclasses to define how the transformation is inverted.
 
-        Returns:
+        Returns
+        -------
             None
         """
         pass
@@ -339,7 +390,8 @@ class Compose(Transform):
     Args:
         transforms (list[Transform]): A list of transforms to be applied in sequence.
 
-    Attributes:
+    Attributes
+    ----------
         transforms (list[Transform]): The list of transforms in the composition.
     """
 
@@ -355,7 +407,8 @@ class Compose(Transform):
         Args:
             other (Transform): The transform to be added.
 
-        Returns:
+        Returns
+        -------
             Compose: A new composition with the added transform.
         """
         new_compose = Compose([*self.transforms, other])
@@ -368,22 +421,25 @@ class Compose(Transform):
         Args:
             index (int): The index of the transform to retrieve.
 
-        Returns:
+        Returns
+        -------
             Transform: The transform at the specified index.
         """
         return self.transforms[index]
 
-    def _fit(self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """
         Fit the composition of transforms to the given time series and targets.
 
-        The method fits and applies each transformation except the last one to the input data, to fitt all the transforms
+        The method fits and applies each transformation except the last one to the input data,
+         to fitt all the transforms
 
         Args:
             time_series (torch.Tensor): The input time series.
             targets (torch.Tensor, optional): The target values. Defaults to None.
 
-        Returns:
+        Returns
+        -------
             None
         """
         if self.transforms == []:
@@ -402,8 +458,8 @@ class Compose(Transform):
         self.is_fitted = True
 
     def _transform(
-        self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None
-    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> tuple[torch.Tensor, torch.Tensor | None]:
         """
         Apply the composition of transforms to the given time series and targets.
 
@@ -411,8 +467,9 @@ class Compose(Transform):
             time_series (torch.Tensor): The input time series.
             targets (torch.Tensor, optional): The target values. Defaults to None.
 
-        Returns:
-            tuple[torch.Tensor, Optional[torch.Tensor]]: The transformed time series and targets.
+        Returns
+        -------
+            tuple[torch.Tensor, torch.Tensor | None]: The transformed time series and targets.
         """
         if targets is None:
             for t in self.transforms:
@@ -429,7 +486,8 @@ class Compose(Transform):
         """
         Invert the composition of transforms.
 
-        Returns:
+        Returns
+        -------
             Transform: The inverted composition of transforms.
         """
         return Compose([~t for t in self.transforms[::-1]])
@@ -438,7 +496,8 @@ class Compose(Transform):
         """
         Get a string representation of the composition.
 
-        Returns:
+        Returns
+        -------
             str: The string representation of the composition.
         """
         format_string = self.__class__.__name__ + "("

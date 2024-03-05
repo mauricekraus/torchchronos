@@ -1,7 +1,7 @@
-from typing import Optional
+"""Module for transfromc converting the data into different formats."""
 
-import torch
 import numpy as np
+import torch
 
 from .base_transforms import Transform
 from .transformation_exceptions import NoInverseError
@@ -9,44 +9,46 @@ from .transformation_exceptions import NoInverseError
 
 class ToTorchTensor(Transform):
     """
-    A transformation class to convert data into torch tensors.
+    Class for converting data into torch tensors.
 
     This transformation is applied to both time series data and optional target data.
     """
 
     def __init__(self):
-        """
-        Initializes the ToTorchTensor transformation.
-        """
+        """Initialize the ToTorchTensor transformation."""
         super().__init__(True)
 
-    def _fit(self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """
-        Fits the transformation.
+        Fit the transformation.
 
-        This method does not perform any fitting as the identity transformation does not require any parameters.
+        This method does not perform any fitting as the identity transformation does not
+        require any parameters.
 
         Args:
             time_series (torch.Tensor): The time series data.
             targets (torch.Tensor, optional): The target data. Defaults to None.
 
-        Returns:
+        Returns
+        -------
             None
         """
         pass
 
     def _transform(
-        self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None
-    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> tuple[torch.Tensor, torch.Tensor | None]:
         """
-        Converts the input time series and target data (if provided) into torch tensors.
+        Convert the input time series and target data (if provided) into torch tensors.
 
         Args:
             time_series (torch.Tensor): The time series data.
             targets (torch.Tensor, optional): The target data. Defaults to None.
 
-        Returns:
-            tuple[torch.Tensor, Optional[torch.Tensor]]: The transformed time series and target data (if provided).
+        Returns
+        -------
+            tuple[torch.Tensor, torch.Tensor | None]: The transformed time series and
+            target data (if provided).
         """
         if (torch.is_tensor(time_series) and targets is None) or (
             torch.is_tensor(time_series) and torch.is_tensor(targets)
@@ -65,18 +67,20 @@ class ToTorchTensor(Transform):
 
     def _invert(self) -> Transform:
         """
-        Raises an exception since inversion is not supported for this transformation.
+        Raise an exception since inversion is not supported for this transformation.
 
-        Raises:
+        Raises
+        ------
             NoInverseError: The inversion of the transformation is not supported.
         """
         raise NoInverseError()
 
     def __repr__(self) -> str:
         """
-        Returns a string representation of the transformation.
+        Return a string representation of the transformation.
 
-        Returns:
+        Returns
+        -------
             str: The string representation of the transformation.
         """
         return f"{self.__class__.__name__}()"
@@ -84,44 +88,46 @@ class ToTorchTensor(Transform):
 
 class ToNumpyArray(Transform):
     """
-    A transformation class to convert data into numpy arrays.
+    Class to convert data into numpy arrays.
 
     This transformation is applied to both time series data and optional target data.
     """
 
     def __init__(self):
-        """
-        Initializes the ToNumpyArray transformation.
-        """
+        """Initialize the ToNumpyArray transformation."""
         super().__init__(True)
 
-    def _fit(self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """
-        Fits the transformation.
+        Fit the transformation.
 
-        This method does not perform any fitting as the identity transformation does not require any parameters.
+        This method does not perform any fitting as the identity transformation does not
+        require any parameters.
 
         Args:
             time_series (torch.Tensor): The time series data.
             targets (torch.Tensor, optional): The target data. Defaults to None.
 
-        Returns:
+        Returns
+        -------
             None
         """
         pass
 
     def _transform(
-        self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None
-    ) -> tuple[np.ndarray, Optional[np.ndarray]]:
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> tuple[np.ndarray, np.ndarray | None]:
         """
-        Converts the input time series and target data (if provided) into numpy arrays.
+        Convert the input time series and target data (if provided) into numpy arrays.
 
         Args:
             time_series (torch.Tensor): The time series data.
             targets (torch.Tensor, optional): The target data. Defaults to None.
 
-        Returns:
-            tuple[np.ndarray, Optional[np.ndarray]]: The transformed time series and target data (if provided).
+        Returns
+        -------
+            tuple[np.ndarray, Optional[np.ndarray]]: The transformed time series and
+            target data (if provided).
         """
         if targets is None:
             return time_series.numpy(), None
@@ -130,18 +136,20 @@ class ToNumpyArray(Transform):
 
     def _invert(self):
         """
-        Raises an exception since inversion is not supported for this transformation.
+        Raise an exception since inversion is not supported for this transformation.
 
-        Raises:
+        Raises
+        ------
             NoInverseError: The inversion of the transformation is not supported.
         """
         raise NoInverseError()
 
     def __repr__(self) -> str:
         """
-        Returns a string representation of the transformation.
+        Return a string representation of the transformation.
 
-        Returns:
+        Returns
+        -------
             str: The string representation of the transformation.
         """
         return f"{self.__class__.__name__}()"
@@ -149,17 +157,18 @@ class ToNumpyArray(Transform):
 
 class To(Transform):
     """
-    A transformation class to convert data into a specific torch data type.
+    Class to convert data into a specific torch data type.
 
     This transformation is applied to both time series data and optional target data.
 
-    Attributes:
+    Attributes
+    ----------
         torch_attribute (torch.dtype): The torch data type to convert the data to.
     """
 
     def __init__(self, torch_attribute):
         """
-        Initializes the To transformation.
+        Initialize the To transformation.
 
         Args:
             torch_attribute (torch.dtype): The torch data type to convert the data to.
@@ -167,33 +176,37 @@ class To(Transform):
         super().__init__(True)
         self.torch_attribute = torch_attribute
 
-    def _fit(self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """
-        Fits the transformation.
+        Fitsthe transformation.
 
-        This method does not perform any fitting as the identity transformation does not require any parameters.
+        This method does not perform any fitting as the identity transformation does not
+        require any parameters.
 
         Args:
             time_series (torch.Tensor): The time series data.
             targets (torch.Tensor, optional): The target data. Defaults to None.
 
-        Returns:
+        Returns
+        -------
             None
         """
         pass
 
     def _transform(
-        self, time_series: torch.Tensor, targets: Optional[torch.Tensor] = None
-    ) -> tuple[torch.Tensor, Optional[torch.Tensor]]:
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> tuple[torch.Tensor, torch.Tensor | None]:
         """
-        Converts the input time series and target data (if provided) into the specified torch data type.
+        Convert the input time series and target data (if provided) into the specified torch data type.
 
         Args:
             time_series (torch.Tensor): The time series data.
             targets (torch.Tensor, optional): The target data. Defaults to None.
 
-        Returns:
-            tuple[torch.Tensor, Optional[torch.Tensor]]: The transformed time series and target data (if provided).
+        Returns
+        -------
+            tuple[torch.Tensor, torch.Tensor | None]: The transformed time series and
+            target data (if provided).
         """
         if targets is None:
             return time_series.to(self.torch_attribute), None
@@ -202,18 +215,20 @@ class To(Transform):
 
     def _invert(self):
         """
-        Raises an exception since inversion is not supported for this transformation.
+        Raise an exception since inversion is not supported for this transformation.
 
-        Raises:
+        Raises
+        ------
             NoInverseError: The inversion of the transformation is not supported.
         """
         raise NoInverseError()
 
     def __repr__(self) -> str:
         """
-        Returns a string representation of the transformation.
+        Return a string representation of the transformation.
 
-        Returns:
+        Returns
+        -------
             str: The string representation of the transformation.
         """
         return f"{self.__class__.__name__}(attribute={self.torch_attribute})"

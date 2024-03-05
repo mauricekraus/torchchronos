@@ -1,6 +1,7 @@
-from pathlib import Path
-from typing import Any, Optional
+"""Class for loading and using Cached Datasets."""
+
 import os
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -8,8 +9,6 @@ import torch
 from ..transforms.base_transforms import Transform
 from ..transforms.basic_transforms import Identity
 from ..transforms.format_conversion_transforms import ToTorchTensor
-
-# from .prepareable_dataset import PrepareableDataset
 from . import prepareable_dataset as pd
 
 
@@ -17,15 +16,13 @@ class CachedDataset(pd.PrepareableDataset):
     """
     A dataset class for loading cached data.
 
-
-    Attributes:
+    Attributes
+    ----------
         name (str): The name of the dataset.
-        data (Optional[torch.Tensor]): The loaded data.
-        targets (Optional[torch.Tensor]): The loaded targets.
+        data (torch.Tensor | None): The loaded data.
+        targets (torch.Tensor | None): The loaded targets.
         return_labels (bool): Whether to return labels along with the data.
         path (Path): The path to save the cached data.
-
-
     """
 
     def __init__(
@@ -36,21 +33,23 @@ class CachedDataset(pd.PrepareableDataset):
         transform: Transform = Identity(),
     ) -> None:
         """
-        Initializes a new instance of the CachedDataset class.
+        Initialize a new instance of the CachedDataset class.
 
         Args:
             name (str): The name of the dataset.
-            save_path (Path | str, optional): The path to save the cached data. Defaults to ".cache/torchchronos/datasets".
+            save_path (Path | str, optional): The path to save the cached data.
+                                                Defaults to ".cache/torchchronos/datasets".
             return_labels (bool, optional): Whether to return labels along with the data. Defaults to True.
             transform (Transform, optional): The data transformation to apply. Defaults to Identity().
 
-        Raises:
+        Raises
+        ------
             TypeError: If the save_path is not a string or a Path object.
             FileNotFoundError: If the cached data file does not exist.
         """
         self.name: str = name
-        self.data: Optional[torch.Tensor] = None
-        self.targets: Optional[torch.Tensor] = None
+        self.data: torch.Tensor | None = None
+        self.targets: torch.Tensor | None = None
 
         self.return_labels: bool = return_labels
         self.path: Path
@@ -67,7 +66,8 @@ class CachedDataset(pd.PrepareableDataset):
         """
         Load the data from the cached file.
 
-        Returns:
+        Returns
+        -------
             tuple[np.ndarray, None]: The loaded data. Without targets.
             tuple[np.ndarray, np.ndarray]: The loaded data and targets (if available).
 
@@ -84,7 +84,8 @@ class CachedDataset(pd.PrepareableDataset):
         """
         Prepare the dataset for loading.
 
-        Raises:
+        Raises
+        ------
             FileNotFoundError: If the cached data file does not exist.
 
         """
@@ -95,12 +96,9 @@ class CachedDataset(pd.PrepareableDataset):
         # TODO: Maybe more checks on the data?
 
     def _load(self) -> None:
-        """
-        Load the data and targets into memory.
-
-        """
+        """Load the data and targets into memory."""
         data: np.ndarray
-        targets: Optional[np.ndarray]
+        targets: np.ndarray | None
         data, targets = self._get_data()
         self.data, self.targets = ToTorchTensor()(data, targets)
         self.transforms.fit(self.data, self.targets)
@@ -112,11 +110,13 @@ class CachedDataset(pd.PrepareableDataset):
         Args:
             index (int): The index of the item to retrieve.
 
-        Returns:
+        Returns
+        -------
             torch.Tensor: The item of the dataset, without the label.
             tuple[torch.Tensor, torch.Tensor]: The data item or a tuple of data and targets.
 
-        Raises:
+        Raises
+        ------
             Exception: If the data has not been loaded yet.
             Exception: If the targets have not been loaded yet.
 
@@ -139,10 +139,12 @@ class CachedDataset(pd.PrepareableDataset):
         """
         Get the length of the dataset.
 
-        Returns:
+        Returns
+        -------
             int: The length of the dataset.
 
-        Raises:
+        Raises
+        ------
             Exception: If the data has not been loaded yet.
 
         """
