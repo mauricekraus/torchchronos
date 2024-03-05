@@ -96,7 +96,6 @@ class MultiDatasetDataModule(L.LightningDataModule):
             pass
 
     def setup(self, stage: str | None = None) -> None:
-
         if stage == "fit":
             if isinstance(self.val, float):
                 new_train: Sequence[Dataset] = []
