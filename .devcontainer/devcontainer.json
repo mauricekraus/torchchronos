@@ -1,0 +1,21 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+	"name": "torchchronos",
+	"image": "python:3.11",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"Swellaby.python-pack",
+				"charliermarsh.ruff",
+				"ms-python.black-formatter",
+				"ms-toolsai.jupyter",
+				"tamasfe.even-better-toml"
+			]
+		}
+	},
+	"postCreateCommand": "poetry install",
+	"features": {
+		"ghcr.io/devcontainers-contrib/features/poetry:2": {}
+	},
+}
