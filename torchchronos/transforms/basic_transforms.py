@@ -9,10 +9,10 @@ The following transformations are implemented:
 
 import torch
 
-from .base_transforms import Compose, Transform
+from . import base_transforms
 
 
-class Identity(Transform):
+class Identity(base_transforms.Transform):
     """Identity tranform."""
 
     def __init__(self) -> None:
@@ -47,7 +47,7 @@ class Identity(Transform):
         """
         return time_series, targets
 
-    def _invert(self) -> Transform:
+    def _invert(self) -> base_transforms.Transform:
         """
         Invert the identity transformation.
 
@@ -62,7 +62,7 @@ class Identity(Transform):
         return "Identity()"
 
 
-class Normalize(Transform):
+class Normalize(base_transforms.Transform):
     """
     Normalize the input time series data.
 
@@ -157,7 +157,7 @@ class Normalize(Transform):
         else:
             return f"{self.__class__.__name__}({mode}, mean={self.mean.shape}, std={self.std.shape})"
 
-    def _invert(self) -> Transform:
+    def _invert(self) -> base_transforms.Transform:
         """
         Invert the normalization transform.
 
@@ -173,10 +173,10 @@ class Normalize(Transform):
         if self.mean is None or self.std is None:
             raise RuntimeError("Cannot invert transform before fitting.")
 
-        return Compose([Scale(self.std), Shift(self.mean)])
+        return base_transforms.Compose([Scale(self.std), Shift(self.mean)])
 
 
-class Scale(Transform):
+class Scale(base_transforms.Transform):
     """
     A transformation class that scales the input time series by a given factor.
 
@@ -256,7 +256,7 @@ class Scale(Transform):
         pass
         return time_series * self.scale, targets
 
-    def _invert(self) -> Transform:
+    def _invert(self) -> base_transforms.Transform:
         """
         Return the inverse transformation of the scaling transformation.
 
@@ -284,7 +284,7 @@ class Scale(Transform):
             return f"Scale({self.scale})"
 
 
-class Shift(Transform):
+class Shift(base_transforms.Transform):
     """
     A transformation class that shifts a time series data by a constant value or a tensor.
 
