@@ -6,10 +6,13 @@ import numpy as np
 import torch
 from aeon.datasets._data_loaders import load_classification
 
-from ..transforms import base_transforms as bt
-from ..transforms.basic_transforms import Identity
-from ..transforms.format_conversion_transforms import ToTorchTensor
-from ..transforms.representation_transformations import LabelTransform
+from ..transforms import (
+    base_transforms,
+    basic_transforms,
+    format_conversion_transforms,
+    representation_transformations,
+)
+
 from .prepareable_dataset import PrepareableDataset
 
 
@@ -29,7 +32,7 @@ class AeonClassificationDataset(PrepareableDataset):
         split: str | None = None,
         path: Path | str | None = None,
         return_labels: bool = True,
-        transform: bt.Transform = Identity(),
+        transform: base_transforms.Transform = basic_transforms.Identity(),
     ) -> None:
         """
         Initialize a new instance of the AeonClassificationDataset class.
@@ -120,7 +123,9 @@ class AeonClassificationDataset(PrepareableDataset):
         targets: np.ndarray
         data, targets = load_classification(name=self.name, split=self.split, extract_path=self.save_path)
 
-        transform: bt.Compose = bt.Compose([ToTorchTensor(), LabelTransform()])
+        transform: base_transforms.Compose = base_transforms.Compose(
+            [format_conversion_transforms.ToTorchTensor(), representation_transformations.LabelTransform()]
+        )
         transform.fit(data, targets)
 
         self.data, self.targets = transform(data, targets)
