@@ -10,9 +10,7 @@ from typing import overload
 
 import dill
 import torch
-from torch.utils.data import Dataset
-
-from ..datasets.base_dataset import BaseDataset
+from torch.utils.data import Dataset, TensorDataset
 
 # TODO: implement Reshape Transform, MinMax Transform
 
@@ -31,6 +29,9 @@ def get_data_from_dataset(dataset: Dataset) -> tuple[torch.Tensor, torch.Tensor 
     data = dataset[:]
     if isinstance(data, tuple) and len(data) == 2:
         data, targets = data
+    elif isinstance(data, tuple) and len(data) == 1:
+        data = data[0]
+        targets = None
     else:
         targets = None
     return data, targets
@@ -58,20 +59,19 @@ class Transform(ABC):
         self._invert_transform: "Transform" | None = None
 
     @overload
-    def __call__(self, time_series: torch.Tensor) -> torch.Tensor:
-        ...
+    def __call__(self, time_series: torch.Tensor) -> torch.Tensor: ...
 
     @overload
-    def __call__(self, time_series: torch.Tensor, targets: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        ...
+    def __call__(
+        self, time_series: torch.Tensor, targets: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]: ...
 
     @overload
-    def __call__(self, time_series: Dataset) -> Dataset:
-        ...
+    def __call__(self, time_series: Dataset) -> Dataset: ...
 
     def __call__(
         self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None
-    ) -> BaseDataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+    ) -> TensorDataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         """
         Apply the transformation to the input time series and targets (if provided).
 
@@ -82,7 +82,7 @@ class Transform(ABC):
 
         Returns
         -------
-            BaseDataset: If a dataset is provided.
+            TensorDataset: If a dataset is provided.
             torch.Tensor: If only the time series is provided.
             tuple[torch.Tensor, torch.Tensor]: If both the time series and targets are provided.
 
@@ -198,22 +198,19 @@ class Transform(ABC):
         return transform
 
     @overload
-    def fit_transform(self, time_series: torch.Tensor) -> torch.Tensor:
-        ...
+    def fit_transform(self, time_series: torch.Tensor) -> torch.Tensor: ...
 
     @overload
     def fit_transform(
         self, time_series: torch.Tensor, targets: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor]:
-        ...
+    ) -> tuple[torch.Tensor, torch.Tensor]: ...
 
     @overload
-    def fit_transform(self, time_series: Dataset) -> BaseDataset:
-        ...
+    def fit_transform(self, time_series: Dataset) -> TensorDataset: ...
 
     def fit_transform(
         self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None
-    ) -> BaseDataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+    ) -> TensorDataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         """
         Fits and transforms the input time series and optional targets.
 
@@ -224,7 +221,7 @@ class Transform(ABC):
 
         Returns
         -------
-            BaseDataset: If a dataset is provided.
+            TensorDataset: If a dataset is provided.
             torch.Tensor: If only the time series is provided.
             tuple[torch.Tensor, torch.Tensor]: If both the time series and targets are provided.
 
@@ -263,22 +260,19 @@ class Transform(ABC):
         self.is_fitted = True
 
     @overload
-    def transform(self, time_series: torch.Tensor) -> torch.Tensor:
-        ...
+    def transform(self, time_series: torch.Tensor) -> torch.Tensor: ...
 
     @overload
     def transform(
         self, time_series: torch.Tensor, targets: torch.Tensor
-    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
-        ...
+    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]: ...
 
     @overload
-    def transform(self, time_series: Dataset) -> BaseDataset:
-        ...
+    def transform(self, time_series: Dataset) -> TensorDataset: ...
 
     def transform(
         self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None
-    ) -> BaseDataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+    ) -> TensorDataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         """
         Apply the transformation to the given time series data and optional targets.
 
@@ -288,7 +282,7 @@ class Transform(ABC):
 
         Returns
         -------
-            BaseDataset: If a dataset is provided.
+            TensorDataset: If a dataset is provided.
             torch.Tensor: If only the time series is provided.
             tuple[torch.Tensor, torch.Tensor]: If both the time series and targets are provided.
 
@@ -314,15 +308,14 @@ class Transform(ABC):
             return time_series
         return self._transform(time_series, targets)
 
-    def _transform_dataset(self, dataset: Dataset) -> BaseDataset:
+    def _transform_dataset(self, dataset: Dataset) -> TensorDataset:
         data, targets = get_data_from_dataset(dataset)
-        # TODO: Use TensorDataset instead of BaseDataset
         if targets is None:
             ts_transformed, _ = self._transform(data)
-            return BaseDataset(ts_transformed)
+            return TensorDataset(ts_transformed)
 
         ts_transformed, targets_transformed = self._transform(data, targets)
-        return BaseDataset(ts_transformed, targets_transformed)
+        return TensorDataset(ts_transformed, targets_transformed)
 
     def _fit_dataset(self, dataset: Dataset) -> None:
         data, targets = get_data_from_dataset(dataset)
