@@ -5,8 +5,7 @@ from typing import Any
 
 from torch.utils.data import Dataset
 
-from ..transforms.base_transforms import Transform
-from ..transforms.basic_transforms import Identity
+from ..transforms import base_transforms, basic_transforms
 
 
 class PrepareableDataset(ABC, Dataset):
@@ -25,7 +24,7 @@ class PrepareableDataset(ABC, Dataset):
 
     def __init__(
         self,
-        transform: Transform = Identity(),
+        transform: base_transforms.Transform = basic_transforms.Identity(),
         domain: str | None = None,
     ) -> None:
         """
@@ -42,11 +41,11 @@ class PrepareableDataset(ABC, Dataset):
         """
         self.is_prepared: bool = False
         self.is_loaded: bool = False
-        self._transform: list[Transform] = transform
+        self._transform: list[base_transforms.Transform] = transform
         self.domain: str | None = domain
 
     @property
-    def transforms(self) -> Transform:
+    def transforms(self) -> base_transforms.Transform:
         """
         Get the transform to be applied to the dataset.
 
