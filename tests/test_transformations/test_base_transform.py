@@ -8,12 +8,12 @@ from torchchronos.transforms.format_conversion_transforms import ToTorchTensor
 from torchchronos.transforms.structure_transforms import SlidingWindow
 from torchchronos.transforms.basic_transforms import Shift, Scale
 from torchchronos.datasets.aeon_datasets import AeonClassificationDataset
-from torchchronos.datasets.base_dataset import BaseDataset
+from torch.utils.data import TensorDataset
 
 transform = Shift(5)
 data = torch.randn(100, 1, 100)
 targets = torch.randint(0, 2, (100, 1))
-dataset = BaseDataset(data, targets)
+dataset = TensorDataset(data, targets)
 
 
 def test_transform_transform():

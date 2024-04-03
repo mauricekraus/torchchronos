@@ -9,10 +9,10 @@ The following transformations are implemented:
 
 import torch
 
-from . import base_transforms
+from .base_transforms import Transform, Compose
 
 
-class Identity(base_transforms.Transform):
+class Identity(Transform):
     """Identity tranform."""
 
     def __init__(self) -> None:
@@ -47,7 +47,7 @@ class Identity(base_transforms.Transform):
         """
         return time_series, targets
 
-    def _invert(self) -> base_transforms.Transform:
+    def _invert(self) -> Transform:
         """
         Invert the identity transformation.
 
@@ -62,7 +62,7 @@ class Identity(base_transforms.Transform):
         return "Identity()"
 
 
-class Normalize(base_transforms.Transform):
+class Normalize(Transform):
     """
     Normalize the input time series data.
 
@@ -157,7 +157,7 @@ class Normalize(base_transforms.Transform):
         else:
             return f"{self.__class__.__name__}({mode}, mean={self.mean.shape}, std={self.std.shape})"
 
-    def _invert(self) -> base_transforms.Transform:
+    def _invert(self) -> Transform:
         """
         Invert the normalization transform.
 
@@ -173,10 +173,10 @@ class Normalize(base_transforms.Transform):
         if self.mean is None or self.std is None:
             raise RuntimeError("Cannot invert transform before fitting.")
 
-        return base_transforms.Compose([Scale(self.std), Shift(self.mean)])
+        return Compose([Scale(self.std), Shift(self.mean)])
 
 
-class Scale(base_transforms.Transform):
+class Scale(Transform):
     """
     A transformation class that scales the input time series by a given factor.
 
@@ -256,7 +256,7 @@ class Scale(base_transforms.Transform):
         pass
         return time_series * self.scale, targets
 
-    def _invert(self) -> base_transforms.Transform:
+    def _invert(self) -> Transform:
         """
         Return the inverse transformation of the scaling transformation.
 
@@ -284,7 +284,7 @@ class Scale(base_transforms.Transform):
             return f"Scale({self.scale})"
 
 
-class Shift(base_transforms.Transform):
+class Shift(Transform):
     """
     A transformation class that shifts a time series data by a constant value or a tensor.
 
