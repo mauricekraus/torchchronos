@@ -7,79 +7,94 @@ from typing import Any
 
 import numpy as np
 from torch import Tensor
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, Subset
+from .prepareable_dataset import PrepareableDataset
 
 
-class DatasetFrequency(Enum):
-    """The relative frequency of a dataset in a collection of multiple ones."""
-
-    ALL_EQUAL = auto()
-    PROPORTIONAL_TO_SAMPLES = auto()
-    ALL_TYPES_EQUAL_PROPORTIONAL_TO_SAMPLES = auto()
-
-
-class ShuffleType(Enum):
-    """The relative frequency of a dataset in a collection of multiple ones."""
-
-    # Never shuffle, go sequentially through dataset list and content each
+class ShuffleMode(Enum):
     DISABLED = auto()
-    # shuffle within dataset, but go sequentially through dataset list
     WITHIN_DATASET = auto()
-    # shuffle within datasets and across datasets
     ACROSS_DATASETS = auto()
 
 
-class ConcatDataset(Dataset):
-    """Class for concatenating multiple datasets into one long one."""
+class FrequencyMode(Enum):
+    ALL_EQUAL = auto()
+    PROPORTIONAL_TO_SAMPLE = auto()
 
-    def __init__(self, datasets: list[Dataset], fractions: float | Sequence[float] = 1.0) -> None:
-        """
-        Initialize a new instance of the ConcatDataset class.
 
-        Args:
-            datasets (list[Dataset]): The datasets to concatenate.
-            fractions (float | Sequence[float], optional): The fraction of each dataset to use.
-                Must be between 0 and 1. If it is a float, the same fraction is used for all datasets.
-                If it is a sequence of floats, each dataset can have a different fraction.
-                Defaults to 1.0.
+class ConcatDataset(PrepareableDataset):
 
-        Raises
-        ------
-            ValueError: If the number of datasets is zero.
-            ValueError: If the number of datasets does not match the number of fractions.
+    def __init__(
+        self,
+        datasets: list[PrepareableDataset],
+        frequency: float | Sequence[float] | FrequencyMode = FrequencyMode.PROPORTIONAL_TO_SAMPLE,
+        shuffle: ShuffleMode = ShuffleMode.DISABLED,
+    ) -> None:
 
-        """
         if not datasets:
             raise ValueError("The number of datasets must be greater than zero")
-        if isinstance(fractions, float):
-            fractions = [fractions] * len(datasets)
-        else:
-            if len(datasets) != len(fractions):
-                raise ValueError(
-                    "The number of datasets must match the number of percentages "
-                    f" but was {len(datasets)} and {len(fractions)} respectively"
-                )
+        if frequency is FrequencyMode.PROPORTIONAL_TO_SAMPLE:
+            frequency = [1.0] * len(datasets)
+        elif isinstance(frequency, float):
+            assert len(datasets) == 1
+            frequency = [frequency]
+        elif isinstance(frequency, list) and len(datasets) != len(frequency):
+            raise ValueError(
+                "The number of datasets must match the number of percentages "
+                f" but was {len(datasets)} and {len(frequency)} respectively"
+            )
 
         self.datasets = datasets
-        self.fractions = fractions
+        self.frequency = frequency
+        self.shuffle = shuffle
 
-        # The number of data points in each dataset
-        self.lengths = [math.ceil(len(d) * p) for d, p in zip(self.datasets, self.fractions)]
-        self.total_length = sum(self.lengths)
+        super().__init__()
 
-        self.start_indices = [0]
+    def _prepare(self) -> None:
+        for dataset in self.datasets:
+            if isinstance(dataset, PrepareableDataset):
+                dataset.prepare()
+
+    def _load(self) -> None:
+        def _build_indicies(dataset: Dataset, fraction: float) -> Dataset:
+            if fraction == 1.0:
+                return np.arange(len(dataset))
+            else:
+                indicies = None
+                while fraction >= 1:
+                    if indicies is None:
+                        indicies = np.arange(len(dataset))
+                    else:
+                        indicies = np.concatenate((indicies, np.arange(len(dataset))))
+                    fraction -= 1
+
+                part_indicies = np.random.permutation(len(dataset))[: math.ceil(len(dataset) * fraction)]
+                indicies = part_indicies if indicies is None else np.concatenate((indicies, part_indicies))
+                if self.shuffle == ShuffleMode.WITHIN_DATASET:
+                    indicies = np.random.permutation(indicies)
+                return indicies
+
+        for dataset in self.datasets:
+            if isinstance(dataset, PrepareableDataset):
+                dataset.load()
+
+        if self.frequency == FrequencyMode.ALL_EQUAL:
+            longest_dataset = max(len(dataset) for dataset in self.datasets)
+            self.frequency = [longest_dataset / len(dataset) for dataset in self.datasets]
+
+        self.datasets = [
+            Subset(dataset, _build_indicies(dataset, fraction))
+            for dataset, fraction in zip(self.datasets, self.frequency)
+        ]
+
+        self.total_length = sum(len(dataset) for dataset in self.datasets)
         self.cumulative_lengths = np.cumsum([len(dataset) for dataset in self.datasets])
+        self.indices = np.arange(self.total_length)
+        if self.shuffle == ShuffleMode.ACROSS_DATASETS:
+            np.random.shuffle(self.indices)
 
-    def __getitem__(self, index: int) -> tuple[Any, Tensor]:
-        """Get an item from the concatenated dataset.
-
-        Args:
-            index (int): The index of the item to retrieve.
-
-        Returns
-        -------
-            tuple[Any, Tensor]: The item from the dataset at the given index.
-        """
+    def _get_item(self, index: int) -> tuple[Any, Tensor]:
+        index = self.indices[index]
         dataset_index = np.searchsorted(self.cumulative_lengths, index, side="right")
 
         if dataset_index > 0:
@@ -90,10 +105,4 @@ class ConcatDataset(Dataset):
         return self.datasets[dataset_index][local_index]
 
     def __len__(self) -> int:
-        """Get the total length of the concatenated dataset.
-
-        Returns
-        -------
-            int: The total length of the concatenated dataset.
-        """
         return self.total_length
