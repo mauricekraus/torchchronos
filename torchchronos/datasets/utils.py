@@ -12,13 +12,10 @@ def save_dataset(dataset: Dataset, name: str, save_path: Path | None = None) -> 
     Save a dataset to a file.
 
     Args:
-        dataset (Dataset): The dataset to save.
-        name (str): The name of the file.
-        save_path (Path, optional): The path to save the file to. Defaults to None.
+        dataset: The dataset to save.
+        name: The name of the file.
+        save_path: The path to save the file to.
 
-    Returns
-    -------
-    None
     """
     has_targets = True if isinstance(dataset[0], tuple) else False
     data: torch.Tensor = dataset[0][0] if has_targets else dataset[0]
@@ -51,11 +48,10 @@ def get_meta_data(dataset: Dataset) -> dict:
     Get the meta data of a dataset.
 
     Args:
-        dataset (Dataset): The dataset to get the meta data from.
+        dataset: The dataset to get the meta data from.
 
     Returns
-    -------
-    dict: The meta data of the dataset.
+        dict: The meta data of the dataset.
     """
     meta_data = {}
     meta_data["length"] = len(dataset)

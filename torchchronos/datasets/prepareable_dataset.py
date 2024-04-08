@@ -12,12 +12,11 @@ class PrepareableDataset(ABC, Dataset):
     """
     A base class for prepareable datasets.
 
-    Attributes
-    ----------
-        is_prepared (bool): Indicates whether the dataset has been prepared.
-        is_loaded (bool): Indicates whether the dataset has been loaded.
-        _transform (list[Transform]): The list of transforms to be applied to the dataset.
-        domain (str, optional): The domain of the dataset.
+    Attributes:
+        is_prepared: Indicates whether the dataset has been prepared.
+        is_loaded: Indicates whether the dataset has been loaded.
+        _transform: The list of transforms to be applied to the dataset.
+        domain: The domain of the dataset.
 
 
     """
@@ -31,11 +30,10 @@ class PrepareableDataset(ABC, Dataset):
         Initialize a new instance of the PrepareableDataset class.
 
         Args:
-            transform (Transform): The transform to be applied to the dataset. Defaults to Identity().
-            domain (str, optional): The domain of the dataset. Defaults to None.
+            transform: The transform to be applied to the dataset. Defaults to Identity().
+            domain: The domain of the dataset.
 
-        Raises
-        ------
+        Raises:
             NotPreparedError: If the dataset is not prepared before it is used.
             NotLoadedError: If the dataset is not loaded before it is used.
         """
@@ -49,8 +47,7 @@ class PrepareableDataset(ABC, Dataset):
         """
         Get the transform to be applied to the dataset.
 
-        Returns
-        -------
+        Returns:
             Transform: The transform to be applied to the dataset.
         """
         return self._transform
@@ -60,14 +57,12 @@ class PrepareableDataset(ABC, Dataset):
         Get an item from the dataset.
 
         Args:
-            idx (int): The index of the item to retrieve.
+            idx: The index of the item to retrieve.
 
-        Returns
-        -------
+        Returns:
             Any: The transformed time series and targets.
 
-        Raises
-        ------
+        Raises:
             NotPreparedError: If the dataset is not prepared before it is used.
             NotLoadedError: If the dataset is not loaded before it is used.
         """
@@ -93,10 +88,9 @@ class PrepareableDataset(ABC, Dataset):
         Abstract method to get an item from the dataset.
 
         Args:
-            idx (int): The index of the item to retrieve.
+            idx : The index of the item to retrieve.
 
-        Returns
-        -------
+        Returns:
             Any: The retrieved item.
         """
         pass
@@ -106,8 +100,7 @@ class PrepareableDataset(ABC, Dataset):
         """
         Abstract method that returns the length of the dataset.
 
-        Returns
-        -------
+        Returns:
             int: The length of the dataset.
         """
         pass
@@ -116,9 +109,6 @@ class PrepareableDataset(ABC, Dataset):
         """
         Prepare the dataset for usage.
 
-        Returns
-        -------
-            None
         """
         if self.is_prepared:
             return
@@ -138,8 +128,7 @@ class PrepareableDataset(ABC, Dataset):
         """
         Load the dataset for usage.
 
-        Raises
-        ------
+        Raises:
             NotPreparedError: If the dataset is not prepared before it is used.
             ValueError: If the transform is not fitted before the dataset is used.
         """

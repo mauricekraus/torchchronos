@@ -26,8 +26,8 @@ class Identity(Transform):
             does not require any parameters.
 
         Args:
-            time_series (torch.Tensor): The input time series.
-            targets (torch.Tensor, optional): The input targets. Defaults to None.
+            time_series: The input time series.
+            targets: The input targets.
         """
         pass
 
@@ -38,12 +38,11 @@ class Identity(Transform):
         Apply the identity transformation to the input time series and targets.
 
         Args:
-            time_series (torch.Tensor): The input time series.
-            targets (torch.Tensor, optional): The input targets. Defaults to None.
+            time_series: The input time series.
+            targets: The input targets.
 
-        Returns
-        -------
-            tuple[torch.Tensor, torch.Tensor | None]: The transformed time series and targets.
+        Returns:
+            The transformed time series and targets.
         """
         return time_series, targets
 
@@ -51,9 +50,8 @@ class Identity(Transform):
         """
         Invert the identity transformation.
 
-        Returns
-        -------
-            Transform: The inverted transformation.
+        Returns:
+            The inverted transformation.
         """
         return self
 
@@ -67,18 +65,16 @@ class Normalize(Transform):
     Normalize the input time series data.
 
     Args:
-        local (bool, optional): If True, perform local normalization. If False, perform global normalization.
+        local: If True, perform local normalization. If False, perform global normalization.
             Defaults to False.
 
-    Attributes
-    ----------
-        local (bool): Indicates whether local or global normalization is performed.
-        mean (torch.Tensor, optional): The mean values used for normalization. None if not yet fitted.
-        std (torch.Tensor, optional): The standard deviation values used for normalization.
+    Attributes:
+        local: Indicates whether local or global normalization is performed.
+        mean: The mean values used for normalization. None if not yet fitted.
+        std: The standard deviation values used for normalization.
                 None if not yet fitted.
 
-    Raises
-    ------
+    Raises:
         RuntimeError: If attempting to transform or invert before fitting.
 
     """
@@ -97,13 +93,8 @@ class Normalize(Transform):
         If self.local is False, the mean and standard deviation are computed across the time dimension.
 
         Args:
-            time_series (torch.Tensor): The input time series data.
-            targets (torch.Tensor, optional): The target values associated with the time series data.
-                Defaults to None.
-
-        Returns
-        -------
-            None
+            time_series: The input time series data.
+            targets: The target values associated with the time series data.
 
         """
         if self.local:
@@ -118,14 +109,12 @@ class Normalize(Transform):
         Apply the normalization transformation to the input time series data.
 
         Args:
-            time_series (torch.Tensor): The input time series data.
-            targets (torch.Tensor, optional): The target values associated with the time series data.
-                Defaults to None.
+            time_series: The input time series data.
+            targets : The target values associated with the time series data.
 
-        Returns
-        -------
-            tuple[torch.Tensor, torch.Tensor | None]:
-                    The normalized time series data and the targets (if provided).
+
+        Returns:
+            The normalized time series data and the targets (if provided).
 
         """
         if self.local:
@@ -146,9 +135,8 @@ class Normalize(Transform):
         """
         Return a string representation of the Normalize object.
 
-        Returns
-        -------
-            str: The string representation of the Normalize object.
+        Returns:
+           The string representation of the Normalize object.
 
         """
         if self.mean is None or self.std is None:
@@ -161,12 +149,10 @@ class Normalize(Transform):
         """
         Invert the normalization transform.
 
-        Returns
-        -------
-            Transform: The inverted normalization transform.
+        Returns:
+            The inverted normalization transform.
 
-        Raises
-        ------
+        Raises:
             RuntimeError: If attempting to invert before fitting.
 
         """
@@ -180,12 +166,8 @@ class Scale(Transform):
     """
     A transformation class that scales the input time series by a given factor.
 
-    Args:
-        scale (float or torch.Tensor): The scaling factor to apply to the time series.
-
-    Attributes
-    ----------
-        scale (float or torch.Tensor): The scaling factor to apply to the time series.
+    Attributes:
+        scale: The scaling factor to apply to the time series.
 
     """
 
@@ -194,7 +176,7 @@ class Scale(Transform):
         Initialize the Scale transformation.
 
         Args:
-            scale (float or torch.Tensor): The scaling factor to apply to the time series.
+            scale: The scaling factor to apply to the time series.
         """
         super().__init__(True)
         self.scale: float | torch.Tensor = scale
@@ -207,9 +189,9 @@ class Scale(Transform):
         require any parameters.
 
         Args:
-            time_series (torch.Tensor): The input time series to fit the scaling transformation to.
-            targets (torch.Tensor, optional): The target values associated with the time series.
-                Defaults to None.
+            time_series: The input time series to fit the scaling transformation to.
+            targets: The target values associated with the time series.
+
         """
         pass
 
@@ -218,13 +200,12 @@ class Scale(Transform):
         Apply the scaling transformation to the input time series.
 
         Args:
-            time_series (torch.Tensor): The input time series to apply the scaling transformation to.
-            targets (torch.Tensor, optional): The target values associated with the time series.
-                Defaults to None.
+            time_series: The input time series to apply the scaling transformation to.
+            targets: The target values associated with the time series.
 
-        Returns
-        -------
-            torch.Tensor: The scaled time series.
+
+        Returns:
+            The scaled time series.
         """
         pass
 
@@ -232,9 +213,8 @@ class Scale(Transform):
         """
         Return the inverse transformation of the scaling transformation.
 
-        Returns
-        -------
-            Scale: The inverse scaling transformation.
+        Returns:
+            The inverse scaling transformation.
         """
         pass
 
@@ -245,13 +225,12 @@ class Scale(Transform):
         Apply the scaling transformation to the input time series.
 
         Args:
-            time_series (torch.Tensor): The input time series to apply the scaling transformation to.
-            targets (torch.Tensor, optional): The target values associated with the time series.
-                Defaults to None.
+            time_series: The input time series to apply the scaling transformation to.
+            targets: The target values associated with the time series.
 
-        Returns
-        -------
-            tuple[torch.Tensor, torch.Tensor | None]: The scaled time series and the targets (if provided).
+
+        Returns:
+            The scaled time series and the targets (if provided).
         """
         pass
         return time_series * self.scale, targets
@@ -260,9 +239,8 @@ class Scale(Transform):
         """
         Return the inverse transformation of the scaling transformation.
 
-        Returns
-        -------
-            Transform: The inverse scaling transformation.
+        Returns:
+            The inverse scaling transformation.
         """
         return Scale(1 / self.scale)
 
@@ -273,9 +251,8 @@ class Scale(Transform):
         If the scale is a tensor, the shape of the tensor is included in the string representation.
         If the scale is a single value, only the value is included in the string representation.
 
-        Returns
-        -------
-            str: A string representation of the Scale transform.
+        Returns:
+            A string representation of the Scale transform.
         """
         if isinstance(self.scale, torch.Tensor):
             return f"Scale({self.scale.shape})"
@@ -288,12 +265,8 @@ class Shift(Transform):
     """
     A transformation class that shifts a time series data by a constant value or a tensor.
 
-    Args:
-        shift (float or torch.Tensor): The amount by which the time series data is shifted.
-
-    Attributes
-    ----------
-        shift (float or torch.Tensor): The shift value.
+    Attributes:
+        shift: The shift value.
     """
 
     def __init__(self, shift: float | torch.Tensor) -> None:
@@ -301,7 +274,7 @@ class Shift(Transform):
         Initialize the Shift transformation.
 
         Args:
-            shift (float or torch.Tensor): The amount by which the time series data is shifted.
+            shift: The amount by which the time series data is shifted.
         """
         super().__init__(True)
         self.shift: float | torch.Tensor = shift
@@ -314,8 +287,8 @@ class Shift(Transform):
         require any parameters.
 
         Args:
-            time_series (torch.Tensor): The input time series data.
-            targets (torch.Tensor | None): The target data (if applicable).
+            time_series: The input time series data.
+            targets: The target data (if applicable).
         """
         pass
 
@@ -326,13 +299,11 @@ class Shift(Transform):
         Transform the time series data by adding the shift value.
 
         Args:
-            time_series (torch.Tensor): The input time series data.
-            targets (torch.Tensor | None): The target data (if applicable).
+            time_series: The input time series data.
+            targets: The target data (if applicable).
 
-        Returns
-        -------
-            tuple[torch.Tensor, torch.Tensor | None]:
-                The transformed time series data and the targets (if provided).
+        Returns:
+            The transformed time series data and the targets (if provided).
         """
         return time_series + self.shift, targets
 
@@ -340,9 +311,8 @@ class Shift(Transform):
         """
         Return a string representation of the shift transformation.
 
-        Returns
-        -------
-            str: String representation of the Shift transformation.
+        Returns:
+            String representation of the Shift transformation.
         """
         if isinstance(self.shift, torch.Tensor):
             return f"Shift(shift={self.shift.shape})"
@@ -354,8 +324,7 @@ class Shift(Transform):
         """
         Return the inverse transformation of the shift operation.
 
-        Returns
-        -------
-            Shift: The inverse transformation of the shift operation.
+        Returns:
+            The inverse transformation of the shift operation.
         """
         return Shift(-self.shift)

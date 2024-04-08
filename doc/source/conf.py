@@ -61,7 +61,9 @@ source_suffix = [".rst"]
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "pytest": ("https://docs.pytest.org/en/stable", None),
-    # TODO add others, e.g. lighning
+    "torch": ("https://pytorch.org/docs/stable", None),
+    "lightning": ("https://pytorch-lightning.readthedocs.io/en/stable", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
 }
 
 nitpicky = True
@@ -98,3 +100,13 @@ latex_elements = {
 assert "_" not in project, "underscores are not rendered as such in LaTeX"
 assert "_" not in author, "underscores are not rendered as such in LaTeX"
 latex_documents = [("index", "torchchronos.tex", f"{project} Documentation", author, "manual")]
+
+
+# Change the description of the autodoc_typehints directive
+autodoc_typehints = "description"
+
+# -- Options for Napoleon extension ------------------------------------------
+napoleon_numpy_docstring = False
+napoleon_include_init_with_doc = True
+napoleon_include_private_with_doc = True
+napoleon_include_special_with_doc = True

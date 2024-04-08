@@ -1,3 +1,5 @@
 """Init file for lightning."""
 
-__all__ = ["MultiDatasetDataModule"]
+from .dataset_data_module import DatasetDataModule
+
+__all__ = ["DatasetDataModule"]

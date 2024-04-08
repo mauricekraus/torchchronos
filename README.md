@@ -95,7 +95,7 @@ The following features are planned for future releases of torchchronos:
 If you have any feature requests or suggestions, please open an issue on our GitHub page.
 
 ## Docs
-
+https://google.github.io/styleguide/pyguide.html
 TODO
 
 ```shell

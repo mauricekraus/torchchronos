@@ -1,4 +1,7 @@
-"""Class for concatinating multiple datasets."""
+"""Module for concatinating multiple datasets.
+
+With the classes ShuffleMode and FrequencyMode it is possible to specify how the datasets should be combined.
+"""
 
 import math
 from enum import Enum, auto
@@ -12,17 +15,45 @@ from .prepareable_dataset import PrepareableDataset
 
 
 class ShuffleMode(Enum):
+    """The different shuffle modes for the ConcatDataset.
+
+    DISABLED: No shuffling is done.
+    WITHIN_DATASET: The indices are shuffled within each dataset.
+    ACROSS_DATASETS: The indices are shuffled across all datasets.
+    """
+
     DISABLED = auto()
     WITHIN_DATASET = auto()
     ACROSS_DATASETS = auto()
 
 
 class FrequencyMode(Enum):
+    """The different frequency modes for the ConcatDataset.
+
+    ALL_EQUAL: All datasets are used the same number of times.
+    PROPORTIONAL_TO_SAMPLE: The datasets are used according to the given fractions.
+    TODO: Add sampling frequency for types.
+    """
+
     ALL_EQUAL = auto()
     PROPORTIONAL_TO_SAMPLE = auto()
 
 
 class ConcatDataset(PrepareableDataset):
+    """Dataset concating multipe datasets together.
+
+    This class allows to chain multiple datasets togehter. It is possilbe to combine normal torch.Datasets with PrepareableDatests.
+    It is a PrepareableDataset itself, and will call prepare and load on all PrepareableDatasets in the datasets list.
+    There are different ways to combine the datasets. It is possible to use one of the FrequencyModes to specify how often each dataset should be used,
+    or specify a list of floats with the fractions of the datasets to be used.
+    When using a frequenca >= 1, will use the dataset as many times as the integer part of the frequency and sample the rest randomly acroding to the proportion of the fraction.
+    The ShuffleMode can be used to shuffle the indices within each dataset or across all datasets.
+
+    Attributes:
+        datasets: The datasets to be concatenated.
+        frequency: The frequency of the datasets. Can be a float, a list of floats or a FrequencyMode. This describes how much of the according datset is in the new concated dataset.
+        shuffle: The shuffle mode of the dataset.
+    """
 
     def __init__(
         self,
@@ -30,6 +61,16 @@ class ConcatDataset(PrepareableDataset):
         frequency: float | Sequence[float] | FrequencyMode = FrequencyMode.PROPORTIONAL_TO_SAMPLE,
         shuffle: ShuffleMode = ShuffleMode.DISABLED,
     ) -> None:
+        """Initializes the ConcatDataset.
+
+        Args:
+            datasets: The datasets to be concatenated.
+            frequency: The frequency of the datasets. Can be a float, a list of floats or a FrequencyMode. This describes how much of the according datset is in the new concated dataset.
+            shuffle: The shuffle mode of the dataset.
+
+        Raises:
+            ValueError: If the number of datasets is zero.
+            ValueError: If the number of datasets does not match the number of frequencies."""
 
         if not datasets:
             raise ValueError("The number of datasets must be greater than zero")
@@ -51,11 +92,19 @@ class ConcatDataset(PrepareableDataset):
         super().__init__()
 
     def _prepare(self) -> None:
+        """
+        Calls prepare on all PrepareableDatasets in the datasets list."""
         for dataset in self.datasets:
             if isinstance(dataset, PrepareableDataset):
                 dataset.prepare()
 
     def _load(self) -> None:
+        """Loads all PrepareableDatasets in the datasets list and builds the indices.
+
+        This method will call load on all PrepareableDatasets in the datasets list.
+        After that it will use the now availavle length attirbute to determine the indices of the new dataset.
+        If the FreqencyMode is ALL_EQUAL, the longest dataset will be used as the reference length."""
+
         def _build_indicies(dataset: Dataset, fraction: float) -> Dataset:
             if fraction == 1.0:
                 return np.arange(len(dataset))
@@ -94,6 +143,14 @@ class ConcatDataset(PrepareableDataset):
             np.random.shuffle(self.indices)
 
     def _get_item(self, index: int) -> tuple[Any, Tensor]:
+        """Returns the item at the given index.
+
+        The dataset might be shuffled, therefore the index is first looked up in the indecies list.
+        A Search is done to first determine the right dataset and then the local index in the dataset.
+
+        Args:
+            index: The index of the item.
+        """
         index = self.indices[index]
         dataset_index = np.searchsorted(self.cumulative_lengths, index, side="right")
 
@@ -105,4 +162,5 @@ class ConcatDataset(PrepareableDataset):
         return self.datasets[dataset_index][local_index]
 
     def __len__(self) -> int:
+        """Returns the total length of the dataset."""
         return self.total_length

@@ -8,8 +8,7 @@ from torch.utils.data import (
 )
 import lightning as L
 
-from ..datasets.concat_dataset import ConcatDataset
-from ..datasets.prepareable_dataset import PrepareableDataset
+from ..datasets import PrepareableDataset
 
 
 class DatasetDataModule(L.LightningDataModule):

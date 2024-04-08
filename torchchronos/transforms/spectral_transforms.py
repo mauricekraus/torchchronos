@@ -26,12 +26,10 @@ class FourierTransform(Transform):
         does not require any parameters.
 
         Args:
-            time_series (torch.Tensor): The input time series data.
-            targets (torch.Tensor, optional): The target values associated with the time series data.
+            time_series: The input time series data.
+            targets: The target values associated with the time series data.
 
-        Returns
-        -------
-            None
+
         """
         pass
 
@@ -42,13 +40,11 @@ class FourierTransform(Transform):
         Apply the Fourier transform to the given time series data.
 
         Args:
-            time_series (torch.Tensor): The input time series data.
-            targets (torch.Tensor, optional): The target values associated with the time series data.
+            time_series: The input time series data.
+            targets : The target values associated with the time series data.
 
-        Returns
-        -------
-            tuple[torch.Tensor, torch.Tensor | None]: The Fourier transformed
-            data and the targets (if provided).
+        Returns:
+            The Fourier transformed data and the targets (if provided).
         """
         ft = torch.fft.fft(time_series, norm="ortho")
         return ft, targets
@@ -57,9 +53,8 @@ class FourierTransform(Transform):
         """
         Return an instance of the InverseFourierTransform class.
 
-        Returns
-        -------
-            InverseFourierTransform: An instance of the InverseFourierTransform class.
+        Returns:
+            An instance of the InverseFourierTransform class.
         """
         return InverseFourierTransform()
 
@@ -67,9 +62,8 @@ class FourierTransform(Transform):
         """
         Return a string representation of the FourierTransform object.
 
-        Returns
-        -------
-            str: A string representation of the FourierTransform object.
+        Returns:
+            A string representation of the FourierTransform object.
         """
         return "FourierTransform()"
 
@@ -88,12 +82,9 @@ class InverseFourierTransform(Transform):
         require any parameters.
 
         Args:
-            time_series (torch.Tensor): The input time series.
-            targets (torch.Tensor, optional): The target values. Defaults to None.
+            time_series: The input time series.
+            targets: The target values.
 
-        Returns
-        -------
-            None
         """
         pass
 
@@ -104,12 +95,11 @@ class InverseFourierTransform(Transform):
         Apply the inverse Fourier transform to the given time series and targets.
 
         Args:
-            time_series (torch.Tensor): The input time series.
-            targets (torch.Tensor, optional): The target values. Defaults to None.
+            time_series: The input time series.
+            targets: The target values.
 
-        Returns
-        -------
-            tuple[torch.Tensor, torch.Tensor | None]: The transformed time series and targets.
+        Returns:
+            The transformed time series and targets.
         """
         ifft = torch.fft.ifft(time_series, norm="ortho")
         return ifft, targets
@@ -118,9 +108,8 @@ class InverseFourierTransform(Transform):
         """
         Return the Fourier transform.
 
-        Returns
-        -------
-            FourierTransform: The Fourier transform.
+        Returns:
+            The Fourier transform.
         """
         return FourierTransform()
 
@@ -128,8 +117,7 @@ class InverseFourierTransform(Transform):
         """
         Return a string representation of the InverseFourierTransform object.
 
-        Returns
-        -------
-            str: The string representation of the InverseFourierTransform object.
+        Returns:
+            The string representation of the InverseFourierTransform object.
         """
         return "InverseFourierTransform()"

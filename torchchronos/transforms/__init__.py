@@ -12,6 +12,8 @@ from .format_conversion_transforms import ToTorchTensor, ToNumpyArray, To
 from .basic_transforms import Normalize, Identity, Scale, Shift
 from .structure_transforms import Filter, Crop, PadBack, PadFront, SlidingWindow
 
+from .transformation_exceptions import NoInverseError
+
 __all__ = [
     "Compose",
     "Transform",
@@ -32,4 +34,5 @@ __all__ = [
     "PadBack",
     "PadFront",
     "SlidingWindow",
+    "NoInverseError",
 ]

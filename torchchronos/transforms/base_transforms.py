@@ -20,11 +20,10 @@ def get_data_from_dataset(dataset: Dataset) -> tuple[torch.Tensor, torch.Tensor 
     Get the data and targets from a dataset.
 
     Args:
-        dataset (Dataset): The input dataset.
+        dataset: The input dataset.
 
-    Returns
-    -------
-    tuple[torch.Tensor, torch.Tensor | None]: The data and targets from the dataset.
+    Returns:
+        The data and targets from the dataset.
     """
     data = dataset[:]
     if isinstance(data, tuple) and len(data) == 2:
@@ -44,8 +43,8 @@ class Transform(ABC):
     Transforms are used to preprocess time series data before feeding it into a model.
     This class provides the basic structure and methods that all transforms should implement.
 
-    Args:
-        is_fitted (bool, optional): Indicates whether the transform has been fitted. Defaults to False.
+    Attirbutes:
+        is_fitted: Indicates whether the transform has been fitted. Defaults to False.
     """
 
     def __init__(self, is_fitted: bool = False):
@@ -53,7 +52,7 @@ class Transform(ABC):
         Initialize a new instance of the Transform class.
 
         Args:
-            is_fitted (bool, optional): Indicates whether the transform is fitted or not. Defaults to False.
+            is_fitted: Indicates whether the transform is fitted or not. Defaults to False.
         """
         self.is_fitted = is_fitted
         self._invert_transform: "Transform" | None = None
@@ -76,18 +75,16 @@ class Transform(ABC):
         Apply the transformation to the input time series and targets (if provided).
 
         Args:
-            time_series (Dataset | torch.Tensor): The input time series data.
-            targets (torch.Tensor, optional): The target values associated with the time series data.
-                                            Has to be None if time_series is a Dataset.
+            time_series: The input time series data.
+            targets: The target values associated with the time series data.
+                    Has to be None if time_series is a Dataset.
 
-        Returns
-        -------
-            TensorDataset: If a dataset is provided.
-            torch.Tensor: If only the time series is provided.
-            tuple[torch.Tensor, torch.Tensor]: If both the time series and targets are provided.
+        Returns:
+            TensorDatset if a dataset is provided.
+            torch.Tensor if only the time series is provided.
+            tuple[torch.Tensor, torch.Tensor] if both the time series and targets are provided.
 
-        Raises
-        ------
+        Raises:
             AssertionError: If `targets` is provided but `time_series` is an instance of `Dataset`.
         """
         if targets is None:
@@ -102,11 +99,10 @@ class Transform(ABC):
         Add a transform to the composition.
 
         Args:
-            other (Transform): The transform to be added.
+            other: The transform to be added.
 
-        Returns
-        -------
-        Compose: A new composition with the added transform.
+        Returns:
+            A new composition with the added transform.
         """
         return Compose([self, other])
 
@@ -114,9 +110,8 @@ class Transform(ABC):
         """
         Invert the transform.
 
-        Returns
-        -------
-        Transform: The inverted transform.
+        Returns:
+            The inverted transform.
         """
         return self.invert()
 
@@ -127,10 +122,9 @@ class Transform(ABC):
         If the inverted transform has not been computed yet, it is computed and stored for future use.
         The inverted transform is computed by calling the `_invert` method of the current transform object.
         The computed inverted transform is then stored in the `_invert_transform` attribute
-            of the current transform object.
+        of the current transform object.
 
-        Returns
-        -------
+        Returns:
             Transform: The inverted transform.
 
         """
@@ -145,16 +139,11 @@ class Transform(ABC):
         Save the fitted transform object to a file.
 
         Args:
-            name (str): The name of the saved file.
-            path (Path, optional): The path where the file will be saved.
+            name: The name of the saved file.
+            path: The path where the file will be saved.
                                     Default path is ".cache/torchchronos/transforms".
 
-        Returns
-        -------
-            None
-
-        Raises
-        ------
+        Raises:
             Exception: If the transform is not fitted before saving.
 
         """
@@ -176,15 +165,13 @@ class Transform(ABC):
         Load a transform object from a pickle file.
 
         Args:
-            name (str): The name of the transform object.
-            path (Path, optional): The path to the directory containing the pickle file. Default path is used.
+            name: The name of the transform object.
+            path: The path to the directory containing the pickle file. Default path is used.
 
-        Returns
-        -------
+        Returns:
             The loaded transform object.
 
-        Raises
-        ------
+        Raises:
             FileNotFoundError: If the specified pickle file does not exist.
             pickle.UnpicklingError: If there is an error while unpickling the transform object.
         """
@@ -215,15 +202,14 @@ class Transform(ABC):
         Fits and transforms the input time series and optional targets.
 
         Args:
-            time_series (Dataset | torch.Tensor): The input time series data.
-            targets (torch.Tensor, optional): The target values associated with the time series.
+            time_series: The input time series data.
+            targets: The target values associated with the time series.
                         Has to be None if time_series is a Dataset.
 
-        Returns
-        -------
-            TensorDataset: If a dataset is provided.
-            torch.Tensor: If only the time series is provided.
-            tuple[torch.Tensor, torch.Tensor]: If both the time series and targets are provided.
+        Returns:
+            TensorDataset if a dataset is provided.
+            torch.Tensor if only the time series is provided.
+            tuple[torch.Tensor, torch.Tensor] if both the time series and targets are provided.
 
         """
         self.fit(time_series, targets)
@@ -242,13 +228,10 @@ class Transform(ABC):
         Fits the transform to the given time series data.
 
         Args:
-            time_series (Dataset | torch.Tensor): The input time series data to fit the transform on.
-            targets (torch.Tensor, optional): The target values associated with the time series data.
+            time_series: The input time series data to fit the transform on.
+            targets: The target values associated with the time series data.
                         Has to be None if time_series is a Dataset.
 
-        Returns
-        -------
-            None
         """
         if self.is_fitted:
             return
@@ -277,17 +260,15 @@ class Transform(ABC):
         Apply the transformation to the given time series data and optional targets.
 
         Args:
-            time_series (Dataset | torch.Tensor): The input time series data to be transformed.
-            targets (torch.Tensor, optional): The optional targets associated with the time series data.
+            time_series: The input time series data to be transformed.
+            targets: The optional targets associated with the time series data.
 
-        Returns
-        -------
-            TensorDataset: If a dataset is provided.
-            torch.Tensor: If only the time series is provided.
-            tuple[torch.Tensor, torch.Tensor]: If both the time series and targets are provided.
+        Returns:
+            TensorDataset if a dataset is provided.
+            torch.Tensor if only the time series is provided.
+            tuple[torch.Tensor, torch.Tensor] if both the time series and targets are provided.
 
-        Raises
-        ------
+        Raises:
             Exception: If the transform has not been fitted before it is used.
             RuntimeError: If transforming a dataset and targets are provided.
 
@@ -329,9 +310,8 @@ class Transform(ABC):
         """
         Abstract method for a string representation of the transform.
 
-        Returns
-        -------
-            str: The string representation of the object.
+        Returns:
+            The string representation of the object.
         """
         pass
 
@@ -341,12 +321,9 @@ class Transform(ABC):
         Abstract method for fitting the transform to the given time series data.
 
         Args:
-            time_series (torch.Tensor): The input time series data.
-            targets (torch.Tensor, optional): The target values associated with the time series data.
+            time_series: The input time series data.
+            targets: The target values associated with the time series data.
 
-        Returns
-        -------
-            None
         """
         pass
 
@@ -358,14 +335,13 @@ class Transform(ABC):
         Abstract method for performing a transformation on the input time series data.
 
         Args:
-            time_series (torch.Tensor): The input time series to be transformed.
-            targets (torch.Tensor, optional): The target values associated with the time series.
-                Defaults to None.
+            time_series: The input time series to be transformed.
+            targets: The target values associated with the time series.
 
-        Returns
-        -------
-            tuple[torch.Tensor, None]: If only a time series is provided.
-            tuple[torch.Tensor, torch.Tensor]: If both the time series and targets are provided.
+
+        Returns:
+            tuple[torch.Tensor, None] if only a time series is provided.
+            tuple[torch.Tensor, torch.Tensor] if both the time series and targets are provided.
         """
         pass
 
@@ -376,9 +352,6 @@ class Transform(ABC):
 
         This method should be implemented by subclasses to define how the transformation is inverted.
 
-        Returns
-        -------
-            None
         """
         pass
 
@@ -387,12 +360,8 @@ class Compose(Transform):
     """
     A class representing a composition of multiple transforms.
 
-    Args:
-        transforms (list[Transform]): A list of transforms to be applied in sequence.
-
-    Attributes
-    ----------
-        transforms (list[Transform]): The list of transforms in the composition.
+    Attributes:
+        transforms: The list of transforms in the composition.
     """
 
     def __init__(self, transforms: list[Transform]):
@@ -405,11 +374,10 @@ class Compose(Transform):
         Add a transform to the composition.
 
         Args:
-            other (Transform): The transform to be added.
+            other: The transform to be added.
 
-        Returns
-        -------
-            Compose: A new composition with the added transform.
+        Returns:
+            A new composition with the added transform.
         """
         new_compose = Compose([*self.transforms, other])
         return new_compose
@@ -419,11 +387,10 @@ class Compose(Transform):
         Get a transform at the specified index.
 
         Args:
-            index (int): The index of the transform to retrieve.
+            index: The index of the transform to retrieve.
 
-        Returns
-        -------
-            Transform: The transform at the specified index.
+        Returns:
+            The transform at the specified index.
         """
         return self.transforms[index]
 
@@ -435,12 +402,9 @@ class Compose(Transform):
          to fitt all the transforms
 
         Args:
-            time_series (torch.Tensor): The input time series.
-            targets (torch.Tensor, optional): The target values. Defaults to None.
+            time_series: The input time series.
+            targets: The target values.
 
-        Returns
-        -------
-            None
         """
         if self.transforms == []:
             return
@@ -464,12 +428,11 @@ class Compose(Transform):
         Apply the composition of transforms to the given time series and targets.
 
         Args:
-            time_series (torch.Tensor): The input time series.
-            targets (torch.Tensor, optional): The target values. Defaults to None.
+            time_series: The input time series.
+            targets: The target values.
 
-        Returns
-        -------
-            tuple[torch.Tensor, torch.Tensor | None]: The transformed time series and targets.
+        Returns:
+            The transformed time series and targets.
         """
         if targets is None:
             for t in self.transforms:
@@ -486,9 +449,8 @@ class Compose(Transform):
         """
         Invert the composition of transforms.
 
-        Returns
-        -------
-            Transform: The inverted composition of transforms.
+        Returns:
+            The inverted composition of transforms.
         """
         return Compose([~t for t in self.transforms[::-1]])
 
@@ -496,9 +458,8 @@ class Compose(Transform):
         """
         Get a string representation of the composition.
 
-        Returns
-        -------
-            str: The string representation of the composition.
+        Returns:
+           The string representation of the composition.
         """
         format_string = self.__class__.__name__ + "("
         for t in self.transforms:

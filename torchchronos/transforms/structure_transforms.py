@@ -16,8 +16,8 @@ class Crop(Transform):
         Initialize a new instance of the Crop class.
 
         Args:
-            start (int): The starting index of the crop.
-            end (int): The ending index of the crop.
+            start: The starting index of the crop.
+            end: The ending index of the crop.
         """
         super().__init__()
         self.start = start
@@ -28,17 +28,12 @@ class Crop(Transform):
         Fit the crop transformation.
 
         Args:
-            time_series (torch.Tensor): The input time series.
-            targets (torch.Tensor, optional): The target values associated with the time series.
+            time_series: The input time series.
+            targets : The target values associated with the time series.
 
-        Raises
-        ------
+        Raises:
             ValueError: If start or end is a negative integer, or if start is greater than or equal to end,
                         or if end is greater than the length of the time series.
-
-        Returns
-        -------
-            None
 
         """
         if self.start < 0 or self.end < 0:
@@ -55,12 +50,11 @@ class Crop(Transform):
         Apply the crop transformation to the input time series.
 
         Args:
-            time_series (torch.Tensor): The input time series.
-            targets (torch.Tensor, optional): The target values associated with the time series.
+            time_series: The input time series.
+            targets: The target values associated with the time series.
 
-        Returns
-        -------
-            tuple[torch.Tensor, torch.Tensor | None]: The cropped time series and the targets (unchanged).
+        Returns:
+            The cropped time series and the targets (unchanged).
 
         """
         return time_series[:, :, self.start : self.end], targets
@@ -69,8 +63,7 @@ class Crop(Transform):
         """
         Invert the crop transformation.
 
-        Raises
-        ------
+        Raises:
             NoInverseError: If the crop transformation is not invertible.
 
         """
@@ -80,9 +73,8 @@ class Crop(Transform):
         """
         Return a string representation of the Crop object.
 
-        Returns
-        -------
-            str: The string representation of the Crop object.
+        Returns:
+            The string representation of the Crop object.
 
         """
         return f"Crop(start={self.start}, end={self.end})"
@@ -92,10 +84,9 @@ class PadFront(Transform):
     """
     Class to pad the front of the time series with zeros.
 
-    Attributes
-    ----------
-        length (int): The length of the padding to be added.
-        time_series_length (int | None): The length of the time series.
+    Attributes:
+        length: The length of the padding to be added.
+        time_series_length: The length of the time series.
 
     """
 
@@ -104,7 +95,7 @@ class PadFront(Transform):
         Initialize a new instance of the PadFront class.
 
         Args:
-            length (int): The length of the padding to be added.
+            length: The length of the padding to be added.
 
         """
         super().__init__()
@@ -116,13 +107,10 @@ class PadFront(Transform):
         Fit the transformation by determining the length of the time series.
 
         Args:
-            time_series (torch.Tensor): The input time series.
-            targets (torch.Tensor, optional): The target values associated with the time series.
-            Defaults to None.
+            time_series: The input time series.
+            targets: The target values associated with the time series.
 
-        Returns
-        -------
-            None
+
         """
         self.time_series_length = time_series.shape[-1]
 
@@ -133,14 +121,12 @@ class PadFront(Transform):
         Apply the transformation by padding the front of the time series with zeros.
 
         Args:
-            time_series (torch.Tensor): The input time series.
-            targets (torch.Tensor, optional): The target values associated with the time series.
-            Defaults to None.
+            time_series: The input time series.
+            targets: The target values associated with the time series.
 
-        Returns
-        -------
-            tuple[torch.Tensor, torch.Tensor | None]: The transformed time series and
-            targets (if provided).
+
+        Returns:
+            The transformed time series and targets (if provided).
         """
         if self.time_series_length is None:
             raise Exception("Fit must be called before transforming")
@@ -152,12 +138,10 @@ class PadFront(Transform):
         """
         Invert the transformation by cropping the padded front.
 
-        Returns
-        -------
-            Crop: The inverted transformation.
+        Returns:
+            The inverted transformation.
 
-        Raises
-        ------
+        Raises:
             Exception: If the fit method has not been called before inverting.
         """
         if self.time_series_length is None:
@@ -169,9 +153,8 @@ class PadFront(Transform):
         """
         Return a string representation of the PadFront object.
 
-        Returns
-        -------
-            str: The string representation of the PadFront object.
+        Returns:
+            The string representation of the PadFront object.
         """
         return f"{self.__class__.__name__}(length={self.length})"
 
@@ -180,10 +163,9 @@ class PadBack(Transform):
     """
     Class to pad the time series data with zeros at the end.
 
-    Attributes
-    ----------
-        length (int): The length of the padding to be added.
-        time_series_length (int | None): The length of the time series data.
+    Attributes:
+        length: The length of the padding to be added.
+        time_series_length: The length of the time series data.
     """
 
     def __init__(self, length: int) -> None:
@@ -191,7 +173,7 @@ class PadBack(Transform):
         Initialize a new instance of the PadBack class.
 
         Args:
-            length (int): The length of the padding to be added.
+            length: The length of the padding to be added.
         """
         super().__init__()
         self.length = length
@@ -202,8 +184,8 @@ class PadBack(Transform):
         Fit the transformation by determining the length of the time series data.
 
         Args:
-            time_series (torch.Tensor): The input time series data.
-            targets (torch.Tensor, optional): The target data. Defaults to None.
+            time_series : The input time series data.
+            targets: The target data.
         """
         self.time_series_length = time_series.shape[-1]
 
@@ -214,15 +196,13 @@ class PadBack(Transform):
         Apply the transformation by padding the time series data with zeros.
 
         Args:
-            time_series (torch.Tensor): The input time series data.
-            targets (torch.Tensor | None, optional): The target data. Defaults to None.
+            time_series: The input time series data.
+            targets: The target data.
 
-        Returns
-        -------
-            tuple[torch.Tensor, torch.Tensor | None]: The transformed time series data and targets.
+        Returns:
+            The transformed time series data and targets.
 
-        Raises
-        ------
+        Raises:
             Exception: If the fit method has not been called before transforming.
         """
         if self.time_series_length is None:
@@ -235,12 +215,10 @@ class PadBack(Transform):
         """
         Invert the transformation by returning a Crop transform.
 
-        Returns
-        -------
-            Transform: The inverted transformation.
+        Returns:
+            The inverted transformation.
 
-        Raises
-        ------
+        Raises:
             Exception: If the fit method has not been called before inverting.
         """
         if self.time_series_length is None:
@@ -252,9 +230,8 @@ class PadBack(Transform):
         """
         Return a string representation of the PadBack object.
 
-        Returns
-        -------
-            str: The string representation of the object.
+        Returns:
+            The string representation of the object.
         """
         return f"{self.__class__.__name__}(length={self.length})"
 
@@ -263,9 +240,8 @@ class Filter(Transform):
     """
     Class to filter time series data based on a given filter function.
 
-    Attributes
-    ----------
-        filter (Callable): The filter function.
+    Attributes:
+        filter: The filter function.
 
     """
 
@@ -274,7 +250,7 @@ class Filter(Transform):
         Initialize a new instance of the Filter class.
 
         Args:
-            filter (Callable): The filter function to be applied to the time series data.
+            filter: The filter function to be applied to the time series data.
 
         """
         super().__init__(True)
@@ -285,13 +261,9 @@ class Filter(Transform):
         Fit the filter transformation to the given time series data.
 
         Args:
-            time_series (torch.Tensor): The input time series data.
-            targets (torch.Tensor, optional): The target values associated with the time series data.
-            Defaults to None.
+            time_series: The input time series data.
+            targets: The target values associated with the time series data.
 
-        Returns
-        -------
-            None
         """
         pass
 
@@ -302,13 +274,11 @@ class Filter(Transform):
         Apply the filter transformation to the given time series data.
 
         Args:
-            time_series (torch.Tensor): The input time series data.
-            targets (torch.Tensor, optional): The target values associated with the time series data.
-            Defaults to None.
+            time_series: The input time series data.
+            targets: The target values associated with the time series data.
 
-        Returns
-        -------
-            tuple[torch.Tensor, torch.Tensor | None]:
+
+        Returns:
             The filtered time series data and the filtered target values (if provided).
 
         """
@@ -328,12 +298,10 @@ class Filter(Transform):
         """
         Invert the filter transformation.
 
-        Returns
-        -------
-            Transform: The inverted transformation.
+        Returns:
+            The inverted transformation.
 
-        Raises
-        ------
+        Raises:
             NoInverseError: If the filter transformation is not invertible.
 
         """
@@ -343,9 +311,8 @@ class Filter(Transform):
         """
         Return a string representation of the Filter object.
 
-        Returns
-        -------
-            str: The string representation of the object.
+        Returns:
+            The string representation of the object.
 
         """
         return f"{self.__class__.__name__}()"
@@ -355,10 +322,9 @@ class SlidingWindow(Transform):
     """
     Class for applying sliding window segmentation to time series data.
 
-    Attributes
-    ----------
-        window_size (int): The size of the sliding window.
-        step_size (int): The step size between consecutive windows.
+    Attributes:
+        window_size: The size of the sliding window.
+        step_size: The step size between consecutive windows.
     """
 
     def __init__(self, window_size: int, step_size: int) -> None:
@@ -366,8 +332,8 @@ class SlidingWindow(Transform):
         Initialize a new instance of the SlidingWindow class.
 
         Args:
-            window_size (int): The size of the sliding window.
-            step_size (int): The step size between consecutive windows.
+            window_size: The size of the sliding window.
+            step_size: The step size between consecutive windows.
         """
         super().__init__(True)
         self.window_size = window_size
@@ -381,12 +347,9 @@ class SlidingWindow(Transform):
         require any parameters.
 
         Args:
-            time_series (torch.Tensor): The input time series data.
-            targets (torch.Tensor, optional): The target values associated with the time series data.
+            time_series: The input time series data.
+            targets: The target values associated with the time series data.
 
-        Returns
-        -------
-            None
         """
         pass
 
@@ -397,12 +360,11 @@ class SlidingWindow(Transform):
         Apply the sliding window transform to the given time series data.
 
         Args:
-            time_series (torch.Tensor): The input time series data.
-            targets (torch.Tensor, optional): The target values associated with the time series data.
+            time_series: The input time series data.
+            targets: The target values associated with the time series data.
 
-        Returns
-        -------
-            tuple[torch.Tensor, torch.Tensor | None]: A tuple containing the transformed time series data
+        Returns:
+            A tuple containing the transformed time series data
             and the transformed target values (if provided).
 
         """
@@ -436,8 +398,7 @@ class SlidingWindow(Transform):
         """
         Invert the sliding window transform.
 
-        Raises
-        ------
+        Raises:
             NoInverseError: The sliding window transform does not have an inverse.
         """
         raise NoInverseError()
@@ -446,8 +407,7 @@ class SlidingWindow(Transform):
         """
         Return a string representation of the SlidingWindow transform.
 
-        Returns
-        -------
-            str: A string representation of the SlidingWindow transform.
+        Returns:
+            A string representation of the SlidingWindow transform.
         """
         return f"{self.__class__.__name__}(window_size={self.window_size}, step_size={self.step_size})"

@@ -26,12 +26,9 @@ class ToTorchTensor(Transform):
         require any parameters.
 
         Args:
-            time_series (torch.Tensor): The time series data.
-            targets (torch.Tensor, optional): The target data. Defaults to None.
+            time_series: The time series data.
+            targets: The target data.
 
-        Returns
-        -------
-            None
         """
         pass
 
@@ -42,11 +39,10 @@ class ToTorchTensor(Transform):
         Convert the input time series and target data (if provided) into torch tensors.
 
         Args:
-            time_series (torch.Tensor): The time series data.
-            targets (torch.Tensor, optional): The target data. Defaults to None.
+            time_series: The time series data.
+            targets: The target data.
 
-        Returns
-        -------
+        Returns:
             tuple[torch.Tensor, torch.Tensor | None]: The transformed time series and
             target data (if provided).
         """
@@ -69,8 +65,7 @@ class ToTorchTensor(Transform):
         """
         Raise an exception since inversion is not supported for this transformation.
 
-        Raises
-        ------
+        Raises:
             NoInverseError: The inversion of the transformation is not supported.
         """
         raise NoInverseError()
@@ -79,9 +74,8 @@ class ToTorchTensor(Transform):
         """
         Return a string representation of the transformation.
 
-        Returns
-        -------
-            str: The string representation of the transformation.
+        Returns:
+            The string representation of the transformation.
         """
         return f"{self.__class__.__name__}()"
 
@@ -105,12 +99,9 @@ class ToNumpyArray(Transform):
         require any parameters.
 
         Args:
-            time_series (torch.Tensor): The time series data.
-            targets (torch.Tensor, optional): The target data. Defaults to None.
+            time_series: The time series data.
+            targets: The target data.
 
-        Returns
-        -------
-            None
         """
         pass
 
@@ -121,13 +112,11 @@ class ToNumpyArray(Transform):
         Convert the input time series and target data (if provided) into numpy arrays.
 
         Args:
-            time_series (torch.Tensor): The time series data.
-            targets (torch.Tensor, optional): The target data. Defaults to None.
+            time_series: The time series data.
+            targets: The target data.
 
-        Returns
-        -------
-            tuple[np.ndarray, Optional[np.ndarray]]: The transformed time series and
-            target data (if provided).
+        Returns:
+            The transformed time series and target data (if provided).
         """
         if targets is None:
             return time_series.numpy(), None
@@ -138,8 +127,7 @@ class ToNumpyArray(Transform):
         """
         Raise an exception since inversion is not supported for this transformation.
 
-        Raises
-        ------
+        Raises:
             NoInverseError: The inversion of the transformation is not supported.
         """
         raise NoInverseError()
@@ -148,9 +136,8 @@ class ToNumpyArray(Transform):
         """
         Return a string representation of the transformation.
 
-        Returns
-        -------
-            str: The string representation of the transformation.
+        Returns:
+            The string representation of the transformation.
         """
         return f"{self.__class__.__name__}()"
 
@@ -161,9 +148,8 @@ class To(Transform):
 
     This transformation is applied to both time series data and optional target data.
 
-    Attributes
-    ----------
-        torch_attribute (torch.dtype): The torch data type to convert the data to.
+    Attributes:
+        torch_attribute: The torch data type to convert the data to.
     """
 
     def __init__(self, torch_attribute):
@@ -171,7 +157,7 @@ class To(Transform):
         Initialize the To transformation.
 
         Args:
-            torch_attribute (torch.dtype): The torch data type to convert the data to.
+            torch_attribute: The torch data type to convert the data to.
         """
         super().__init__(True)
         self.torch_attribute = torch_attribute
@@ -184,12 +170,9 @@ class To(Transform):
         require any parameters.
 
         Args:
-            time_series (torch.Tensor): The time series data.
-            targets (torch.Tensor, optional): The target data. Defaults to None.
+            time_series: The time series data.
+            targets: The target data.
 
-        Returns
-        -------
-            None
         """
         pass
 
@@ -200,13 +183,11 @@ class To(Transform):
         Convert the input time series and target data (if provided) into the specified torch data type.
 
         Args:
-            time_series (torch.Tensor): The time series data.
-            targets (torch.Tensor, optional): The target data. Defaults to None.
+            time_series: The time series data.
+            targets: The target data.
 
-        Returns
-        -------
-            tuple[torch.Tensor, torch.Tensor | None]: The transformed time series and
-            target data (if provided).
+        Returns:
+            The transformed time series and target data (if provided).
         """
         if targets is None:
             return time_series.to(self.torch_attribute), None
@@ -217,8 +198,7 @@ class To(Transform):
         """
         Raise an exception since inversion is not supported for this transformation.
 
-        Raises
-        ------
+        Raises:
             NoInverseError: The inversion of the transformation is not supported.
         """
         raise NoInverseError()
@@ -227,8 +207,7 @@ class To(Transform):
         """
         Return a string representation of the transformation.
 
-        Returns
-        -------
-            str: The string representation of the transformation.
+        Returns:
+            The string representation of the transformation.
         """
         return f"{self.__class__.__name__}(attribute={self.torch_attribute})"

@@ -9,20 +9,19 @@ import torch
 from ..transforms.base_transforms import Transform
 from ..transforms.basic_transforms import Identity
 from ..transforms.format_conversion_transforms import ToTorchTensor
-from . import prepareable_dataset as pd
+from .prepareable_dataset import PrepareableDataset
 
 
-class CachedDataset(pd.PrepareableDataset):
+class CachedDataset(PrepareableDataset):
     """
     A dataset class for loading cached data.
 
-    Attributes
-    ----------
-        name (str): The name of the dataset.
-        data (torch.Tensor | None): The loaded data.
-        targets (torch.Tensor | None): The loaded targets.
-        return_labels (bool): Whether to return labels along with the data.
-        path (Path): The path to save the cached data.
+    Attributes:
+        name : The name of the dataset.
+        data : The loaded data.
+        targets : The loaded targets.
+        return_labels : Whether to return labels along with the data.
+        path : The path to save the cached data.
     """
 
     def __init__(
@@ -36,14 +35,13 @@ class CachedDataset(pd.PrepareableDataset):
         Initialize a new instance of the CachedDataset class.
 
         Args:
-            name (str): The name of the dataset.
-            save_path (Path | str, optional): The path to save the cached data.
+            name: The name of the dataset.
+            save_path: The path to save the cached data.
                                                 Defaults to ".cache/torchchronos/datasets".
-            return_labels (bool, optional): Whether to return labels along with the data. Defaults to True.
-            transform (Transform, optional): The data transformation to apply. Defaults to Identity().
+            return_labels: Whether to return labels along with the data. Defaults to True.
+            transform: The data transformation to apply. Defaults to Identity().
 
-        Raises
-        ------
+        Raises:
             TypeError: If the save_path is not a string or a Path object.
             FileNotFoundError: If the cached data file does not exist.
         """
@@ -66,10 +64,9 @@ class CachedDataset(pd.PrepareableDataset):
         """
         Load the data from the cached file.
 
-        Returns
-        -------
-            tuple[np.ndarray, None]: The loaded data. Without targets.
-            tuple[np.ndarray, np.ndarray]: The loaded data and targets (if available).
+        Returns:
+            tuple: The loaded data. Without targets.
+            tuple: The loaded data and targets (if available).
 
         """
         data_dict = np.load(self.path / f"{self.name}.npz", mmap_mode="r")
@@ -84,8 +81,7 @@ class CachedDataset(pd.PrepareableDataset):
         """
         Prepare the dataset for loading.
 
-        Raises
-        ------
+        Raises:
             FileNotFoundError: If the cached data file does not exist.
 
         """
@@ -108,15 +104,13 @@ class CachedDataset(pd.PrepareableDataset):
         Get a specific item from the dataset.
 
         Args:
-            index (int): The index of the item to retrieve.
+            index: The index of the item to retrieve.
 
-        Returns
-        -------
+        Returns:
             torch.Tensor: The item of the dataset, without the label.
             tuple[torch.Tensor, torch.Tensor]: The data item or a tuple of data and targets.
 
-        Raises
-        ------
+        Raises:
             Exception: If the data has not been loaded yet.
             Exception: If the targets have not been loaded yet.
 
@@ -139,12 +133,10 @@ class CachedDataset(pd.PrepareableDataset):
         """
         Get the length of the dataset.
 
-        Returns
-        -------
+        Returns:
             int: The length of the dataset.
 
-        Raises
-        ------
+        Raises:
             Exception: If the data has not been loaded yet.
 
         """
