@@ -49,10 +49,47 @@ class ConcatDataset(PrepareableDataset):
     When using a frequenca >= 1, will use the dataset as many times as the integer part of the frequency and sample the rest randomly acroding to the proportion of the fraction.
     The ShuffleMode can be used to shuffle the indices within each dataset or across all datasets.
 
-    Attributes:
-        datasets: The datasets to be concatenated.
-        frequency: The frequency of the datasets. Can be a float, a list of floats or a FrequencyMode. This describes how much of the according datset is in the new concated dataset.
-        shuffle: The shuffle mode of the dataset.
+    Examples:
+        This example shows how to create a dataset containng 3 times the same dataset.
+
+        >>> from torchchronos.datasets import ConcatDataset, AeonClassificationDataset
+        >>> gun_point = AeonClassificationDataset("GunPoint")
+        >>> dataset = ConcatDataset([gun_point], [3.0])
+        >>> dataset.prepare()
+        >>> dataset.load()
+
+        This example shows how to create a dataset containing 3 different datasets. The the amount of each dataset is proportional to the given fractions.
+
+        >>> from torchchronos.datasets import ConcatDataset, AeonClassificationDataset
+        >>>
+        >>> gun_point = AeonClassificationDataset("GunPoint")
+        >>> arrow_head = AeonClassificationDataset("ArrowHead")
+        >>> coffee = AeonClassificationDataset("Coffee")
+        >>> dataset = ConcatDataset([gun_point, arrow_head, coffee], [0.5, 0.3, 0.2])
+        >>> dataset.prepare()
+        >>> dataset.load()
+
+        In the last example each time series of the dataset has a different length. This could run into problems when batches are created.
+        To avoid this, either add a transform to the ConcatDataset or add transformations to the datasets before concatenating them.
+
+        >>> from torchchronos.datasets import ConcatDataset, AeonClassificationDataset
+        >>> from torchchronos.transforms import Crop
+        >>>
+        >>> crop = Crop(0, 100)
+        >>>
+        >>> gun_point = AeonClassificationDataset("GunPoint", transform=crop)
+        >>> arrow_head = AeonClassificationDataset("ArrowHead", transform=crop)
+        >>> coffee = AeonClassificationDataset("Coffee", transform=crop)
+        >>> dataset = ConcatDataset([gun_point, arrow_head, coffee], [0.5, 0.3, 0.2])
+        >>> # or
+        >>> gun_point = AeonClassificationDataset("GunPoint")
+        >>> arrow_head = AeonClassificationDataset("ArrowHead")
+        >>> coffee = AeonClassificationDataset("Coffee")
+        >>> dataset = ConcatDataset([gun_point, arrow_head, coffee], [0.5, 0.3, 0.2], transform=crop)
+        >>>
+        >>> dataset.prepare()
+        >>> dataset.load()
+
     """
 
     def __init__(
@@ -150,6 +187,7 @@ class ConcatDataset(PrepareableDataset):
 
         Args:
             index: The index of the item.
+
         """
         index = self.indices[index]
         dataset_index = np.searchsorted(self.cumulative_lengths, index, side="right")

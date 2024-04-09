@@ -49,6 +49,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
     "sphinx_rtd_theme",
+    "sphinx.ext.viewcode",
 ]
 
 # List of patterns, relative to source directory, that match files and
@@ -104,6 +105,7 @@ latex_documents = [("index", "torchchronos.tex", f"{project} Documentation", aut
 
 # Change the description of the autodoc_typehints directive
 autodoc_typehints = "description"
+
 
 # -- Options for Napoleon extension ------------------------------------------
 napoleon_numpy_docstring = False

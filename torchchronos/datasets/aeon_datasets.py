@@ -26,11 +26,12 @@ class AeonClassificationDataset(PrepareableDataset):
     downloaded and extracted. In the load step, the data is loaded into the memory and transformed. Noth prepare and load
     have to be called before the dataset can be used.
 
-    Attributes:
-        name: The name of the dataset. This name is simillar to the name on the website of the UCR datasets.
-        split: The split of the dataset. This can be 'train', 'test' or None. If None, the whole dataset is loaded.
-        return_labels: Whether to return labels along with the data.
-        transform: The transformation that is applied to each item, when getting an item from the dataset.
+    Args:
+        name: The name of the dataset.
+        split: The split of the dataset.
+        path: The path to save the dataset.
+        return_labels: Whether to return labels along with the data. Defaults to True.
+        transform: The data transformation to apply. Defaults to Identity().
 
     Examples:
         Load the GunPoint dataset and get the first item.
@@ -61,13 +62,6 @@ class AeonClassificationDataset(PrepareableDataset):
     ) -> None:
         """
         Initialize a new instance of the AeonClassificationDataset class.
-
-        Args:
-            name: The name of the dataset.
-            split: The split of the dataset.
-            path: The path to save the dataset.
-            return_labels: Whether to return labels along with the data. Defaults to True.
-            transform: The data transformation to apply. Defaults to Identity().
 
         Raises:
             TypeError: If the `path` argument is not of type `str`, `Path` or 'None'.
