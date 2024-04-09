@@ -6,9 +6,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from ..transforms.base_transforms import Transform
-from ..transforms.basic_transforms import Identity
-from ..transforms.format_conversion_transforms import ToTorchTensor
+from ..transforms import Transform, Identity, ToTorchTensor
 from .prepareable_dataset import PrepareableDataset
 
 

@@ -182,5 +182,5 @@ def test_compose_example():
     dataset.load()
 
     transform = Compose([ToTorchTensor(), SlidingWindow(10, 3), Shift(shift=1)])
-    transform.fit(dataset.data, dataset.targets)
+    transform.fit(dataset._data, dataset._targets)
     transformed_dataset = transform(dataset)
