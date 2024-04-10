@@ -14,12 +14,7 @@ class CachedDataset(PrepareableDataset):
     """
     A dataset class for loading cached data.
 
-    Attributes:
-        name : The name of the dataset.
-        data : The loaded data.
-        targets : The loaded targets.
-        return_labels : Whether to return labels along with the data.
-        path : The path to save the cached data.
+
     """
 
     def __init__(

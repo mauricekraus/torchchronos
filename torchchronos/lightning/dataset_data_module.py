@@ -1,5 +1,3 @@
-from collections.abc import Sequence
-
 import torch
 from torch.utils.data import (
     DataLoader,
@@ -8,10 +6,47 @@ from torch.utils.data import (
 )
 import lightning as L
 
-from ..datasets import PrepareableDataset
+from torchchronos.datasets import PrepareableDataset
 
 
 class DatasetDataModule(L.LightningDataModule):
+    """
+
+    Examples:
+        A simple example where a single dataset is used for training and a fraction is passed for the val and test splits.
+
+        >>> from torchchronos.lightning import DatasetDataModule
+        >>> from torchchronos.datasets import AeonClassificationDataset
+        >>>
+        >>> gun_point = AeonClassificationDataset("GunPoint")
+        >>> ddm = DatasetDataModule(gun_point, val=0.2, test=0.2)
+        >>> ddm.prepare_data()
+        >>> ddm.setup("fit")
+        >>> train_loader = ddm.train_dataloader()
+
+        An example where we have two datasets, one for training and one for testing. Those do not have to be the same dataset.
+        It is not enforced that the datasets have the same size, but it makes sence for training a model to pad them to the same size.
+        This however have to be done in the dataset itself, as the dataloader will only make the handling of the data and setup of the
+        correct dataset splits.
+
+        >>> gun_point = AeonClassificationDataset("GunPoint")
+        >>> wafer = AeonClassificationDataset("Wafer")
+        >>> ddm = DatasetDataModule(gun_point, test=wafer)
+        >>> ddm.prepare_data()
+        >>> ddm.setup("fit")
+        >>> ddm.setup("test")
+        >>>
+        >>> train_loader = ddm.train_dataloader()
+        >>>
+        >>> for batch in train_loader:
+        ...    data, targets = batch
+        >>>
+        >>> print(len(ddm.train_dataset))
+        200
+        >>> print(len(ddm.test_dataset))
+        7164
+    """
+
     def __init__(
         self,
         train: Dataset,
@@ -28,21 +63,37 @@ class DatasetDataModule(L.LightningDataModule):
 
         self.batch_size: int = batch_size
 
-        self.train_dataset: Dataset | None = None
-        self.val_dataset: Dataset | None = None
-        self.test_dataset: Dataset | None = None
+        self._train_dataset: Dataset | None = None
+        self._val_dataset: Dataset | None = None
+        self._test_dataset: Dataset | None = None
         self._shuffle: bool = shuffle
 
     @property
-    def datasets(self) -> Sequence[Dataset]:
-        return self._datasets
+    def train_dataset(self) -> Dataset:
+        if self._train_dataset is None:
+            raise ValueError("Train dataset is not set up")
+        return self._train_dataset
+
+    @property
+    def val_dataset(self) -> Dataset:
+        if self._val_dataset is None:
+            raise ValueError("Validation dataset is not set up")
+        return self._val_dataset
+
+    @property
+    def test_dataset(self) -> Dataset:
+        if self._test_dataset is None:
+            raise ValueError("Test dataset is not set up")
+        return self._test_dataset
 
     def prepare_data(self) -> None:
+        """Some funny comment."""
         for dataset in [self.train, self.val, self.test]:
             if isinstance(dataset, PrepareableDataset):
                 dataset.prepare()
 
     def setup(self, stage: str | None = None) -> None:
+        """Some funny comment."""
         if isinstance(self.train, PrepareableDataset):
             self.train.load()
         if isinstance(self.val, PrepareableDataset):
@@ -60,13 +111,14 @@ class DatasetDataModule(L.LightningDataModule):
             self.train, self.test = random_split(self.train, [1 - self.test, self.test])
 
         if stage == "fit":
-            self.train_dataset = self.train
-            self.val_dataset = self.val
+            self._train_dataset = self.train
+            self._val_dataset = self.val
 
         elif stage == "test":
-            self.test_dataset = self.test
+            self._test_dataset = self.test
 
     def train_dataloader(self) -> DataLoader:
+        """Some funny comment."""
         if self.train_dataset is None:
             raise ValueError("Train dataset is not set up")
 
@@ -78,8 +130,9 @@ class DatasetDataModule(L.LightningDataModule):
         )
 
     def val_dataloader(self) -> DataLoader:
+        """Some funny comment."""
         if self.val_dataset is None:
-            raise ValueError("Val dataset is not set up")
+            raise ValueError("Validation dataset is not set up, or does not exist.")
 
         return DataLoader(
             dataset=self.val_dataset,
@@ -89,8 +142,9 @@ class DatasetDataModule(L.LightningDataModule):
         )
 
     def test_dataloader(self) -> DataLoader:
+        """Some funny comment."""
         if self.test_dataset is None:
-            raise ValueError("Test dataset is not set up")
+            raise ValueError("Test dataset is not set up, or does not exist.")
 
         return DataLoader(
             dataset=self.test_dataset,

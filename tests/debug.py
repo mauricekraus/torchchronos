@@ -13,18 +13,17 @@ from torchchronos.datasets.concat_dataset import ShuffleMode, FrequencyMode
 
 
 gun_point = AeonClassificationDataset("GunPoint")
-gun_point.prepare()
-gun_point.load()
 wafer = AeonClassificationDataset("Wafer")
-wafer.prepare()
-wafer.load()
+ddm = DatasetDataModule(gun_point, test=wafer)
+ddm.prepare_data()
+ddm.setup("fit")
+ddm.setup("test")
 
-cd = ConcatDataset([gun_point, wafer], FrequencyMode.ALL_EQUAL, shuffle=ShuffleMode.ACROSS_DATASETS)
+train_loader = ddm.train_dataloader()
 
-cd.prepare()
-cd.load()
-print(len(cd))
-print(cd.frequency)
+for batch in train_loader:
+    data, targets = batch
+    print(data.shape)
 
-for i in range(10):
-    print(cd[i][0].shape)
+print(len(ddm.train_dataset))
+print(len(ddm.test_dataset))
