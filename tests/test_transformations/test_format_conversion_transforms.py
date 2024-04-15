@@ -1,11 +1,8 @@
-import torch
 import numpy as np
 import pytest
-
+import torch
+from torchchronos.transforms.format_conversion_transforms import To, ToNumpyArray, ToTorchTensor
 from torchchronos.transforms.transformation_exceptions import NoInverseError
-from torchchronos.transforms.format_conversion_transforms import ToTorchTensor, ToNumpyArray, To
-
-
 
 
 def test_ToTorchTensor():

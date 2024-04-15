@@ -8,8 +8,7 @@ from torch.utils.data import Dataset
 
 
 def save_dataset(dataset: Dataset, name: str, save_path: Path | None = None) -> None:
-    """
-    Save a dataset to a file.
+    """Save a dataset to a file.
 
     Args:
         dataset: The dataset to save.
@@ -44,13 +43,12 @@ def save_dataset(dataset: Dataset, name: str, save_path: Path | None = None) -> 
 
 
 def get_meta_data(dataset: Dataset) -> dict:
-    """
-    Get the meta data of a dataset.
+    """Get the meta data of a dataset.
 
     Args:
         dataset: The dataset to get the meta data from.
 
-    Returns
+    Returns:
         dict: The meta data of the dataset.
     """
     meta_data = {}

@@ -1,7 +1,5 @@
 import torch
-import pytest
-
-from torchchronos.transforms.basic_transforms import Identity, Scale, Shift, Normalize
+from torchchronos.transforms.basic_transforms import Identity, Normalize, Scale, Shift
 
 
 def test_identity():
@@ -81,4 +79,3 @@ def test_normalize():
     local_transformer = Normalize(local=True)
     local_transformed_data = local_transformer.transform(data)
     assert torch.allclose(local_transformed_data, (data - torch.mean(data, 2, True)) / (torch.std(data, 2, True) + 1e-5))
-    

@@ -1,26 +1,24 @@
 """Class for using the UCR datasets from the Aeon library."""
 
+import tempfile
 from pathlib import Path
-
 import numpy as np
-import pandas as pd
 import torch
 from aeon.datasets._data_loaders import load_classification, load_forecasting
 
+from torchchronos import dataset_cache_path
 from ..transforms import (
-    Identity,
     Compose,
-    ToTorchTensor,
+    Identity,
     LabelTransform,
+    ToTorchTensor,
     Transform,
 )
-
 from .prepareable_dataset import PrepareableDataset
 
 
 class AeonClassificationDataset(PrepareableDataset):
-    """
-    A Dataset class to load classification datasets from the Aeon library (UCR).
+    """A Dataset class to load classification datasets from the Aeon library (UCR).
 
     This class is a PrepareableDataset and therefore has a prepare and a load step. In the prepare step, the dataset is
     downloaded and extracted. In the load step, the data is loaded into the memory and transformed. Noth prepare and load
@@ -45,10 +43,12 @@ class AeonClassificationDataset(PrepareableDataset):
 
         >>> from torchchronos.transforms import Scale
         >>> scale_transform = Scale(10)
-        >>> dataset = AeonClassificationDataset(name="GunPoint", split="train", transform=scale_transform, return_labels=False)
+        >>> dataset = AeonClassificationDataset(
+        ...     name="GunPoint", split="train", transform=scale_transform, return_labels=False
+        ... )
         >>> dataset.prepare()
         >>> dataset.load()
-        >>> data = dataset[0] # Scaled by 10
+        >>> data = dataset[0]  # Scaled by 10
 
     """
 
@@ -60,8 +60,7 @@ class AeonClassificationDataset(PrepareableDataset):
         return_labels: bool = True,
         transform: Transform = Identity(),
     ) -> None:
-        """
-        Initialize a new instance of the AeonClassificationDataset class.
+        """Initialize a new instance of the AeonClassificationDataset class.
 
         Raises:
             TypeError: If the `path` argument is not of type `str`, `Path` or 'None'.
@@ -88,8 +87,7 @@ class AeonClassificationDataset(PrepareableDataset):
         )
 
     def _get_item(self, idx: int) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
-        """
-        Get an item from the dataset.
+        """Get an item from the dataset.
 
         Args:
             idx: The index of the item to retrieve.
@@ -112,8 +110,7 @@ class AeonClassificationDataset(PrepareableDataset):
             return self._data[idx]
 
     def __len__(self) -> int:
-        """
-        Get the length of the dataset.
+        """Get the length of the dataset.
 
         Returns:
             int: The length of the dataset.
@@ -128,12 +125,10 @@ class AeonClassificationDataset(PrepareableDataset):
 
     def _prepare(self) -> None:
         """Prepare the dataset by downloading and extracting it."""
-
         load_classification(name=self.name, split=self.split, extract_path=self._save_path)
 
     def _load(self) -> None:
-        """
-        Load the dataset and fit the self.transform object to the data and targets.
+        """Load the dataset and fit the self.transform object to the data and targets.
 
         First the already downloaded data is loaded into memory. Then the data is converted to a torch.Tensor.
         With the `LabelTransform` the targets are converted into integer targets from [0, n_classes - 1].
@@ -152,20 +147,14 @@ class AeonClassificationDataset(PrepareableDataset):
 
 
 class MonashForcastingDataset(PrepareableDataset):
-
-    def __init__(self, name: str, path: Path | str | None = None, transform=Identity()):
-        self.data: torch.Tensor | None = None
+    def __init__(self, name: str, path: Path | str = dataset_cache_path, transform=Identity()):
+        self._data: torch.Tensor | None = None
 
         self.name: str = name
-        self.save_path: Path | None = None
-        if path is None:
-            self.save_path = None
-        elif isinstance(path, str):
-            self.save_path = Path(path)
+        if isinstance(path, str):
+            self._save_path = Path(path)
         elif isinstance(path, Path):
-            self.save_path = path
-        else:
-            raise TypeError("The 'path' argument must be of type 'str' or 'Path'.")
+            self._save_path = path
 
         super().__init__(
             transform=transform,
@@ -178,15 +167,25 @@ class MonashForcastingDataset(PrepareableDataset):
         return len(self._data)
 
     def _prepare(self) -> None:
-        load_forecasting(name=self.name, extract_path=self._save_path)
+        if (self._save_path / f"{self.name}.npy").exists():
+            return
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            df = load_forecasting(name=self.name, extract_path=tmpdirname)
+            data = []
+            max_len = max([len(df["series_value"][i]) for i in range(len(df))])
+            for i in range(len(df)):
+                time_series = df["series_value"][i].to_numpy()
+                padded_time_series = np.pad(
+                    time_series, (0, max_len - len(time_series)), "constant", constant_values=(np.nan,)
+                )
+                data.append(padded_time_series)
+
+            data = np.array(data)
+            with open(self._save_path / f"{self.name}.npy", "wb") as f:
+                np.save(f, data)
 
     def _load(self) -> None:
-        data_frame: pd.DataFrame
-        data_frame = load_forecasting(name=self.name, extract_path=self.save_path)
-        print(data_frame["series_value"][0])
+        np_data = np.load(self._save_path / f"{self.name}.npy")
 
-        self.data = data_frame["series_value"][0].to_numpy(dtype=np.float32)
-
-        self.data = ToTorchTensor()(self.data)
-
-        self.transforms.fit(self.data)
+        self._data = ToTorchTensor()(np_data)
+        self.transforms.fit(self._data)

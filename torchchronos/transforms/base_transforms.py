@@ -16,8 +16,7 @@ from torch.utils.data import Dataset, TensorDataset
 
 
 def get_data_from_dataset(dataset: Dataset) -> tuple[torch.Tensor, torch.Tensor | None]:
-    """
-    Get the data and targets from a dataset.
+    """Get the data and targets from a dataset.
 
     Args:
         dataset: The input dataset.
@@ -37,8 +36,7 @@ def get_data_from_dataset(dataset: Dataset) -> tuple[torch.Tensor, torch.Tensor 
 
 
 class Transform(ABC):
-    """
-    Base class for all transforms in the TorchChronos library.
+    """Base class for all transforms in the TorchChronos library.
 
     Transforms are used to preprocess time series data before feeding it into a model.
     This class provides the basic structure and methods that all transforms should implement.
@@ -48,8 +46,7 @@ class Transform(ABC):
     """
 
     def __init__(self, is_fitted: bool = False):
-        """
-        Initialize a new instance of the Transform class.
+        """Initialize a new instance of the Transform class.
 
         Args:
             is_fitted: Indicates whether the transform is fitted or not. Defaults to False.
@@ -71,8 +68,7 @@ class Transform(ABC):
     def __call__(
         self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None
     ) -> TensorDataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
-        """
-        Apply the transformation to the input time series and targets (if provided).
+        """Apply the transformation to the input time series and targets (if provided).
 
         Args:
             time_series: The input time series data.
@@ -95,8 +91,7 @@ class Transform(ABC):
             return self.transform(time_series, targets)
 
     def __add__(self, other: "Transform") -> "Compose":
-        """
-        Add a transform to the composition.
+        """Add a transform to the composition.
 
         Args:
             other: The transform to be added.
@@ -107,8 +102,7 @@ class Transform(ABC):
         return Compose([self, other])
 
     def __invert__(self) -> "Transform":
-        """
-        Invert the transform.
+        """Invert the transform.
 
         Returns:
             The inverted transform.
@@ -116,8 +110,7 @@ class Transform(ABC):
         return self.invert()
 
     def invert(self) -> "Transform":
-        """
-        Return the inverted transform.
+        """Return the inverted transform.
 
         If the inverted transform has not been computed yet, it is computed and stored for future use.
         The inverted transform is computed by calling the `_invert` method of the current transform object.
@@ -135,8 +128,7 @@ class Transform(ABC):
         return self._invert_transform
 
     def save(self, name: str, path: Path | None = None) -> None:
-        """
-        Save the fitted transform object to a file.
+        """Save the fitted transform object to a file.
 
         Args:
             name: The name of the saved file.
@@ -161,8 +153,7 @@ class Transform(ABC):
 
     @staticmethod
     def load(name: str, path: Path | None = None):
-        """
-        Load a transform object from a pickle file.
+        """Load a transform object from a pickle file.
 
         Args:
             name: The name of the transform object.
@@ -198,8 +189,7 @@ class Transform(ABC):
     def fit_transform(
         self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None
     ) -> TensorDataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
-        """
-        Fits and transforms the input time series and optional targets.
+        """Fits and transforms the input time series and optional targets.
 
         Args:
             time_series: The input time series data.
@@ -224,8 +214,7 @@ class Transform(ABC):
             return ts_transformed, targets_transformed
 
     def fit(self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None) -> None:
-        """
-        Fits the transform to the given time series data.
+        """Fits the transform to the given time series data.
 
         Args:
             time_series: The input time series data to fit the transform on.
@@ -256,8 +245,7 @@ class Transform(ABC):
     def transform(
         self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None
     ) -> TensorDataset | torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
-        """
-        Apply the transformation to the given time series data and optional targets.
+        """Apply the transformation to the given time series data and optional targets.
 
         Args:
             time_series: The input time series data to be transformed.
@@ -307,8 +295,7 @@ class Transform(ABC):
 
     @abstractmethod
     def __repr__(self) -> str:
-        """
-        Abstract method for a string representation of the transform.
+        """Abstract method for a string representation of the transform.
 
         Returns:
             The string representation of the object.
@@ -317,8 +304,7 @@ class Transform(ABC):
 
     @abstractmethod
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
-        """
-        Abstract method for fitting the transform to the given time series data.
+        """Abstract method for fitting the transform to the given time series data.
 
         Args:
             time_series: The input time series data.
@@ -331,8 +317,7 @@ class Transform(ABC):
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
-        """
-        Abstract method for performing a transformation on the input time series data.
+        """Abstract method for performing a transformation on the input time series data.
 
         Args:
             time_series: The input time series to be transformed.
@@ -347,8 +332,7 @@ class Transform(ABC):
 
     @abstractmethod
     def _invert(self) -> None:
-        """
-        Abstract method to invert the transformation.
+        """Abstract method to invert the transformation.
 
         This method should be implemented by subclasses to define how the transformation is inverted.
 
@@ -357,8 +341,7 @@ class Transform(ABC):
 
 
 class Compose(Transform):
-    """
-    A class representing a composition of multiple transforms.
+    """A class representing a composition of multiple transforms.
 
     Attributes:
         transforms: The list of transforms in the composition.
@@ -370,8 +353,7 @@ class Compose(Transform):
         self.transforms: list[Transform] = transforms
 
     def __add__(self, other: Transform) -> "Compose":
-        """
-        Add a transform to the composition.
+        """Add a transform to the composition.
 
         Args:
             other: The transform to be added.
@@ -383,8 +365,7 @@ class Compose(Transform):
         return new_compose
 
     def __getitem__(self, index: int) -> Transform:
-        """
-        Get a transform at the specified index.
+        """Get a transform at the specified index.
 
         Args:
             index: The index of the transform to retrieve.
@@ -395,8 +376,7 @@ class Compose(Transform):
         return self.transforms[index]
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
-        """
-        Fit the composition of transforms to the given time series and targets.
+        """Fit the composition of transforms to the given time series and targets.
 
         The method fits and applies each transformation except the last one to the input data,
          to fitt all the transforms
@@ -424,8 +404,7 @@ class Compose(Transform):
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
-        """
-        Apply the composition of transforms to the given time series and targets.
+        """Apply the composition of transforms to the given time series and targets.
 
         Args:
             time_series: The input time series.
@@ -446,8 +425,7 @@ class Compose(Transform):
             return time_series, targets
 
     def _invert(self) -> Transform:
-        """
-        Invert the composition of transforms.
+        """Invert the composition of transforms.
 
         Returns:
             The inverted composition of transforms.
@@ -455,8 +433,7 @@ class Compose(Transform):
         return Compose([~t for t in self.transforms[::-1]])
 
     def __repr__(self) -> str:
-        """
-        Get a string representation of the composition.
+        """Get a string representation of the composition.
 
         Returns:
            The string representation of the composition.

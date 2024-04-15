@@ -2,8 +2,8 @@
 
 from .aeon_datasets import AeonClassificationDataset
 from .cached_datasets import CachedDataset
-from .prepareable_dataset import PrepareableDataset, NotPreparedError, NotLoadedError
 from .concat_dataset import ConcatDataset, FrequencyMode, ShuffleMode
+from .prepareable_dataset import NotLoadedError, NotPreparedError, PrepareableDataset
 
 __all__ = [
     "AeonClassificationDataset",

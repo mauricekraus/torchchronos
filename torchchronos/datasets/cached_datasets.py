@@ -6,13 +6,12 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from ..transforms import Transform, Identity, ToTorchTensor
+from ..transforms import Identity, ToTorchTensor, Transform
 from .prepareable_dataset import PrepareableDataset
 
 
 class CachedDataset(PrepareableDataset):
-    """
-    A dataset class for loading cached data.
+    """A dataset class for loading cached data.
 
 
     """
@@ -24,8 +23,7 @@ class CachedDataset(PrepareableDataset):
         return_labels: bool = True,
         transform: Transform = Identity(),
     ) -> None:
-        """
-        Initialize a new instance of the CachedDataset class.
+        """Initialize a new instance of the CachedDataset class.
 
         Args:
             name: The name of the dataset.
@@ -54,8 +52,7 @@ class CachedDataset(PrepareableDataset):
         super().__init__(transform=transform)
 
     def _get_data(self) -> tuple[np.ndarray, None] | tuple[np.ndarray, np.ndarray]:
-        """
-        Load the data from the cached file.
+        """Load the data from the cached file.
 
         Returns:
             tuple: The loaded data. Without targets.
@@ -71,8 +68,7 @@ class CachedDataset(PrepareableDataset):
             return data, None
 
     def _prepare(self) -> None:
-        """
-        Prepare the dataset for loading.
+        """Prepare the dataset for loading.
 
         Raises:
             FileNotFoundError: If the cached data file does not exist.
@@ -93,8 +89,7 @@ class CachedDataset(PrepareableDataset):
         self.transforms.fit(self.data, self.targets)
 
     def _get_item(self, index: int) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
-        """
-        Get a specific item from the dataset.
+        """Get a specific item from the dataset.
 
         Args:
             index: The index of the item to retrieve.
@@ -123,8 +118,7 @@ class CachedDataset(PrepareableDataset):
             return self.data[index]
 
     def __len__(self) -> int:
-        """
-        Get the length of the dataset.
+        """Get the length of the dataset.
 
         Returns:
             int: The length of the dataset.

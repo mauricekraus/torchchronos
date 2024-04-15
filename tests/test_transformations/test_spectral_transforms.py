@@ -1,5 +1,4 @@
 import torch
-
 from torchchronos.transforms.spectral_transforms import FourierTransform, InverseFourierTransform
 
 

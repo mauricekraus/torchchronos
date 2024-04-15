@@ -1,14 +1,14 @@
-import torch
-import pytest
 import tempfile
 from pathlib import Path
 
-from torchchronos.transforms.base_transforms import Transform, Compose
+import pytest
+import torch
+from torch.utils.data import TensorDataset
+from torchchronos.datasets.aeon_datasets import AeonClassificationDataset
+from torchchronos.transforms.base_transforms import Compose, Transform
+from torchchronos.transforms.basic_transforms import Scale, Shift
 from torchchronos.transforms.format_conversion_transforms import ToTorchTensor
 from torchchronos.transforms.structure_transforms import SlidingWindow
-from torchchronos.transforms.basic_transforms import Shift, Scale
-from torchchronos.datasets.aeon_datasets import AeonClassificationDataset
-from torch.utils.data import TensorDataset
 
 transform = Shift(5)
 data = torch.randn(100, 1, 100)

@@ -1,9 +1,9 @@
 import pytest
 import torch
-
-from torchchronos.datasets.prepareable_dataset import PrepareableDataset, NotPreparedError, NotLoadedError
 from torchchronos.datasets.aeon_datasets import AeonClassificationDataset
+from torchchronos.datasets.prepareable_dataset import NotLoadedError, NotPreparedError
 from torchchronos.transforms.basic_transforms import Shift
+
 
 def test_prepareable_dataset_exceptions():
     dataset = AeonClassificationDataset(name="GunPoint")

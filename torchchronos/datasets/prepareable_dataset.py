@@ -9,8 +9,7 @@ from ..transforms import base_transforms, basic_transforms
 
 
 class PrepareableDataset(ABC, Dataset):
-    """
-    A base class for prepareable datasets.
+    """A base class for prepareable datasets.
 
     Attributes:
         is_prepared: Indicates whether the dataset has been prepared.
@@ -26,8 +25,7 @@ class PrepareableDataset(ABC, Dataset):
         transform: base_transforms.Transform = basic_transforms.Identity(),
         domain: str | None = None,
     ) -> None:
-        """
-        Initialize a new instance of the PrepareableDataset class.
+        """Initialize a new instance of the PrepareableDataset class.
 
         Args:
             transform: The transform to be applied to the dataset. Defaults to Identity().
@@ -44,8 +42,7 @@ class PrepareableDataset(ABC, Dataset):
 
     @property
     def transforms(self) -> base_transforms.Transform:
-        """
-        Get the transform to be applied to the dataset.
+        """Get the transform to be applied to the dataset.
 
         Returns:
             Transform: The transform to be applied to the dataset.
@@ -53,8 +50,7 @@ class PrepareableDataset(ABC, Dataset):
         return self._transform
 
     def __getitem__(self, idx: int) -> Any:
-        """
-        Get an item from the dataset.
+        """Get an item from the dataset.
 
         Args:
             idx: The index of the item to retrieve.
@@ -84,8 +80,7 @@ class PrepareableDataset(ABC, Dataset):
 
     @abstractmethod
     def _get_item(self, idx: int) -> Any:
-        """
-        Abstract method to get an item from the dataset.
+        """Abstract method to get an item from the dataset.
 
         Args:
             idx : The index of the item to retrieve.
@@ -97,8 +92,7 @@ class PrepareableDataset(ABC, Dataset):
 
     @abstractmethod
     def __len__(self) -> int:
-        """
-        Abstract method that returns the length of the dataset.
+        """Abstract method that returns the length of the dataset.
 
         Returns:
             int: The length of the dataset.
@@ -106,8 +100,7 @@ class PrepareableDataset(ABC, Dataset):
         pass
 
     def prepare(self) -> None:
-        """
-        Prepare the dataset for usage.
+        """Prepare the dataset for usage.
 
         """
         if self.is_prepared:
@@ -117,16 +110,14 @@ class PrepareableDataset(ABC, Dataset):
 
     @abstractmethod
     def _prepare(self) -> None:
-        """
-        Abstract method to prepare the dataset.
+        """Abstract method to prepare the dataset.
 
         This method should be implemented by subclasses to perform any necessary data preparation steps.
         """
         pass
 
     def load(self) -> None:
-        """
-        Load the dataset for usage.
+        """Load the dataset for usage.
 
         Raises:
             NotPreparedError: If the dataset is not prepared before it is used.
@@ -146,8 +137,7 @@ class PrepareableDataset(ABC, Dataset):
 
     @abstractmethod
     def _load(self) -> None:
-        """
-        Abstract method to load the dataset.
+        """Abstract method to load the dataset.
 
         This method should be implemented by subclasses to define how the dataset is loaded.
         """

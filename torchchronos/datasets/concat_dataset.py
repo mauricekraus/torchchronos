@@ -4,13 +4,16 @@ With the classes ShuffleMode and FrequencyMode it is possible to specify how the
 """
 
 import math
-from enum import Enum, auto
 from collections.abc import Sequence
+from enum import Enum, auto
 from typing import Any
 
 import numpy as np
 from torch import Tensor
 from torch.utils.data import Dataset, Subset
+
+from torchchronos.transforms import Identity, Transform
+
 from .prepareable_dataset import PrepareableDataset
 
 
@@ -97,6 +100,7 @@ class ConcatDataset(PrepareableDataset):
         datasets: list[PrepareableDataset],
         frequency: float | Sequence[float] | FrequencyMode = FrequencyMode.PROPORTIONAL_TO_SAMPLE,
         shuffle: ShuffleMode = ShuffleMode.DISABLED,
+        transform: Transform = Identity(),
     ) -> None:
         """Initializes the ConcatDataset.
 
@@ -107,8 +111,8 @@ class ConcatDataset(PrepareableDataset):
 
         Raises:
             ValueError: If the number of datasets is zero.
-            ValueError: If the number of datasets does not match the number of frequencies."""
-
+        ValueError: If the number of datasets does not match the number of frequencies.
+        """
         if not datasets:
             raise ValueError("The number of datasets must be greater than zero")
         if frequency is FrequencyMode.PROPORTIONAL_TO_SAMPLE:
@@ -125,12 +129,12 @@ class ConcatDataset(PrepareableDataset):
         self.datasets = datasets
         self.frequency = frequency
         self.shuffle = shuffle
+        self.transform = transform
 
         super().__init__()
 
     def _prepare(self) -> None:
-        """
-        Calls prepare on all PrepareableDatasets in the datasets list."""
+        """Calls prepare on all PrepareableDatasets in the datasets list."""
         for dataset in self.datasets:
             if isinstance(dataset, PrepareableDataset):
                 dataset.prepare()
@@ -140,13 +144,14 @@ class ConcatDataset(PrepareableDataset):
 
         This method will call load on all PrepareableDatasets in the datasets list.
         After that it will use the now availavle length attirbute to determine the indices of the new dataset.
-        If the FreqencyMode is ALL_EQUAL, the longest dataset will be used as the reference length."""
+        If the FreqencyMode is ALL_EQUAL, the longest dataset will be used as the reference length.
+        """
 
         def _build_indicies(dataset: Dataset, fraction: float) -> Dataset:
             if fraction == 1.0:
                 return np.arange(len(dataset))
             else:
-                indicies = None
+                indicies = None # np.empty((0, )) und dann kein if/else
                 while fraction >= 1:
                     if indicies is None:
                         indicies = np.arange(len(dataset))
@@ -177,7 +182,8 @@ class ConcatDataset(PrepareableDataset):
         self.cumulative_lengths = np.cumsum([len(dataset) for dataset in self.datasets])
         self.indices = np.arange(self.total_length)
         if self.shuffle == ShuffleMode.ACROSS_DATASETS:
-            np.random.shuffle(self.indices)
+            np.random.shuffle(self.indices) # This is in place
+
 
     def _get_item(self, index: int) -> tuple[Any, Tensor]:
         """Returns the item at the given index.

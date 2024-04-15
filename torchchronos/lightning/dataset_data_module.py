@@ -4,47 +4,45 @@ from torch.utils.data import (
     Dataset,
     random_split,
 )
-import lightning as L
 
+import lightning as L
 from torchchronos.datasets import PrepareableDataset
 
 
 class DatasetDataModule(L.LightningDataModule):
-    """
+    """Examples:
+    A simple example where a single dataset is used for training and a fraction is passed for the val and test splits.
 
-    Examples:
-        A simple example where a single dataset is used for training and a fraction is passed for the val and test splits.
+    >>> from torchchronos.lightning import DatasetDataModule
+    >>> from torchchronos.datasets import AeonClassificationDataset
+    >>>
+    >>> gun_point = AeonClassificationDataset("GunPoint")
+    >>> ddm = DatasetDataModule(gun_point, val=0.2, test=0.2)
+    >>> ddm.prepare_data()
+    >>> ddm.setup("fit")
+    >>> train_loader = ddm.train_dataloader()
 
-        >>> from torchchronos.lightning import DatasetDataModule
-        >>> from torchchronos.datasets import AeonClassificationDataset
-        >>>
-        >>> gun_point = AeonClassificationDataset("GunPoint")
-        >>> ddm = DatasetDataModule(gun_point, val=0.2, test=0.2)
-        >>> ddm.prepare_data()
-        >>> ddm.setup("fit")
-        >>> train_loader = ddm.train_dataloader()
+    An example where we have two datasets, one for training and one for testing. Those do not have to be the same dataset.
+    It is not enforced that the datasets have the same size, but it makes sence for training a model to pad them to the same size.
+    This however have to be done in the dataset itself, as the dataloader will only make the handling of the data and setup of the
+    correct dataset splits.
 
-        An example where we have two datasets, one for training and one for testing. Those do not have to be the same dataset.
-        It is not enforced that the datasets have the same size, but it makes sence for training a model to pad them to the same size.
-        This however have to be done in the dataset itself, as the dataloader will only make the handling of the data and setup of the
-        correct dataset splits.
-
-        >>> gun_point = AeonClassificationDataset("GunPoint")
-        >>> wafer = AeonClassificationDataset("Wafer")
-        >>> ddm = DatasetDataModule(gun_point, test=wafer)
-        >>> ddm.prepare_data()
-        >>> ddm.setup("fit")
-        >>> ddm.setup("test")
-        >>>
-        >>> train_loader = ddm.train_dataloader()
-        >>>
-        >>> for batch in train_loader:
-        ...    data, targets = batch
-        >>>
-        >>> print(len(ddm.train_dataset))
-        200
-        >>> print(len(ddm.test_dataset))
-        7164
+    >>> gun_point = AeonClassificationDataset("GunPoint")
+    >>> wafer = AeonClassificationDataset("Wafer")
+    >>> ddm = DatasetDataModule(gun_point, test=wafer)
+    >>> ddm.prepare_data()
+    >>> ddm.setup("fit")
+    >>> ddm.setup("test")
+    >>>
+    >>> train_loader = ddm.train_dataloader()
+    >>>
+    >>> for batch in train_loader:
+    ...    data, targets = batch
+    >>>
+    >>> print(len(ddm.train_dataset))
+    200
+    >>> print(len(ddm.test_dataset))
+    7164
     """
 
     def __init__(

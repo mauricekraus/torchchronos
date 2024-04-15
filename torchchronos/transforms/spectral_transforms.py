@@ -1,5 +1,4 @@
-"""
-Spectral transforms for time series data.
+"""Spectral transforms for time series data.
 
 Implemeted transforms:
     - FourierTransform: Applies the Fourier transform to time series data.
@@ -19,8 +18,7 @@ class FourierTransform(Transform):
         super().__init__(True)
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
-        """
-        Fits the Fourier transform to the given time series data.
+        """Fits the Fourier transform to the given time series data.
 
         This method does not perform any fitting as the identity transformation
         does not require any parameters.
@@ -36,8 +34,7 @@ class FourierTransform(Transform):
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
-        """
-        Apply the Fourier transform to the given time series data.
+        """Apply the Fourier transform to the given time series data.
 
         Args:
             time_series: The input time series data.
@@ -50,8 +47,7 @@ class FourierTransform(Transform):
         return ft, targets
 
     def _invert(self):
-        """
-        Return an instance of the InverseFourierTransform class.
+        """Return an instance of the InverseFourierTransform class.
 
         Returns:
             An instance of the InverseFourierTransform class.
@@ -59,8 +55,7 @@ class FourierTransform(Transform):
         return InverseFourierTransform()
 
     def __repr__(self) -> str:
-        """
-        Return a string representation of the FourierTransform object.
+        """Return a string representation of the FourierTransform object.
 
         Returns:
             A string representation of the FourierTransform object.
@@ -75,8 +70,7 @@ class InverseFourierTransform(Transform):
         super().__init__(True)
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
-        """
-        Fits the inverse Fourier transform to the given time series and targets.
+        """Fits the inverse Fourier transform to the given time series and targets.
 
         This method does not perform any fitting as the identity transformation does not
         require any parameters.
@@ -91,8 +85,7 @@ class InverseFourierTransform(Transform):
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
-        """
-        Apply the inverse Fourier transform to the given time series and targets.
+        """Apply the inverse Fourier transform to the given time series and targets.
 
         Args:
             time_series: The input time series.
@@ -105,8 +98,7 @@ class InverseFourierTransform(Transform):
         return ifft, targets
 
     def _invert(self):
-        """
-        Return the Fourier transform.
+        """Return the Fourier transform.
 
         Returns:
             The Fourier transform.
@@ -114,8 +106,7 @@ class InverseFourierTransform(Transform):
         return FourierTransform()
 
     def __repr__(self) -> str:
-        """
-        Return a string representation of the InverseFourierTransform object.
+        """Return a string representation of the InverseFourierTransform object.
 
         Returns:
             The string representation of the InverseFourierTransform object.

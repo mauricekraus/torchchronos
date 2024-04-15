@@ -1,10 +1,10 @@
 import tempfile
-import pytest
 from pathlib import Path
-import torch
 
-from torchchronos.datasets.cached_datasets import CachedDataset
+import pytest
+import torch
 from torchchronos.datasets.aeon_datasets import AeonClassificationDataset
+from torchchronos.datasets.cached_datasets import CachedDataset
 from torchchronos.datasets.utils import save_dataset
 
 

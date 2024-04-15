@@ -7,16 +7,14 @@ from .base_transforms import Transform
 
 
 class LabelTransform(Transform):
-    """
-    Class to map labels to integer indices.
+    """Class to map labels to integer indices.
 
     Attributes:
         label_map: A mapping of labels to integer indices.
     """
 
     def __init__(self, label_map: dict[int, int] | None = None) -> None:
-        """
-        Initialize the LabelTransform.
+        """Initialize the LabelTransform.
 
         Args:
             label_map: A mapping of labels to integer indices.
@@ -25,8 +23,7 @@ class LabelTransform(Transform):
         self.label_map = label_map
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
-        """
-        Fit the LabelTransform.
+        """Fit the LabelTransform.
 
         Args:
             time_series: The input time series data.
@@ -46,8 +43,7 @@ class LabelTransform(Transform):
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
-        """
-        Transform the data by mapping labels to integer indices.
+        """Transform the data by mapping labels to integer indices.
 
         Args:
             time_series: The input time series data.
@@ -69,8 +65,7 @@ class LabelTransform(Transform):
         return time_series, new_targets
 
     def _invert(self) -> Transform:
-        """
-        Invert the LabelTransform.
+        """Invert the LabelTransform.
 
         Returns:
             The inverted LabelTransform.
@@ -85,8 +80,7 @@ class LabelTransform(Transform):
         return LabelTransform(label_map)
 
     def __repr__(self) -> str:
-        """
-        Return a string representation of the LabelTransform.
+        """Return a string representation of the LabelTransform.
 
         Returns:
             String representation of the LabelTransform.
@@ -102,8 +96,7 @@ class ComplexToPolar(Transform):
         super().__init__(True)
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
-        """
-        Fit the ComplexToPolar transformation.
+        """Fit the ComplexToPolar transformation.
 
         This method does not perform any fitting as the identity transformation does not
         require any parameters.
@@ -117,8 +110,7 @@ class ComplexToPolar(Transform):
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
-        """
-        Convert the input complex numbers to polar representation.
+        """Convert the input complex numbers to polar representation.
 
         Args:
             time_series: The input time series data.
@@ -134,8 +126,7 @@ class ComplexToPolar(Transform):
         return ts_stacked.type(torch.float32), targets
 
     def _invert(self):
-        """
-        Invert the ComplexToPolar transformation.
+        """Invert the ComplexToPolar transformation.
 
         Returns:
             The inverted transformation.
@@ -143,8 +134,7 @@ class ComplexToPolar(Transform):
         return PolarToComplex()
 
     def __repr__(self) -> str:
-        """
-        Return a string representation of the transformation.
+        """Return a string representation of the transformation.
 
         Returns:
             String representation of the ComplexToPolar transformation.
@@ -160,8 +150,7 @@ class PolarToComplex(Transform):
         super().__init__(True)
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
-        """
-        Fit the PolarToComplex transformation.
+        """Fit the PolarToComplex transformation.
 
         Args:
             time_series: The input time series data.
@@ -172,8 +161,7 @@ class PolarToComplex(Transform):
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
-        """
-        Transform the data from polar representation to complex numbers.
+        """Transform the data from polar representation to complex numbers.
 
         Args:
             time_series: The input time series data.
@@ -191,8 +179,7 @@ class PolarToComplex(Transform):
         return reshaped_ts.type(torch.cfloat), targets
 
     def _invert(self):
-        """
-        Invert the PolarToComplex transformation.
+        """Invert the PolarToComplex transformation.
 
         Returns:
             The inverted transformation.
@@ -200,8 +187,7 @@ class PolarToComplex(Transform):
         return ComplexToPolar()
 
     def __repr__(self) -> str:
-        """
-        Return a string representation of the PolarToComplex transformation.
+        """Return a string representation of the PolarToComplex transformation.
 
         Returns:
             String representation of the PolarToComplex transformation.
@@ -217,8 +203,7 @@ class CombineToComplex(Transform):
         super().__init__(True)
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
-        """
-        Fit the CombineToComplex transformation.
+        """Fit the CombineToComplex transformation.
 
         Args:
             time_series: The input time series data.
@@ -229,8 +214,7 @@ class CombineToComplex(Transform):
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
-        """
-        Transform the data by combining real and imaginary parts into complex numbers.
+        """Transform the data by combining real and imaginary parts into complex numbers.
 
         Args:
             time_series: The input time series data.
@@ -244,8 +228,7 @@ class CombineToComplex(Transform):
         return complex_samples, targets
 
     def _invert(self):
-        """
-        Invert the CombineToComplex transformation.
+        """Invert the CombineToComplex transformation.
 
         Returns:
             The inverted transformation.
@@ -253,10 +236,9 @@ class CombineToComplex(Transform):
         return SplitComplexToRealImag()
 
     def __repr__(self) -> str:
-        """
-        Return a string representation of the CombineToComplex transformation.
+        """Return a string representation of the CombineToComplex transformation.
 
-        Returns
+        Returns:
             String representation of the CombineToComplex transformation.
         """
         return f"{self.__class__.__name__}()"
@@ -270,8 +252,7 @@ class SplitComplexToRealImag(Transform):
         super().__init__(True)
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
-        """
-        Fit the SplitComplexToRealImag transformation.
+        """Fit the SplitComplexToRealImag transformation.
 
         This method does not perform any fitting as the identity transformation does not
         require any parameters.
@@ -286,8 +267,7 @@ class SplitComplexToRealImag(Transform):
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
-        """
-        Split a complex time series into real and imaginary parts.
+        """Split a complex time series into real and imaginary parts.
 
         Args:
             time_series: The input time series data.
@@ -301,8 +281,7 @@ class SplitComplexToRealImag(Transform):
         return flattened_time_series, targets
 
     def _invert(self):
-        """
-        Invert the SplitComplexToRealImag transformation.
+        """Invert the SplitComplexToRealImag transformation.
 
         Returns:
             The inverted transformation.
@@ -310,8 +289,7 @@ class SplitComplexToRealImag(Transform):
         return CombineToComplex()
 
     def __repr__(self) -> str:
-        """
-        Return a string representation of the transformation.
+        """Return a string representation of the transformation.
 
         Returns:
             String representation of the SplitComplexToRealImag transformation.
