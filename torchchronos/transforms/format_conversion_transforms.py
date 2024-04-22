@@ -14,10 +14,11 @@ class ToTorchTensor(Transform):
     """
 
     def __init__(self):
-        """Initialize the ToTorchTensor transformation."""
         super().__init__(True)
 
-    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
+    def _fit(
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> None:
         """Fit the transformation.
 
         This method does not perform any fitting as the identity transformation does not
@@ -67,11 +68,6 @@ class ToTorchTensor(Transform):
         raise NoInverseError()
 
     def __repr__(self) -> str:
-        """Return a string representation of the transformation.
-
-        Returns:
-            The string representation of the transformation.
-        """
         return f"{self.__class__.__name__}()"
 
 
@@ -82,10 +78,11 @@ class ToNumpyArray(Transform):
     """
 
     def __init__(self):
-        """Initialize the ToNumpyArray transformation."""
         super().__init__(True)
 
-    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
+    def _fit(
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> None:
         """Fit the transformation.
 
         This method does not perform any fitting as the identity transformation does not
@@ -124,11 +121,6 @@ class ToNumpyArray(Transform):
         raise NoInverseError()
 
     def __repr__(self) -> str:
-        """Return a string representation of the transformation.
-
-        Returns:
-            The string representation of the transformation.
-        """
         return f"{self.__class__.__name__}()"
 
 
@@ -137,20 +129,17 @@ class To(Transform):
 
     This transformation is applied to both time series data and optional target data.
 
-    Attributes:
+    Args:
         torch_attribute: The torch data type to convert the data to.
     """
 
     def __init__(self, torch_attribute):
-        """Initialize the To transformation.
-
-        Args:
-            torch_attribute: The torch data type to convert the data to.
-        """
         super().__init__(True)
         self.torch_attribute = torch_attribute
 
-    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
+    def _fit(
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> None:
         """Fitsthe transformation.
 
         This method does not perform any fitting as the identity transformation does not
@@ -178,7 +167,9 @@ class To(Transform):
         if targets is None:
             return time_series.to(self.torch_attribute), None
         else:
-            return time_series.to(self.torch_attribute), targets.to(self.torch_attribute)
+            return time_series.to(self.torch_attribute), targets.to(
+                self.torch_attribute
+            )
 
     def _invert(self):
         """Raise an exception since inversion is not supported for this transformation.
@@ -189,9 +180,4 @@ class To(Transform):
         raise NoInverseError()
 
     def __repr__(self) -> str:
-        """Return a string representation of the transformation.
-
-        Returns:
-            The string representation of the transformation.
-        """
         return f"{self.__class__.__name__}(attribute={self.torch_attribute})"

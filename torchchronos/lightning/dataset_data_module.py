@@ -1,3 +1,5 @@
+"""Module for the DatasetDataModule class."""
+
 import torch
 from torch.utils.data import (
     DataLoader,
@@ -10,8 +12,24 @@ from torchchronos.datasets import PrepareableDataset
 
 
 class DatasetDataModule(L.LightningDataModule):
-    """Examples:
-    A simple example where a single dataset is used for training and a fraction is passed for the val and test splits.
+    """A data module for for multiple datasets.
+
+    With this data module, you can train your model on one dataset and test or validate on another dataset.
+    This can also be done in combindation with the Concat dataset, where multiple datasets can be combined
+    into one.
+
+    Args:
+        train: The training dataset.
+        val: The validation dataset. This can either be a float or a dataset. If it is a float, it will be
+        used as the fraction of the training dataset to be used for validation.
+        test: The test dataset. This can either be a float or a dataset. If it is a float, it will be used
+        as the fraction of the training dataset to be used for testing.
+        batch_size: The batch size.
+        shuffle: Whether to shuffle the data.
+
+    Examples:
+    A simple example where a single dataset is used for training and a fraction is passed for the val and
+    test splits.
 
     >>> from torchchronos.lightning import DatasetDataModule
     >>> from torchchronos.datasets import AeonClassificationDataset
@@ -22,10 +40,10 @@ class DatasetDataModule(L.LightningDataModule):
     >>> ddm.setup("fit")
     >>> train_loader = ddm.train_dataloader()
 
-    An example where we have two datasets, one for training and one for testing. Those do not have to be the same dataset.
-    It is not enforced that the datasets have the same size, but it makes sence for training a model to pad them to the same size.
-    This however have to be done in the dataset itself, as the dataloader will only make the handling of the data and setup of the
-    correct dataset splits.
+    An example where we have two datasets, one for training and one for testing. Those do not have to be
+    the same dataset. It is not enforced that the datasets have the same size, but it makes sence for
+    training a model to pad them to the same size. This however have to be done in the dataset itself, as the
+    dataloader will only make the handling of the data and setup of the correct dataset splits.
 
     >>> gun_point = AeonClassificationDataset("GunPoint")
     >>> wafer = AeonClassificationDataset("Wafer")
@@ -37,7 +55,7 @@ class DatasetDataModule(L.LightningDataModule):
     >>> train_loader = ddm.train_dataloader()
     >>>
     >>> for batch in train_loader:
-    ...    data, targets = batch
+    ...     data, targets = batch
     >>>
     >>> print(len(ddm.train_dataset))
     200
@@ -68,36 +86,44 @@ class DatasetDataModule(L.LightningDataModule):
 
     @property
     def train_dataset(self) -> Dataset:
+        """The training dataset."""
         if self._train_dataset is None:
             raise ValueError("Train dataset is not set up")
         return self._train_dataset
 
     @property
     def val_dataset(self) -> Dataset:
+        """The validation dataset."""
         if self._val_dataset is None:
             raise ValueError("Validation dataset is not set up")
         return self._val_dataset
 
     @property
     def test_dataset(self) -> Dataset:
+        """The test dataset."""
         if self._test_dataset is None:
             raise ValueError("Test dataset is not set up")
         return self._test_dataset
 
     def prepare_data(self) -> None:
-        """Some funny comment."""
+        """Prepare the datasets for usage.
+
+        Since the main feature of this library are PrepareableDatasets, this method will call the prepare
+        method on the datasets.
+        """
         for dataset in [self.train, self.val, self.test]:
             if isinstance(dataset, PrepareableDataset):
                 dataset.prepare()
 
     def setup(self, stage: str | None = None) -> None:
-        """Some funny comment."""
-        if isinstance(self.train, PrepareableDataset):
-            self.train.load()
-        if isinstance(self.val, PrepareableDataset):
-            self.val.load()
-        if isinstance(self.test, PrepareableDataset):
-            self.test.load()
+        """Set up the datasets for usage.
+
+        First all load methods are called on the datasets, then the datasets are split into train, val and
+        test sets.
+        """
+        for dataset in [self.train, self.val, self.test]:
+            if isinstance(dataset, PrepareableDataset):
+                dataset.load()
 
         if isinstance(self.val, float) and isinstance(self.test, float):
             self.train, self.val, self.test = random_split(
@@ -116,7 +142,7 @@ class DatasetDataModule(L.LightningDataModule):
             self._test_dataset = self.test
 
     def train_dataloader(self) -> DataLoader:
-        """Some funny comment."""
+        """Get the train dataloader."""
         if self.train_dataset is None:
             raise ValueError("Train dataset is not set up")
 
@@ -128,7 +154,7 @@ class DatasetDataModule(L.LightningDataModule):
         )
 
     def val_dataloader(self) -> DataLoader:
-        """Some funny comment."""
+        """Get the validation dataloader."""
         if self.val_dataset is None:
             raise ValueError("Validation dataset is not set up, or does not exist.")
 
@@ -140,7 +166,7 @@ class DatasetDataModule(L.LightningDataModule):
         )
 
     def test_dataloader(self) -> DataLoader:
-        """Some funny comment."""
+        """Get the test dataloader."""
         if self.test_dataset is None:
             raise ValueError("Test dataset is not set up, or does not exist.")
 
@@ -153,7 +179,7 @@ class DatasetDataModule(L.LightningDataModule):
 
 
 def stack_collate(batch):
-
+    """Collate function for stacking data and targets."""
     data, targets = zip(*batch)
     stacked_data = torch.cat(data)
     stacked_targets = torch.stack(targets)

@@ -49,21 +49,23 @@ class Transform(ABC):
         """Initialize a new instance of the Transform class.
 
         Args:
-            is_fitted: Indicates whether the transform is fitted or not. Defaults to False.
+            is_fitted: Indicates whether the transform is fitted or not. Defaults to False. This can be set
+                by inheriting classes when inverting.
         """
         self.is_fitted = is_fitted
         self._invert_transform: "Transform" | None = None
 
     @overload
-    def __call__(self, time_series: torch.Tensor) -> torch.Tensor: ...
+    def __call__(self, time_series: torch.Tensor) -> torch.Tensor:
+        ...
 
     @overload
-    def __call__(
-        self, time_series: torch.Tensor, targets: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor]: ...
+    def __call__(self, time_series: torch.Tensor, targets: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        ...
 
     @overload
-    def __call__(self, time_series: Dataset) -> Dataset: ...
+    def __call__(self, time_series: Dataset) -> Dataset:
+        ...
 
     def __call__(
         self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None
@@ -176,15 +178,18 @@ class Transform(ABC):
         return transform
 
     @overload
-    def fit_transform(self, time_series: torch.Tensor) -> torch.Tensor: ...
+    def fit_transform(self, time_series: torch.Tensor) -> torch.Tensor:
+        ...
 
     @overload
     def fit_transform(
         self, time_series: torch.Tensor, targets: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor]: ...
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        ...
 
     @overload
-    def fit_transform(self, time_series: Dataset) -> TensorDataset: ...
+    def fit_transform(self, time_series: Dataset) -> TensorDataset:
+        ...
 
     def fit_transform(
         self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None
@@ -232,15 +237,18 @@ class Transform(ABC):
         self.is_fitted = True
 
     @overload
-    def transform(self, time_series: torch.Tensor) -> torch.Tensor: ...
+    def transform(self, time_series: torch.Tensor) -> torch.Tensor:
+        ...
 
     @overload
     def transform(
         self, time_series: torch.Tensor, targets: torch.Tensor
-    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]: ...
+    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+        ...
 
     @overload
-    def transform(self, time_series: Dataset) -> TensorDataset: ...
+    def transform(self, time_series: Dataset) -> TensorDataset:
+        ...
 
     def transform(
         self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None

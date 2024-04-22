@@ -9,20 +9,22 @@ from .transformation_exceptions import NoInverseError
 
 
 class Crop(Transform):
-    """Crop transformation that crops a given portion of the time series."""
+    """Crop transformation that crops a given portion of the time series.
+
+    Args:
+        start: The starting index of the crop.
+        end: The ending index of the crop.
+    """
 
     def __init__(self, start: int, end: int) -> None:
-        """Initialize a new instance of the Crop class.
 
-        Args:
-            start: The starting index of the crop.
-            end: The ending index of the crop.
-        """
         super().__init__()
         self.start = start
         self.end = end
 
-    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
+    def _fit(
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> None:
         """Fit the crop transformation.
 
         Args:
@@ -66,36 +68,26 @@ class Crop(Transform):
         raise NoInverseError("Crop transformation is not invertible")
 
     def __repr__(self) -> str:
-        """Return a string representation of the Crop object.
 
-        Returns:
-            The string representation of the Crop object.
-
-        """
         return f"Crop(start={self.start}, end={self.end})"
 
 
 class PadFront(Transform):
     """Class to pad the front of the time series with zeros.
 
-    Attributes:
+    Args:
         length: The length of the padding to be added.
-        time_series_length: The length of the time series.
 
     """
 
     def __init__(self, length: int) -> None:
-        """Initialize a new instance of the PadFront class.
-
-        Args:
-            length: The length of the padding to be added.
-
-        """
         super().__init__()
         self.length = length
         self.time_series_length: int | None = None
 
-    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
+    def _fit(
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> None:
         """Fit the transformation by determining the length of the time series.
 
         Args:
@@ -140,33 +132,25 @@ class PadFront(Transform):
         return Crop(self.length, self.time_series_length + self.length)
 
     def __repr__(self) -> str:
-        """Return a string representation of the PadFront object.
 
-        Returns:
-            The string representation of the PadFront object.
-        """
         return f"{self.__class__.__name__}(length={self.length})"
 
 
 class PadBack(Transform):
     """Class to pad the time series data with zeros at the end.
 
-    Attributes:
+    Args:
         length: The length of the padding to be added.
-        time_series_length: The length of the time series data.
     """
 
     def __init__(self, length: int) -> None:
-        """Initialize a new instance of the PadBack class.
-
-        Args:
-            length: The length of the padding to be added.
-        """
         super().__init__()
         self.length = length
         self.time_series_length: int | None = None
 
-    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
+    def _fit(
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> None:
         """Fit the transformation by determining the length of the time series data.
 
         Args:
@@ -211,33 +195,24 @@ class PadBack(Transform):
         return Crop(0, self.time_series_length)
 
     def __repr__(self) -> str:
-        """Return a string representation of the PadBack object.
-
-        Returns:
-            The string representation of the object.
-        """
         return f"{self.__class__.__name__}(length={self.length})"
 
 
 class Filter(Transform):
     """Class to filter time series data based on a given filter function.
 
-    Attributes:
+    Args:
         filter: The filter function.
 
     """
 
     def __init__(self, filter: Callable) -> None:
-        """Initialize a new instance of the Filter class.
-
-        Args:
-            filter: The filter function to be applied to the time series data.
-
-        """
         super().__init__(True)
         self.filter: Callable = filter
 
-    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
+    def _fit(
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> None:
         """Fit the filter transformation to the given time series data.
 
         Args:
@@ -286,35 +261,25 @@ class Filter(Transform):
         raise NoInverseError("Filter transformation is not invertible")
 
     def __repr__(self) -> str:
-        """Return a string representation of the Filter object.
-
-        Returns:
-            The string representation of the object.
-
-        """
         return f"{self.__class__.__name__}()"
 
 
 class SlidingWindow(Transform):
     """Class for applying sliding window segmentation to time series data.
 
-    Attributes:
+    Args:
         window_size: The size of the sliding window.
         step_size: The step size between consecutive windows.
     """
 
     def __init__(self, window_size: int, step_size: int) -> None:
-        """Initialize a new instance of the SlidingWindow class.
-
-        Args:
-            window_size: The size of the sliding window.
-            step_size: The step size between consecutive windows.
-        """
         super().__init__(True)
         self.window_size = window_size
         self.step_size = step_size
 
-    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
+    def _fit(
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> None:
         """Fit the sliding window transform to the given time series data.
 
         This method does not perform any fitting as the identity transformation does not
@@ -376,9 +341,4 @@ class SlidingWindow(Transform):
         raise NoInverseError()
 
     def __repr__(self) -> str:
-        """Return a string representation of the SlidingWindow transform.
-
-        Returns:
-            A string representation of the SlidingWindow transform.
-        """
         return f"{self.__class__.__name__}(window_size={self.window_size}, step_size={self.step_size})"

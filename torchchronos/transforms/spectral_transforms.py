@@ -14,7 +14,6 @@ class FourierTransform(Transform):
     """Fourier Transform class that applies the Fourier transform to time series data."""
 
     def __init__(self) -> None:
-        """Initialize a new instance of the FourierTransform class."""
         super().__init__(True)
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
@@ -55,11 +54,7 @@ class FourierTransform(Transform):
         return InverseFourierTransform()
 
     def __repr__(self) -> str:
-        """Return a string representation of the FourierTransform object.
 
-        Returns:
-            A string representation of the FourierTransform object.
-        """
         return "FourierTransform()"
 
 
@@ -106,9 +101,5 @@ class InverseFourierTransform(Transform):
         return FourierTransform()
 
     def __repr__(self) -> str:
-        """Return a string representation of the InverseFourierTransform object.
 
-        Returns:
-            The string representation of the InverseFourierTransform object.
-        """
         return "InverseFourierTransform()"
