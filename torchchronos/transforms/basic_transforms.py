@@ -19,7 +19,9 @@ class Identity(Transform):
     def __init__(self) -> None:
         super().__init__(is_fitted=True)
 
-    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
+    def _fit(
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> None:
         """Fit the identity transformation.
 
         This method does not perform any fitting as the identity transformation
@@ -82,7 +84,9 @@ class Normalize(Transform):
         self.mean: torch.Tensor | None = None
         self.std: torch.Tensor | None = None
 
-    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
+    def _fit(
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> None:
         """Fit the normalization parameters based on the input time series data.
 
         If self.local is True, nothing is done here
@@ -95,8 +99,11 @@ class Normalize(Transform):
         """
         if self.local:
             return
-        self.mean = torch.from_numpy(np.nanmean(time_series, axis=2, keepdims=True))
-        self.std = torch.from_numpy(np.nanstd(time_series, axis=0, keepdims=True) + 1e-5)
+        self.mean = torch.from_numpy(np.nanmean(time_series, axis=0, keepdims=True))
+        self.std = torch.from_numpy(
+            np.nanstd(time_series, axis=0, keepdims=True, ddof=1) + 1e-5
+        )
+        print(self.mean, self.std)
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -127,14 +134,9 @@ class Normalize(Transform):
             return time_series, targets
 
     def __repr__(self) -> str:
-        """Return a string representation of the Normalize object.
 
-        Returns:
-           The string representation of the Normalize object.
-
-        """
+        mode = "local" if self.local else "global"
         if self.mean is None or self.std is None:
-            mode = "local" if self.local else "global"
             return f"{self.__class__.__name__}({mode})"
         else:
             return f"{self.__class__.__name__}({mode}, mean={self.mean.shape}, std={self.std.shape})"
@@ -172,7 +174,9 @@ class Scale(Transform):
         super().__init__(True)
         self.scale: float | torch.Tensor = scale
 
-    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
+    def _fit(
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> None:
         """Fit the scaling transformation to the input time series.
 
         This method does not perform any fitting as the identity transformation does not
@@ -185,7 +189,9 @@ class Scale(Transform):
         """
         pass
 
-    def _transform(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> torch.Tensor:
+    def _transform(
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> torch.Tensor:
         """Apply the scaling transformation to the input time series.
 
         Args:
@@ -262,7 +268,9 @@ class Shift(Transform):
         super().__init__(True)
         self.shift: float | torch.Tensor = shift
 
-    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
+    def _fit(
+        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> None:
         """Fits the shift transformation.
 
         This method does not perform any fitting as the identity transformation does not
