@@ -1,4 +1,18 @@
-"""Base Class for Datsets that have a prepare and a load step."""
+"""Base Class for Datsets that have a prepare and a load step.
+
+This class is the main building block for many further classes that inherit from it. The class has a perpare
+and a load step. In the prepare step actions like downloading data, reading data, and preprocessing data
+should be done. In the load step the data is loaded.
+
+Note:
+    When inheriting from this class keep the following in mind:
+    - The inherited class can ignore the is_prepared and is_loaded attributes, all handeling is done in the
+    base class.
+    - In the load step the passed transformation has to be fitted. This can not be done here, since different
+    classes will have different ways of saving the data such as numpy arrays, torch Tensors, or pandas
+    DataFrames. Therefore, the fitting of the transformation has to be done in the inherited class.
+-
+"""
 
 from abc import ABC, abstractmethod
 from typing import Any
@@ -11,12 +25,15 @@ from ..transforms import base_transforms, basic_transforms
 class PrepareableDataset(ABC, Dataset):
     """A base class for prepareable datasets.
 
+    Args:
+        transform: The transform to be applied to the dataset.
+        domain: The domain of the dataset.
+
     Attributes:
         is_prepared: Indicates whether the dataset has been prepared.
         is_loaded: Indicates whether the dataset has been loaded.
         _transform: The list of transforms to be applied to the dataset.
         domain: The domain of the dataset.
-
 
     """
 
@@ -25,16 +42,6 @@ class PrepareableDataset(ABC, Dataset):
         transform: base_transforms.Transform = basic_transforms.Identity(),
         domain: str | None = None,
     ) -> None:
-        """Initialize a new instance of the PrepareableDataset class.
-
-        Args:
-            transform: The transform to be applied to the dataset. Defaults to Identity().
-            domain: The domain of the dataset.
-
-        Raises:
-            NotPreparedError: If the dataset is not prepared before it is used.
-            NotLoadedError: If the dataset is not loaded before it is used.
-        """
         self.is_prepared: bool = False
         self.is_loaded: bool = False
         self._transform: list[base_transforms.Transform] = transform
@@ -92,17 +99,10 @@ class PrepareableDataset(ABC, Dataset):
 
     @abstractmethod
     def __len__(self) -> int:
-        """Abstract method that returns the length of the dataset.
-
-        Returns:
-            int: The length of the dataset.
-        """
         pass
 
     def prepare(self) -> None:
-        """Prepare the dataset for usage.
-
-        """
+        """Prepare the dataset for usage."""
         if self.is_prepared:
             return
         self._prepare()

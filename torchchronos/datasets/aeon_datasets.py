@@ -158,13 +158,16 @@ class MonashForcastingDataset(PrepareableDataset):
         Load the dataset and transform it.
 
         >>> from torchchronos.transforms import Scale
-        >>> 
+        >>>
         >>> scale_transform = Scale(10)
-        >>> dataset = MonashForcastingDataset(name="sunspot_dataset_without_missing_values", transform=scale_transform)
+        >>> dataset = MonashForcastingDataset(
+        ...     name="sunspot_dataset_without_missing_values", transform=scale_transform
+        ... )
         >>> dataset.prepare()
         >>> dataset.load()
         >>> data = dataset[0]
     """
+
     def __init__(self, name: str, path: Path | str = dataset_cache_path, transform=Identity()):
         self._data: torch.Tensor | None = None
 

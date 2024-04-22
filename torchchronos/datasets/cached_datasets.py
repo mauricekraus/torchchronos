@@ -23,7 +23,7 @@ class CachedDataset(PrepareableDataset):
         save_path: The path to save the cached data.
         return_labels: Whether to return labels along with the data. Defaults to True.
         transform: The data transformation to apply. Defaults to Identity().
-    
+
     Examples:
         Load a dataset from a cache.
 
@@ -31,7 +31,7 @@ class CachedDataset(PrepareableDataset):
         >>> from torchchronos.datasets.utils import save_dataset
         >>> #
         >>> datasets = AeonClassificationDataset(name="GunPoint")
-        
+
     """
 
     def __init__(
@@ -41,7 +41,6 @@ class CachedDataset(PrepareableDataset):
         return_labels: bool = True,
         transform: Transform = Identity(),
     ) -> None:
-
         self.name: str = name
         self.data: torch.Tensor | None = None
         self.targets: torch.Tensor | None = None
@@ -107,20 +106,14 @@ class CachedDataset(PrepareableDataset):
 
         """
         if self.data is None:
-            raise Exception(
-                "The data has to be loaded first, call prepare and load first."
-            )
+            raise Exception("The data has to be loaded first, call prepare and load first.")
 
         if self.return_labels and self.targets is None:
-            raise Exception(
-                "The targets have to be loaded first, call prepare and load first."
-            )
+            raise Exception("The targets have to be loaded first, call prepare and load first.")
 
         if self.return_labels:
             if self.return_labels and self.targets is None:
-                raise Exception(
-                    "The targets have to be loaded first, call prepare and load first."
-                )
+                raise Exception("The targets have to be loaded first, call prepare and load first.")
 
             return self.data[index], self.targets[index]
         else:
@@ -137,8 +130,6 @@ class CachedDataset(PrepareableDataset):
 
         """
         if self.data is None:
-            raise Exception(
-                "The data has to be loaded first, call prepare and load first."
-            )
+            raise Exception("The data has to be loaded first, call prepare and load first.")
 
         return len(self.data)
