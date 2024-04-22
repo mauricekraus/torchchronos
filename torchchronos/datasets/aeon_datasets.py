@@ -2,11 +2,13 @@
 
 import tempfile
 from pathlib import Path
+
 import numpy as np
 import torch
 from aeon.datasets._data_loaders import load_classification, load_forecasting
 
 from torchchronos import dataset_cache_path
+
 from ..transforms import (
     Compose,
     Identity,
@@ -20,9 +22,9 @@ from .prepareable_dataset import PrepareableDataset
 class AeonClassificationDataset(PrepareableDataset):
     """A Dataset class to load classification datasets from the Aeon library (UCR).
 
-    This class is a PrepareableDataset and therefore has a prepare and a load step. In the prepare step, the dataset is
-    downloaded and extracted. In the load step, the data is loaded into the memory and transformed. Noth prepare and load
-    have to be called before the dataset can be used.
+    This class is a PrepareableDataset and therefore has a prepare and a load step. In the prepare step,
+    the dataset is downloaded and extracted. In the load step, the data is loaded into the memory and
+    transformed. Noth prepare and load have to be called before the dataset can be used.
 
     Args:
         name: The name of the dataset.
@@ -39,7 +41,8 @@ class AeonClassificationDataset(PrepareableDataset):
         >>> dataset.load()
         >>> data, label = dataset[0]
 
-        Loat the train split, apply a scaling transformation and only return the data without the respective labels.
+        Loat the train split, apply a scaling transformation and only return the data without the respective
+        labels.
 
         >>> from torchchronos.transforms import Scale
         >>> scale_transform = Scale(10)
@@ -60,11 +63,6 @@ class AeonClassificationDataset(PrepareableDataset):
         return_labels: bool = True,
         transform: Transform = Identity(),
     ) -> None:
-        """Initialize a new instance of the AeonClassificationDataset class.
-
-        Raises:
-            TypeError: If the `path` argument is not of type `str`, `Path` or 'None'.
-        """
         self._data: torch.Tensor | None = None
         self._targets: torch.Tensor | None = None
 
@@ -93,7 +91,8 @@ class AeonClassificationDataset(PrepareableDataset):
             idx: The index of the item to retrieve.
 
         Returns:
-            The item from the dataset. If `return_labels` is True, a tuple of the data and the target is returned.
+            The item from the dataset. If `return_labels` is True, a tuple of the data and the target is
+            returned.
             If not the data is returned, however not in a tuple.
 
         Raises:
@@ -110,14 +109,6 @@ class AeonClassificationDataset(PrepareableDataset):
             return self._data[idx]
 
     def __len__(self) -> int:
-        """Get the length of the dataset.
-
-        Returns:
-            int: The length of the dataset.
-
-        Raises:
-            ValueError: If the data is not loaded.
-        """
         if self._data is None:
             raise ValueError("The data is not loaded. Please load the data before using the dataset.")
 
@@ -147,6 +138,33 @@ class AeonClassificationDataset(PrepareableDataset):
 
 
 class MonashForcastingDataset(PrepareableDataset):
+    """Dataset class for loading datasets from the Monash Repository.
+
+    The dataset that can be downloaded can be checked here: https://forecastingdata.org/
+    However, the datasets are downloaded via the aeon library and therefore the names are slightly different.
+    The dataset names can be checked here:
+    https://github.com/aeon-toolkit/aeon/blob/main/aeon/datasets/tsf_datasets.py
+
+    Since many of the time series have different lengths, the time series are padded with np.nan to the
+    maximum length. This is a PrepareableDataset, in the prepare step the dataset is downloaded, extracted,
+    padded and saved as a .npy file. In the load step, the data is loaded into memory and transformed.
+
+    Args:
+        name: The name of the dataset.
+        path: The path to save the dataset.
+        transform: The data transformation to apply.
+
+    Examples:
+        Load the dataset and transform it.
+
+        >>> from torchchronos.transforms import Scale
+        >>> 
+        >>> scale_transform = Scale(10)
+        >>> dataset = MonashForcastingDataset(name="sunspot_dataset_without_missing_values", transform=scale_transform)
+        >>> dataset.prepare()
+        >>> dataset.load()
+        >>> data = dataset[0]
+    """
     def __init__(self, name: str, path: Path | str = dataset_cache_path, transform=Identity()):
         self._data: torch.Tensor | None = None
 
@@ -161,12 +179,20 @@ class MonashForcastingDataset(PrepareableDataset):
         )
 
     def _get_item(self, idx: int) -> torch.Tensor:
+        """Get an item from the dataset."""
         return self._data[idx]
 
     def __len__(self) -> int:
         return len(self._data)
 
     def _prepare(self) -> None:
+        """Prepare the dataset by downloading and padding np.nan's to it.
+
+        This Method consists of 3 main steps:
+        1. Download the dataset from the Monash Repository. This is done via the Aeon libarary.
+        2. Pad the time series with np.nan's to the maximum length.
+        3. Save the padded time series as a .npy file.
+        """
         if (self._save_path / f"{self.name}.npy").exists():
             return
         with tempfile.TemporaryDirectory() as tmpdirname:
@@ -185,6 +211,7 @@ class MonashForcastingDataset(PrepareableDataset):
                 np.save(f, data)
 
     def _load(self) -> None:
+        """Load the dataset and fit the self.transform object to the data."""
         np_data = np.load(self._save_path / f"{self.name}.npy")
 
         self._data = ToTorchTensor()(np_data)

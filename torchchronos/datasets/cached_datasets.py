@@ -13,7 +13,25 @@ from .prepareable_dataset import PrepareableDataset
 class CachedDataset(PrepareableDataset):
     """A dataset class for loading cached data.
 
+    This class is a PrepareableDataset and therefore has a prepare and a load step.
+    In the prepare step, it is checked whether the path to the data exists.
+    In the load step, the data is loaded into the memory and transformed.
+    Currently only numpy files are supported.
 
+    Args:
+        name: The name of the dataset.
+        save_path: The path to save the cached data.
+        return_labels: Whether to return labels along with the data. Defaults to True.
+        transform: The data transformation to apply. Defaults to Identity().
+    
+    Examples:
+        Load a dataset from a cache.
+
+        >>> from torchchronos.datasets import AeonClassificationDataset
+        >>> from torchchronos.datasets.utils import save_dataset
+        >>> #
+        >>> datasets = AeonClassificationDataset(name="GunPoint")
+        
     """
 
     def __init__(
@@ -23,19 +41,7 @@ class CachedDataset(PrepareableDataset):
         return_labels: bool = True,
         transform: Transform = Identity(),
     ) -> None:
-        """Initialize a new instance of the CachedDataset class.
 
-        Args:
-            name: The name of the dataset.
-            save_path: The path to save the cached data.
-                                                Defaults to ".cache/torchchronos/datasets".
-            return_labels: Whether to return labels along with the data. Defaults to True.
-            transform: The data transformation to apply. Defaults to Identity().
-
-        Raises:
-            TypeError: If the save_path is not a string or a Path object.
-            FileNotFoundError: If the cached data file does not exist.
-        """
         self.name: str = name
         self.data: torch.Tensor | None = None
         self.targets: torch.Tensor | None = None
@@ -77,9 +83,6 @@ class CachedDataset(PrepareableDataset):
         if os.path.exists(self.path / f"{self.name}.npz") is False:
             raise FileNotFoundError
 
-        # data, targets = self._get_data()
-        # TODO: Maybe more checks on the data?
-
     def _load(self) -> None:
         """Load the data and targets into memory."""
         data: np.ndarray
@@ -104,14 +107,20 @@ class CachedDataset(PrepareableDataset):
 
         """
         if self.data is None:
-            raise Exception("The data has to be loaded first, call prepare and load first.")
+            raise Exception(
+                "The data has to be loaded first, call prepare and load first."
+            )
 
         if self.return_labels and self.targets is None:
-            raise Exception("The targets have to be loaded first, call prepare and load first.")
+            raise Exception(
+                "The targets have to be loaded first, call prepare and load first."
+            )
 
         if self.return_labels:
             if self.return_labels and self.targets is None:
-                raise Exception("The targets have to be loaded first, call prepare and load first.")
+                raise Exception(
+                    "The targets have to be loaded first, call prepare and load first."
+                )
 
             return self.data[index], self.targets[index]
         else:
@@ -128,6 +137,8 @@ class CachedDataset(PrepareableDataset):
 
         """
         if self.data is None:
-            raise Exception("The data has to be loaded first, call prepare and load first.")
+            raise Exception(
+                "The data has to be loaded first, call prepare and load first."
+            )
 
         return len(self.data)
