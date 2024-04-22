@@ -50,13 +50,6 @@ quote-style = "double"
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[tool.black]
-line-length = 110
-target-version = ['py310']
-
-[tool.isort]
-profile = "black"
-
 [tool.pytest.ini_options]
 testpaths = [
     "tests",
