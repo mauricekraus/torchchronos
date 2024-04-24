@@ -41,7 +41,7 @@ src = ["torchchronos", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "D", "C90", "UP", "NPY"]
-ignore = ["D105", "D107"] # Remove rules for commenting magic methods and __init__ methods
+ignore = ["D105", "D107", "N812"] # Remove rules for commenting magic methods and __init__ methods
 
 [tool.ruff.format]
 docstring-code-format = true
@@ -49,6 +49,9 @@ quote-style = "double"
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D"]
 
 [tool.pytest.ini_options]
 testpaths = [
