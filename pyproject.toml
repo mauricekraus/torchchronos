@@ -12,7 +12,7 @@ license = "MIT"
 homepage = "https://github.com/mauricekraus/torchchronos"
 
 [tool.poetry.dependencies]
-python = ">3.11, <3.12"
+python = ">=3.11, <3.12"
 sktime = "^0.16.1"
 torch = ">=2.0.0, !=2.0.1"
 lightning = "^2.0.0"
