@@ -6,13 +6,16 @@ This module provides the Tranform class and a class for composing multiple trans
 import pickle
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import overload
+from typing import TypeAlias, overload
 
 import dill
+import numpy as np
 import torch
 from torch.utils.data import Dataset, TensorDataset
 
 # TODO: implement Reshape Transform, MinMax Transform
+
+ListLike: TypeAlias = list | tuple | torch.Tensor | np.ndarray
 
 
 def get_data_from_dataset(dataset: Dataset) -> tuple[torch.Tensor, torch.Tensor | None]:
@@ -31,6 +34,7 @@ def get_data_from_dataset(dataset: Dataset) -> tuple[torch.Tensor, torch.Tensor 
         data = data[0]
         targets = None
     else:
+        print("Data is not a tuple")
         targets = None
     return data, targets
 
@@ -56,16 +60,15 @@ class Transform(ABC):
         self._invert_transform: "Transform" | None = None
 
     @overload
-    def __call__(self, time_series: torch.Tensor) -> torch.Tensor:
-        ...
+    def __call__(self, time_series: torch.Tensor) -> torch.Tensor: ...
 
     @overload
-    def __call__(self, time_series: torch.Tensor, targets: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        ...
+    def __call__(
+        self, time_series: torch.Tensor, targets: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]: ...
 
     @overload
-    def __call__(self, time_series: Dataset) -> Dataset:
-        ...
+    def __call__(self, time_series: Dataset) -> Dataset: ...
 
     def __call__(
         self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None
@@ -178,18 +181,15 @@ class Transform(ABC):
         return transform
 
     @overload
-    def fit_transform(self, time_series: torch.Tensor) -> torch.Tensor:
-        ...
+    def fit_transform(self, time_series: torch.Tensor) -> torch.Tensor: ...
 
     @overload
     def fit_transform(
         self, time_series: torch.Tensor, targets: torch.Tensor
-    ) -> tuple[torch.Tensor, torch.Tensor]:
-        ...
+    ) -> tuple[torch.Tensor, torch.Tensor]: ...
 
     @overload
-    def fit_transform(self, time_series: Dataset) -> TensorDataset:
-        ...
+    def fit_transform(self, time_series: Dataset) -> TensorDataset: ...
 
     def fit_transform(
         self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None
@@ -237,18 +237,15 @@ class Transform(ABC):
         self.is_fitted = True
 
     @overload
-    def transform(self, time_series: torch.Tensor) -> torch.Tensor:
-        ...
+    def transform(self, time_series: torch.Tensor) -> torch.Tensor: ...
 
     @overload
     def transform(
         self, time_series: torch.Tensor, targets: torch.Tensor
-    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
-        ...
+    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]: ...
 
     @overload
-    def transform(self, time_series: Dataset) -> TensorDataset:
-        ...
+    def transform(self, time_series: Dataset) -> TensorDataset: ...
 
     def transform(
         self, time_series: Dataset | torch.Tensor, targets: torch.Tensor | None = None
@@ -288,6 +285,7 @@ class Transform(ABC):
     def _transform_dataset(self, dataset: Dataset) -> TensorDataset:
         data, targets = get_data_from_dataset(dataset)
         if targets is None:
+            print("No targets")
             ts_transformed, _ = self._transform(data)
             return TensorDataset(ts_transformed)
 

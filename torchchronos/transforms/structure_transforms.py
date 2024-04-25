@@ -17,14 +17,11 @@ class Crop(Transform):
     """
 
     def __init__(self, start: int, end: int) -> None:
-
         super().__init__()
         self.start = start
         self.end = end
 
-    def _fit(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the crop transformation.
 
         Args:
@@ -68,7 +65,6 @@ class Crop(Transform):
         raise NoInverseError("Crop transformation is not invertible")
 
     def __repr__(self) -> str:
-
         return f"Crop(start={self.start}, end={self.end})"
 
 
@@ -85,9 +81,7 @@ class PadFront(Transform):
         self.length = length
         self.time_series_length: int | None = None
 
-    def _fit(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the transformation by determining the length of the time series.
 
         Args:
@@ -132,7 +126,6 @@ class PadFront(Transform):
         return Crop(self.length, self.time_series_length + self.length)
 
     def __repr__(self) -> str:
-
         return f"{self.__class__.__name__}(length={self.length})"
 
 
@@ -143,14 +136,13 @@ class PadBack(Transform):
         length: The length of the padding to be added.
     """
 
-    def __init__(self, length: int) -> None:
+    def __init__(self, length: int, pad_to_length: bool = False) -> None:
         super().__init__()
-        self.length = length
         self.time_series_length: int | None = None
+        self.pad_to_length = pad_to_length
+        self.length: int = length
 
-    def _fit(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the transformation by determining the length of the time series data.
 
         Args:
@@ -158,6 +150,10 @@ class PadBack(Transform):
             targets: The target data.
         """
         self.time_series_length = time_series.shape[-1]
+        if self.pad_to_length:
+            if self.length < self.time_series_length:
+                raise RuntimeError("Pad length is less than the time series length")
+            self.length = self.length - self.time_series_length
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -210,9 +206,7 @@ class Filter(Transform):
         super().__init__(True)
         self.filter: Callable = filter
 
-    def _fit(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the filter transformation to the given time series data.
 
         Args:
@@ -277,9 +271,7 @@ class SlidingWindow(Transform):
         self.window_size = window_size
         self.step_size = step_size
 
-    def _fit(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the sliding window transform to the given time series data.
 
         This method does not perform any fitting as the identity transformation does not
@@ -306,6 +298,7 @@ class SlidingWindow(Transform):
             and the transformed target values (if provided).
 
         """
+        print(targets)
         num_time_series, dimensions, time_steps = time_series.shape
         num_segments = (time_steps - self.window_size) // self.step_size + 1
 
@@ -324,6 +317,7 @@ class SlidingWindow(Transform):
                     targets_segmented.append(targets[i])
 
         ts_tensor = torch.cat(ts_segments, dim=0)
+        print(ts_tensor.shape)
 
         if targets is None:
             targets_tensor = None

@@ -54,7 +54,6 @@ class FourierTransform(Transform):
         return InverseFourierTransform()
 
     def __repr__(self) -> str:
-
         return "FourierTransform()"
 
 
@@ -101,5 +100,4 @@ class InverseFourierTransform(Transform):
         return FourierTransform()
 
     def __repr__(self) -> str:
-
         return "InverseFourierTransform()"

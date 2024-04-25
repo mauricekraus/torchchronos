@@ -18,7 +18,6 @@ def test_label_transform():
     transform.fit(data, labels)
     data_transformed, labels_transformed = transform(data, labels)
 
-
     assert np.allclose(data, data_transformed)
     assert np.allclose(labels_transformed, np.array([1, 4, 2, 1, 3, 1, 5, 0, 4, 1]))
 
@@ -39,6 +38,7 @@ def test_complex_to_polar():
     assert torch.allclose(polar_coords[:, 0], expected_r, atol=1e-4)
     assert torch.allclose(polar_coords[:, 1], expected_theta, atol=1e-4)
 
+
 def test_polar_to_complex():
     transform = PolarToComplex()
     polar_coords = torch.tensor([[5.0, 0.9273], [2.8284, -0.7854], [2.2361, 2.0344]]).reshape(3, 2, 1)
@@ -49,20 +49,22 @@ def test_polar_to_complex():
 
     assert torch.allclose(complex_numbers, expected_complex_numbers, atol=1e-4)
 
+
 def test_combine_to_complex():
-        transform = CombineToComplex()
-        data = torch.tensor([[1,2,3,4],[5,4,3,2],[1,6,8,9]]).reshape(3, 1, 4)
+    transform = CombineToComplex()
+    data = torch.tensor([[1, 2, 3, 4], [5, 4, 3, 2], [1, 6, 8, 9]]).reshape(3, 1, 4)
 
-        expected_complex = torch.tensor([[[1 + 2j, 3 + 4j]], [[5 + 4j, 3 + 2j]], [[1 + 6j, 8 + 9j]]])
-        complex_numbers = transform.transform(data)
+    expected_complex = torch.tensor([[[1 + 2j, 3 + 4j]], [[5 + 4j, 3 + 2j]], [[1 + 6j, 8 + 9j]]])
+    complex_numbers = transform.transform(data)
 
-        assert torch.allclose(complex_numbers, expected_complex)
+    assert torch.allclose(complex_numbers, expected_complex)
+
 
 def test_split_complex_to_real_imag():
-        transform = SplitComplexToRealImag()
-        complex_data = torch.tensor([[[1 + 2j, 3 + 4j]], [[5 + 4j, 3 + 2j]], [[1 + 6j, 8 + 9j]]])
+    transform = SplitComplexToRealImag()
+    complex_data = torch.tensor([[[1 + 2j, 3 + 4j]], [[5 + 4j, 3 + 2j]], [[1 + 6j, 8 + 9j]]])
 
-        expected = torch.tensor([[1,2,3,4],[5,4,3,2],[1,6,8,9]], dtype=torch.float32).reshape(3, 1, 4)
+    expected = torch.tensor([[1, 2, 3, 4], [5, 4, 3, 2], [1, 6, 8, 9]], dtype=torch.float32).reshape(3, 1, 4)
 
-        data_split = transform.transform(complex_data)
-        assert torch.allclose(data_split, expected)
+    data_split = transform.transform(complex_data)
+    assert torch.allclose(data_split, expected)

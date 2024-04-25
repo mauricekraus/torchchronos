@@ -17,7 +17,6 @@ dataset = TensorDataset(data, targets)
 
 
 def test_transform_transform():
-
     transform.fit(data)
 
     transformed_data = transform.transform(data)
@@ -176,7 +175,6 @@ def test_compose_invert():
 
 
 def test_compose_example():
-
     dataset = AeonClassificationDataset(name="GunPoint")
     dataset.prepare()
     dataset.load()

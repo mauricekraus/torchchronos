@@ -14,11 +14,11 @@ from .base_transforms import Compose, Transform
 
 
 class Identity(Transform):
-    """
-    Identity tranform.
+    """Identity tranform.
 
     Examples:
-    The first example demonstrates how to use the Identity transform to return the input time series data unchanged.
+    The first example demonstrates how to use the Identity transform to return the input time series data
+    unchanged.
 
     >>> import torch
     >>> time_series = torch.randn(10, 1, 100)  # 10 samples, 1 feature, 100 time points
@@ -27,7 +27,8 @@ class Identity(Transform):
     >>> transformed_time_series.shape
     torch.Size([10, 1, 100])
 
-    The second example demonstrates how to use the Identity transform to return the input time series data and targets unchanged.
+    The second example demonstrates how to use the Identity transform to return the input time series data and
+    targets unchanged.
     >>> import torch
     >>> time_series = torch.randn(10, 1, 100)  # 10 samples, 1 feature, 100 time points
     >>> targets = torch.randn(10, 1)  # 10 samples, 1 target
@@ -42,9 +43,7 @@ class Identity(Transform):
     def __init__(self) -> None:
         super().__init__(is_fitted=True)
 
-    def _fit(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the identity transformation.
 
         This method does not perform any fitting as the identity transformation
@@ -93,7 +92,8 @@ class Normalize(Transform):
         RuntimeError: If attempting to transform or invert before fitting.
 
     Examples:
-    The first example demonstrates how to use the Normalize transform to normalize the input over all time series data.
+    The first example demonstrates how to use the Normalize transform to normalize the input over all time
+    series data.
 
     >>> import torch
     >>> time_series = torch.randn(10, 1, 100)  # 10 samples, 1 feature, 100 time points
@@ -101,7 +101,8 @@ class Normalize(Transform):
     >>> normalize_transform.fit(time_series)
     >>> transformed_time_series = normalize_transform(time_series)
 
-    The second example demonstrates how to use the Normalize transform to normalize the input over each time series data.
+    The second example demonstrates how to use the Normalize transform to normalize the input over each time
+    series data.
 
     >>> import torch
     >>> time_series = torch.arange(10).repeat(10, 1, 1).float()  # 10 samples, 1 feature, 100 time points
@@ -118,9 +119,7 @@ class Normalize(Transform):
         self.mean: torch.Tensor | None = None
         self.std: torch.Tensor | None = None
 
-    def _fit(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the normalization parameters based on the input time series data.
 
         If self.local is True, nothing is done here
@@ -134,9 +133,7 @@ class Normalize(Transform):
         if self.local:
             return
         self.mean = torch.from_numpy(np.nanmean(time_series, axis=0, keepdims=True))
-        self.std = torch.from_numpy(
-            np.nanstd(time_series, axis=0, keepdims=True, ddof=1) + 1e-5
-        )
+        self.std = torch.from_numpy(np.nanstd(time_series, axis=0, keepdims=True, ddof=1) + 1e-5)
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -201,7 +198,7 @@ class Scale(Transform):
     >>> import torch
     >>> time_series = torch.arange(10).repeat(10, 1, 1).float()  # 10 samples, 1 feature, 10 time points
     >>> scale_transform = Scale(2)
-    >>> transformed_time_series = scale_transform(time_series) # Does not require fitting
+    >>> transformed_time_series = scale_transform(time_series)  # Does not require fitting
     >>> transformed_time_series[0, 0]
     tensor([ 0.,  2.,  4.,  6.,  8., 10., 12., 14., 16., 18.])
 
@@ -210,7 +207,7 @@ class Scale(Transform):
     >>> import torch
     >>> time_series = torch.arange(10).repeat(10, 1, 1).float()  # 10 samples, 1 feature, 10 time points
     >>> scale_transform = Scale(torch.arange(1, 11).float())
-    >>> transformed_time_series = scale_transform(time_series) # Does not require fitting
+    >>> transformed_time_series = scale_transform(time_series)  # Does not require fitting
     >>> transformed_time_series[0, 0]
     tensor([ 0.,  2.,  6., 12., 20., 30., 42., 56., 72., 90.])
     """
@@ -219,9 +216,7 @@ class Scale(Transform):
         super().__init__(True)
         self.scale: float | torch.Tensor = scale
 
-    def _fit(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the scaling transformation to the input time series.
 
         This method does not perform any fitting as the identity transformation does not
@@ -234,9 +229,7 @@ class Scale(Transform):
         """
         pass
 
-    def _transform(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> torch.Tensor:
+    def _transform(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> torch.Tensor:
         """Apply the scaling transformation to the input time series.
 
         Args:
@@ -309,7 +302,7 @@ class Shift(Transform):
         >>> import torch
         >>> time_series = torch.arange(10).repeat(10, 1, 1).float()  # 10 samples, 1 feature, 10 time points
         >>> shift_transform = Shift(2)
-        >>> transformed_time_series = shift_transform(time_series) # Does not require fitting
+        >>> transformed_time_series = shift_transform(time_series)  # Does not require fitting
         >>> transformed_time_series[0, 0]
         tensor([ 2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10., 11.])
 
@@ -318,7 +311,7 @@ class Shift(Transform):
         >>> import torch
         >>> time_series = torch.arange(10).repeat(10, 1, 1).float()  # 10 samples, 1 feature, 10 time points
         >>> shift_transform = Shift(torch.arange(1, 11).float())
-        >>> transformed_time_series = shift_transform(time_series) # Does not require fitting
+        >>> transformed_time_series = shift_transform(time_series)  # Does not require fitting
         >>> transformed_time_series[0, 0]
         tensor([ 1.,  3.,  5.,  7.,  9., 11., 13., 15., 17., 19.])
     """
@@ -327,9 +320,7 @@ class Shift(Transform):
         super().__init__(True)
         self.shift: float | torch.Tensor = shift
 
-    def _fit(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fits the shift transformation.
 
         This method does not perform any fitting as the identity transformation does not

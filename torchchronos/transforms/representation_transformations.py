@@ -17,9 +17,7 @@ class LabelTransform(Transform):
         super().__init__(False if label_map is None else True)
         self.label_map = label_map
 
-    def _fit(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the LabelTransform.
 
         Args:
@@ -53,16 +51,12 @@ class LabelTransform(Transform):
             ValueError: If LabelTransform is not fitted.
         """
         if self.label_map is None:
-            raise ValueError(
-                "LabelTransform is not fitted. Please fit the transform first."
-            )
+            raise ValueError("LabelTransform is not fitted. Please fit the transform first.")
 
         if targets is None:
             raise ValueError("Targets cannot be None.")
 
-        new_targets = torch.tensor(
-            [self.label_map[int(label)] for label in targets], dtype=torch.int64
-        )
+        new_targets = torch.tensor([self.label_map[int(label)] for label in targets], dtype=torch.int64)
         return time_series, new_targets
 
     def _invert(self) -> Transform:
@@ -75,9 +69,7 @@ class LabelTransform(Transform):
             ValueError: If LabelTransform is not fitted.
         """
         if self.label_map is None:
-            raise ValueError(
-                "LabelTransform is not fitted. Please fit the transform first."
-            )
+            raise ValueError("LabelTransform is not fitted. Please fit the transform first.")
 
         label_map = {value: key for key, value in self.label_map.items()}
         return LabelTransform(label_map)
@@ -90,12 +82,9 @@ class ComplexToPolar(Transform):
     """Class to convert complex numbers to polar representation."""
 
     def __init__(self):
-
         super().__init__(True)
 
-    def _fit(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the ComplexToPolar transformation.
 
         This method does not perform any fitting as the identity transformation does not
@@ -134,7 +123,6 @@ class ComplexToPolar(Transform):
         return PolarToComplex()
 
     def __repr__(self) -> str:
-
         return f"{self.__class__.__name__}()"
 
 
@@ -142,12 +130,9 @@ class PolarToComplex(Transform):
     """Class to convert polar representation to complex numbers."""
 
     def __init__(self):
-
         super().__init__(True)
 
-    def _fit(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the PolarToComplex transformation.
 
         Args:
@@ -185,7 +170,6 @@ class PolarToComplex(Transform):
         return ComplexToPolar()
 
     def __repr__(self) -> str:
-
         return f"{self.__class__.__name__}()"
 
 
@@ -195,9 +179,7 @@ class CombineToComplex(Transform):
     def __init__(self):
         super().__init__(True)
 
-    def _fit(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the CombineToComplex transformation.
 
         Args:
@@ -218,12 +200,8 @@ class CombineToComplex(Transform):
         Returns:
             The transformed time series data and the targets.
         """
-        samples_reshaped = time_series.reshape(
-            time_series.shape[0], time_series.shape[1], -1, 2
-        )
-        complex_samples = (
-            samples_reshaped[:, :, :, 0] + 1j * samples_reshaped[:, :, :, 1]
-        )
+        samples_reshaped = time_series.reshape(time_series.shape[0], time_series.shape[1], -1, 2)
+        complex_samples = samples_reshaped[:, :, :, 0] + 1j * samples_reshaped[:, :, :, 1]
         return complex_samples, targets
 
     def _invert(self):
@@ -244,9 +222,7 @@ class SplitComplexToRealImag(Transform):
     def __init__(self):
         super().__init__(True)
 
-    def _fit(
-        self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> None:
+    def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the SplitComplexToRealImag transformation.
 
         This method does not perform any fitting as the identity transformation does not
@@ -272,9 +248,7 @@ class SplitComplexToRealImag(Transform):
             The transformed time series data and the targets.
         """
         flattened_time_series = torch.view_as_real(time_series)
-        flattened_time_series = (
-            flattened_time_series.type(torch.float32).flatten(1).unsqueeze(1)
-        )
+        flattened_time_series = flattened_time_series.type(torch.float32).flatten(1).unsqueeze(1)
         return flattened_time_series, targets
 
     def _invert(self):

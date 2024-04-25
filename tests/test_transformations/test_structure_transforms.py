@@ -87,9 +87,7 @@ def test_pad_back_inverse():
 
 def test_filter():
     data = torch.randn((10, 1, 10), dtype=torch.float32)
-    targets = torch.tensor([0, 1, 0, 1, 0, 1, 0, 1, 0, 1], dtype=torch.float32).view(
-        -1, 1
-    )
+    targets = torch.tensor([0, 1, 0, 1, 0, 1, 0, 1, 0, 1], dtype=torch.float32).view(-1, 1)
 
     filter = Filter(lambda x, y: y[0] == 0)
 
@@ -101,9 +99,7 @@ def test_filter():
     assert torch.allclose(filtered_data, data[targets[:, 0] == 0])
     assert torch.allclose(filtered_targets, targets[targets[:, 0] == 0])
 
-    data = torch.tensor(
-        [[1, 0, 3], [1, 1, 1], [2, 4, 3], [3, 0, 0]], dtype=torch.float32
-    ).reshape(4, 1, 3)
+    data = torch.tensor([[1, 0, 3], [1, 1, 1], [2, 4, 3], [3, 0, 0]], dtype=torch.float32).reshape(4, 1, 3)
 
     filter = Filter(lambda x, y: torch.max(x) == 3)
 
@@ -111,6 +107,3 @@ def test_filter():
     filtered_data = filter(data)
 
     assert filtered_data.shape == torch.Size([2, 1, 3])
-
-
-

@@ -25,6 +25,7 @@ def test_ToTorchTensor():
     with pytest.raises(NoInverseError):
         transform.invert()
 
+
 def test_ToNumpyArray():
     transform = ToNumpyArray()
     torch_data = torch.rand(10, 1, 10)
@@ -53,4 +54,3 @@ def test_To():
 
     with pytest.raises(NoInverseError):
         transform.invert()
-

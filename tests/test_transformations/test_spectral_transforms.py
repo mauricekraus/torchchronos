@@ -15,6 +15,7 @@ def test_fourier_transform():
     assert isinstance(inverse_transform, InverseFourierTransform)
     assert repr(transform) == "FourierTransform()"
 
+
 def test_inverse_fourier_transform():
     transform = InverseFourierTransform()
     time_series = torch.tensor([1, 2, 3, 4, 5])
