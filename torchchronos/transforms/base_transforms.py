@@ -34,7 +34,6 @@ def get_data_from_dataset(dataset: Dataset) -> tuple[torch.Tensor, torch.Tensor 
         data = data[0]
         targets = None
     else:
-        print("Data is not a tuple")
         targets = None
     return data, targets
 
@@ -285,7 +284,6 @@ class Transform(ABC):
     def _transform_dataset(self, dataset: Dataset) -> TensorDataset:
         data, targets = get_data_from_dataset(dataset)
         if targets is None:
-            print("No targets")
             ts_transformed, _ = self._transform(data)
             return TensorDataset(ts_transformed)
 
