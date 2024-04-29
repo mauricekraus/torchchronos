@@ -14,6 +14,20 @@ class Crop(Transform):
     Args:
         start: The starting index of the crop.
         end: The ending index of the crop.
+
+    Examples:
+    This example demonstrates how to crop the time series from index 2 to 8.
+
+    >>> import torch
+    >>>
+    >>> data = time_series = torch.arange(10).repeat(10, 1, 1).float()
+    >>> crop = Crop(2, 8)
+    >>> crop.fit(data)
+    >>> cropped_data = crop(data)
+    >>> cropped_data.shape
+    torch.Size([10, 1, 6])
+    >>> cropped_data[0]
+    tensor([[2., 3., 4., 5., 6., 7.]])
     """
 
     def __init__(self, start: int, end: int) -> None:
@@ -71,14 +85,44 @@ class Crop(Transform):
 class PadFront(Transform):
     """Class to pad the front of the time series with zeros.
 
+    This class has 2 different modes. This first mode is for padding at the front a specific number of zeros.
+    The second pads the time series to a specific length by calculating the difference between the length of
+    the time series and the desired length.
+
     Args:
         length: The length of the padding to be added.
+        fixed_length: If True, the length is the time series will have the given length, after transforming.
 
+    Examples:
+    This example demonstrates how to pad 2 zeros at the front of the time series.
+
+    >>> import torch
+    >>> time_series = time_series = torch.arange(10).repeat(10, 1, 1).float()
+    >>> pad = PadFront(2)
+    >>> pad.fit(time_series)
+    >>> padded_data = pad(time_series)
+    >>> padded_data.shape
+    torch.Size([10, 1, 12])
+    >>> padded_data[0]
+    tensor([[0., 0., 0., 1., 2., 3., 4., 5., 6., 7., 8., 9.]])
+
+    Here the time series should be padded to a lenght of 15, the transform calculates, how many zeros to pad.
+
+    >>> import torch
+    >>> time_series = torch.arange(10).repeat(10, 1, 1).float()
+    >>> pad = PadFront(15, True)
+    >>> pad.fit(time_series)
+    >>> padded_data = pad(time_series)
+    >>> padded_data.shape
+    torch.Size([10, 1, 15])
+    >>> padded_data[0]
+    tensor([[0., 0., 0., 0., 0., 0., 1., 2., 3., 4., 5., 6., 7., 8., 9.]])
     """
 
-    def __init__(self, length: int) -> None:
+    def __init__(self, length: int, fixed_length: bool = False) -> None:
         super().__init__()
         self.length = length
+        self.fixed_length = fixed_length
         self.time_series_length: int | None = None
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
@@ -91,6 +135,10 @@ class PadFront(Transform):
 
         """
         self.time_series_length = time_series.shape[-1]
+        if self.fixed_length:
+            if self.length < self.time_series_length:
+                raise RuntimeError("Pad length is less than the time series length")
+            self.length = self.length - self.time_series_length
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -132,14 +180,44 @@ class PadFront(Transform):
 class PadBack(Transform):
     """Class to pad the time series data with zeros at the end.
 
+    This class has 2 different modes. This first mode is for padding at the end a specific number of zeros.
+    The second pads the time series to a specific length by calculating the difference between the length of
+    the time series and the desired length.
+
     Args:
         length: The length of the padding to be added.
+        fixed_length: If True, the length is the time series will have the given length, after transforming.
+
+    Examples:
+    This example demonstrates how to pad 2 zeros at the end of the time series.
+
+    >>> import torch
+    >>> time_series = time_series = torch.arange(10).repeat(10, 1, 1).float()
+    >>> pad = PadBack(2)
+    >>> pad.fit(time_series)
+    >>> padded_data = pad(time_series)
+    >>> padded_data.shape
+    torch.Size([10, 1, 12])
+    >>> padded_data[0]
+    tensor([[0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 0., 0.]])
+
+    Here the time series should be padded to a lenght of 15, the transform calculates, how many zeros to pad.
+
+    >>> import torch
+    >>> time_series = time_series = torch.arange(10).repeat(10, 1, 1).float()
+    >>> pad = PadBack(15, True)
+    >>> pad.fit(time_series)
+    >>> padded_data = pad(time_series)
+    >>> padded_data.shape
+    torch.Size([10, 1, 15])
+    >>> padded_data[0]
+    tensor([[0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 0., 0., 0., 0., 0.]])
     """
 
-    def __init__(self, length: int, pad_to_length: bool = False) -> None:
+    def __init__(self, length: int, fixed_length: bool = False) -> None:
         super().__init__()
         self.time_series_length: int | None = None
-        self.pad_to_length = pad_to_length
+        self.fixed_length = fixed_length
         self.length: int = length
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
@@ -150,7 +228,7 @@ class PadBack(Transform):
             targets: The target data.
         """
         self.time_series_length = time_series.shape[-1]
-        if self.pad_to_length:
+        if self.fixed_length:
             if self.length < self.time_series_length:
                 raise RuntimeError("Pad length is less than the time series length")
             self.length = self.length - self.time_series_length
@@ -172,6 +250,8 @@ class PadBack(Transform):
         """
         if self.time_series_length is None:
             raise Exception("Fit must be called before transforming")
+        if self.length == 0:
+            return time_series, targets
 
         zeros = torch.zeros((time_series.shape[0], time_series.shape[1], self.length))
         return torch.cat([time_series, zeros], dim=2), targets
@@ -197,9 +277,32 @@ class PadBack(Transform):
 class Filter(Transform):
     """Class to filter time series data based on a given filter function.
 
+    This is a filter transform. The filter function is called on each time series of the dataset. When the
+    filter method returns True, the time series says in the dataset. If False is returned, the time series
+    is removed.
+
     Args:
         filter: The filter function.
 
+    Note:
+        The given function for filtering, has to take 2 parameters. Even if there are no targets involved in
+        the training, None is passed through the transforms for the targets. The function is then called with
+        function(data, None).
+
+    Examples:
+    In this example each second row gets multiplied by 2. Next, using the Filter transform, each time series
+    with a value bigger than 13 gets filtered.
+
+    >>> import torch
+    >>> time_series = torch.arange(10).repeat(10, 1, 1).float()
+    >>> time_series[0::2] = time_series[0::2] * 2
+    >>> filter_lambda_expression = lambda x, y: True if torch.max(x) < 13 else False
+    >>> filter = Filter(filter_lambda_expression)
+    >>> filtered_data = filter(time_series)
+    >>> filtered_data.shape
+    torch.Size([5, 1, 10])
+    >>> torch.max(filtered_data) > 13
+    tensor(False)
     """
 
     def __init__(self, filter: Callable) -> None:
@@ -261,12 +364,41 @@ class Filter(Transform):
 class SlidingWindow(Transform):
     """Class for applying sliding window segmentation to time series data.
 
+    The SlidingWindow transform, cuts the time series into smaller pieces. The given window_size determins
+    the size of the parts. The step_size describes, how many time steps are between the different windows.
+
     Args:
         window_size: The size of the sliding window.
         step_size: The step size between consecutive windows.
+
+    Examples:
+    This example cuts the time series in pairs of numbers.
+
+    >>> import torch
+    >>> time_series = torch.arange(10).repeat(10, 1, 1).float()
+    >>> sliding_window = SlidingWindow(2)
+    >>> transformed_data = sliding_window(time_series)
+    >>> transformed_data.shape
+    torch.Size([90, 1, 2])
+    >>> transformed_data[0]
+    tensor([[0., 1.]])
+
+    This example cuts the time series in pairs of numbers with a step size of 4.
+
+    >>> import torch
+    >>> time_series = torch.arange(10).repeat(10, 1, 1).float()
+    >>> sliding_window = SlidingWindow(3, 4)
+    >>> transformed_data = sliding_window(time_series)
+    >>> transformed_data.shape
+    torch.Size([20, 1, 3])
+    >>> transformed_data[0]
+    tensor([[0., 1., 2.]])
+    >>> transformed_data[1]
+    tensor([[4., 5., 6.]])
+
     """
 
-    def __init__(self, window_size: int, step_size: int) -> None:
+    def __init__(self, window_size: int, step_size: int = 1) -> None:
         super().__init__(True)
         self.window_size = window_size
         self.step_size = step_size
@@ -298,7 +430,6 @@ class SlidingWindow(Transform):
             and the transformed target values (if provided).
 
         """
-        print(targets)
         num_time_series, dimensions, time_steps = time_series.shape
         num_segments = (time_steps - self.window_size) // self.step_size + 1
 
@@ -317,7 +448,6 @@ class SlidingWindow(Transform):
                     targets_segmented.append(targets[i])
 
         ts_tensor = torch.cat(ts_segments, dim=0)
-        print(ts_tensor.shape)
 
         if targets is None:
             targets_tensor = None
