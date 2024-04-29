@@ -50,6 +50,7 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx_rtd_theme",
     "sphinx.ext.viewcode",
+    "sphinx_rtd_dark_mode",
 ]
 
 # List of patterns, relative to source directory, that match files and
@@ -112,3 +113,6 @@ napoleon_numpy_docstring = False
 napoleon_include_init_with_doc = True
 napoleon_include_private_with_doc = True
 napoleon_include_special_with_doc = True
+
+
+default_dark_mode = False
