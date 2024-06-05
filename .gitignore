@@ -5,9 +5,9 @@
 # VS Code
 .vscode
 # Sphinx Documentation
-docs/build/
-# Caches
-__pycache__
+docs/build/*
+# PyCache
+**__pycache__/
 # Pyenv 
 .python-version
 # Debug File
