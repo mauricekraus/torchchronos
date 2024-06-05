@@ -50,7 +50,6 @@ extensions = [
     "sphinx.ext.doctest",
     "sphinx_rtd_theme",
     "sphinx.ext.viewcode",
-    "sphinx_rtd_dark_mode",
 ]
 
 # List of patterns, relative to source directory, that match files and
