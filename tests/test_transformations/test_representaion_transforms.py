@@ -35,8 +35,10 @@ def test_complex_to_polar():
 
     polar_coords = transform.transform(complex_numbers)
 
-    assert torch.allclose(polar_coords[:, 0], expected_r, atol=1e-4)
-    assert torch.allclose(polar_coords[:, 1], expected_theta, atol=1e-4)
+    print(complex_numbers.shape, polar_coords.shape)
+
+    assert torch.allclose(polar_coords[0, :], expected_r, atol=1e-4)
+    assert torch.allclose(polar_coords[1, :], expected_theta, atol=1e-4)
 
 
 def test_polar_to_complex():
@@ -52,7 +54,7 @@ def test_polar_to_complex():
 
 def test_combine_to_complex():
     transform = CombineToComplex()
-    data = torch.tensor([[1, 2, 3, 4], [5, 4, 3, 2], [1, 6, 8, 9]]).reshape(3, 1, 4)
+    data = torch.tensor([[1, 2, 3, 4], [5, 4, 3, 2], [1, 6, 8, 9]]).reshape(3, 1, 4).float()
 
     expected_complex = torch.tensor([[[1 + 2j, 3 + 4j]], [[5 + 4j, 3 + 2j]], [[1 + 6j, 8 + 9j]]])
     complex_numbers = transform.transform(data)

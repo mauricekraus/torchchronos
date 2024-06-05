@@ -1,7 +1,7 @@
 """Init file for transforms."""
 
 from .base_transforms import Compose, Transform
-from .basic_transforms import Identity, Normalize, Scale, Shift
+from .basic_transforms import Identity, NaNToNumber, Normalize, Scale, Shift
 from .format_conversion_transforms import To, ToNumpyArray, ToTorchTensor
 from .representation_transformations import (
     CombineToComplex,
@@ -34,4 +34,5 @@ __all__ = [
     "PadFront",
     "SlidingWindow",
     "NoInverseError",
+    "NaNToNumber",
 ]

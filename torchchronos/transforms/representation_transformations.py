@@ -201,7 +201,7 @@ class CombineToComplex(Transform):
             The transformed time series data and the targets.
         """
         samples_reshaped = time_series.reshape(time_series.shape[0], time_series.shape[1], -1, 2)
-        complex_samples = samples_reshaped[:, :, :, 0] + 1j * samples_reshaped[:, :, :, 1]
+        complex_samples = torch.view_as_complex(samples_reshaped)
         return complex_samples, targets
 
     def _invert(self):

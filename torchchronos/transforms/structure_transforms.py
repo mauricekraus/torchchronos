@@ -119,11 +119,12 @@ class PadFront(Transform):
     tensor([[0., 0., 0., 0., 0., 0., 1., 2., 3., 4., 5., 6., 7., 8., 9.]])
     """
 
-    def __init__(self, length: int, fixed_length: bool = False) -> None:
+    def __init__(self, length: int, value: float = 0, fixed_length: bool = False) -> None:
         super().__init__()
         self.length = length
         self.fixed_length = fixed_length
         self.time_series_length: int | None = None
+        self.value = value
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the transformation by determining the length of the time series.
@@ -156,8 +157,8 @@ class PadFront(Transform):
         if self.time_series_length is None:
             raise Exception("Fit must be called before transforming")
 
-        zeros = torch.zeros((time_series.shape[0], time_series.shape[1], self.length))
-        return torch.cat([zeros, time_series], dim=2), targets
+        padding = torch.zeros((time_series.shape[0], time_series.shape[1], self.length)) + self.value
+        return torch.cat([padding, time_series], dim=2), targets
 
     def _invert(self) -> Transform:
         """Invert the transformation by cropping the padded front.
@@ -214,11 +215,12 @@ class PadBack(Transform):
     tensor([[0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 0., 0., 0., 0., 0.]])
     """
 
-    def __init__(self, length: int, fixed_length: bool = False) -> None:
+    def __init__(self, length: int, value: float = 0, fixed_length: bool = False) -> None:
         super().__init__()
         self.time_series_length: int | None = None
         self.fixed_length = fixed_length
         self.length: int = length
+        self.value = value
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the transformation by determining the length of the time series data.
@@ -253,8 +255,8 @@ class PadBack(Transform):
         if self.length == 0:
             return time_series, targets
 
-        zeros = torch.zeros((time_series.shape[0], time_series.shape[1], self.length))
-        return torch.cat([time_series, zeros], dim=2), targets
+        padding = torch.zeros((time_series.shape[0], time_series.shape[1], self.length)) + self.value
+        return torch.cat([time_series, padding], dim=2), targets
 
     def _invert(self) -> Transform:
         """Invert the transformation by returning a Crop transform.

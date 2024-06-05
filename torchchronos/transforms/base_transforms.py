@@ -15,8 +15,6 @@ from torch.utils.data import Dataset, TensorDataset
 
 # TODO: implement Reshape Transform, MinMax Transform
 
-ListLike: TypeAlias = list | tuple | torch.Tensor | np.ndarray
-
 
 def get_data_from_dataset(dataset: Dataset) -> tuple[torch.Tensor, torch.Tensor | None]:
     """Get the data and targets from a dataset.
@@ -276,13 +274,32 @@ class Transform(ABC):
                 )
             dataset_transformed = self._transform_dataset(time_series)
             return dataset_transformed
+        
+        # Ensuring all time series for the transformations have 3 dimensions
+        shape = time_series.shape
+        reshaped = False
+        if time_series.ndim is 1:
+            time_series = time_series.reshape(1, 1, shape[0])
+            reshaped = True
+        elif time_series.ndim is 2:
+            time_series = time_series.reshape(shape[0], 1, shape[1])
+            reshaped = True
+
+        
+        transformed_ts, transformed_target = self._transform(time_series, targets)
+
+        # Removing synthetic dimensions, if added
+        if reshaped:
+            transformed_ts = transformed_ts.squeeze()
+
         if targets is None:
-            time_series, _ = self._transform(time_series)
-            return time_series
-        return self._transform(time_series, targets)
+            return transformed_ts
+        else:
+            return transformed_ts, transformed_target 
 
     def _transform_dataset(self, dataset: Dataset) -> TensorDataset:
         data, targets = get_data_from_dataset(dataset)
+
         if targets is None:
             ts_transformed, _ = self._transform(data)
             return TensorDataset(ts_transformed)

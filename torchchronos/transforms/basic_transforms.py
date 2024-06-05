@@ -11,6 +11,7 @@ import numpy as np
 import torch
 
 from .base_transforms import Compose, Transform
+from .transformation_exceptions import NoInverseError
 
 
 class Identity(Transform):
@@ -134,6 +135,7 @@ class Normalize(Transform):
             return
         self.mean = torch.from_numpy(np.nanmean(time_series, axis=0, keepdims=True))
         self.std = torch.from_numpy(np.nanstd(time_series, axis=0, keepdims=True, ddof=1) + 1e-5)
+        self.std = torch.nan_to_num(self.std, nan=1e-5)
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -160,7 +162,6 @@ class Normalize(Transform):
                 raise RuntimeError("Cannot transform before fitting.")
 
             time_series = (time_series - self.mean) / self.std
-            time_series[torch.isnan(time_series)] = 0
             return time_series, targets
 
     def __repr__(self) -> str:
@@ -360,3 +361,25 @@ class Shift(Transform):
             The inverse transformation of the shift operation.
         """
         return Shift(-self.shift)
+
+
+class NaNToNumber(Transform):
+    """A transformation to replace all NaNs with a fixed number."""
+
+    def __init__(self, replacement: float = 0):
+        self.replacement = replacement
+
+        super().__init__(True)
+
+    def _fit(self, time_series, targets):
+        pass
+
+    def _transform(self, time_series, targets):
+        time_series[time_series == torch.nan] = self.replacement
+        return time_series, targets
+
+    def _invert(self):
+        raise NoInverseError
+
+    def __repr__(self):
+        return f"NaNToNumber(replacement={self.replacement})"
