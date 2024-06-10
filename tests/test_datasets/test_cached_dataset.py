@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 import torch
+
 from torchchronos.datasets.aeon_datasets import AeonClassificationDataset
 from torchchronos.datasets.cached_datasets import CachedDataset
 from torchchronos.datasets.utils import save_dataset

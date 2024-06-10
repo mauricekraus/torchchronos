@@ -1,5 +1,6 @@
 import pytest
 import torch
+
 from torchchronos.datasets.aeon_datasets import AeonClassificationDataset
 from torchchronos.datasets.prepareable_dataset import NotLoadedError, NotPreparedError
 from torchchronos.transforms.basic_transforms import Shift

@@ -1,3 +1,7 @@
+"""This is the torchchoronos library.
+
+The goal of this library is to handle time series in Pytorch more easy.
+"""
 from pathlib import Path
 
 __author__ = "The torchchronos contributors"

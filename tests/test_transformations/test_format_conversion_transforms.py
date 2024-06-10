@@ -1,14 +1,16 @@
 import numpy as np
 import pytest
 import torch
+
 from torchchronos.transforms.format_conversion_transforms import To, ToNumpyArray, ToTorchTensor
 from torchchronos.transforms.transformation_exceptions import NoInverseError
 
 
-def test_ToTorchTensor():
+def test_to_torch_tensor():
+    generator = np.random.default_rng(7)
     transform = ToTorchTensor()
-    numpy_data = np.random.rand(10, 1, 10)
-    numpy_targets = np.random.rand(10, 1)
+    numpy_data = generator.rand(10, 1, 10)
+    numpy_targets = generator.rand(10, 1)
     numpy_string_targets = np.array(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"])
 
     torch_data = transform(numpy_data)
@@ -26,7 +28,7 @@ def test_ToTorchTensor():
         transform.invert()
 
 
-def test_ToNumpyArray():
+def test_to_numpy_array():
     transform = ToNumpyArray()
     torch_data = torch.rand(10, 1, 10)
     torch_targets = torch.rand(10, 1)
@@ -42,7 +44,7 @@ def test_ToNumpyArray():
         transform.invert()
 
 
-def test_To():
+def test_to():
     transform = To(torch.float32)
     data = torch.randint(0, 10, (10, 1, 10))
     targets = torch.randint(-4, 8, (10, 1))

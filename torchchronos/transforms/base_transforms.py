@@ -6,7 +6,7 @@ This module provides the Tranform class and a class for composing multiple trans
 import pickle
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import overload
+from typing import NoReturn, overload
 
 import dill
 import torch
@@ -111,7 +111,7 @@ class Transform(ABC):
         """
         return self.invert()
 
-    def invert(self) -> "Transform":
+    def invert(self) -> "Transform" | NoReturn:
         """Return the inverted transform.
 
         If the inverted transform has not been computed yet, it is computed and stored for future use.
@@ -363,7 +363,7 @@ class Transform(ABC):
         """
 
     @abstractmethod
-    def _invert(self) -> None:
+    def _invert(self) -> "Transform" | NoReturn:
         """Abstract method to invert the transformation.
 
         This method should be implemented by subclasses to define how the transformation is inverted.

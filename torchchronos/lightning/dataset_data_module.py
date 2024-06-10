@@ -1,5 +1,6 @@
 """Module for the DatasetDataModule class."""
 
+import lightning as L
 import torch
 from torch.utils.data import (
     DataLoader,
@@ -7,7 +8,6 @@ from torch.utils.data import (
     random_split,
 )
 
-import lightning as L
 from torchchronos.datasets import PrepareableDataset
 
 

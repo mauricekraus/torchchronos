@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 import torch
 from torch.utils.data import TensorDataset
+
 from torchchronos.datasets.aeon_datasets import AeonClassificationDataset
 from torchchronos.transforms.base_transforms import Compose, Transform
 from torchchronos.transforms.basic_transforms import Scale, Shift
@@ -115,7 +116,7 @@ def test_save_load():
 
         assert isinstance(loaded_transform, Shift)
         assert loaded_transform.shift == 5
-        assert loaded_transform.is_fitted == True
+        assert loaded_transform.is_fitted is True
 
 
 def test_compose_init():
@@ -138,7 +139,7 @@ def test_compose_fit():
     transform = Compose([shift, shift])
     transform.fit(data)
 
-    assert shift.is_fitted == True
+    assert shift.is_fitted is True
 
 
 def test_compose_transform():
@@ -165,4 +166,4 @@ def test_compose_example():
 
     transform = Compose([ToTorchTensor(), SlidingWindow(10, 3), Shift(shift=1)])
     transform.fit(dataset._data, dataset._targets)
-    transformed_dataset = transform(dataset)
+    transform(dataset)

@@ -31,7 +31,7 @@ class ToTorchTensor(Transform):
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
-    ) -> tuple[torch.Tensor, torch.Tensor | None]: #type: ignore[override]
+    ) -> tuple[torch.Tensor, torch.Tensor | None]:
         """Convert the input time series and target data (if provided) into torch tensors.
 
         Args:
@@ -91,7 +91,7 @@ class ToNumpyArray(Transform):
         """
         pass
 
-    def _transform(
+    def _transform(  # type: ignore[override]
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
     ) -> tuple[np.ndarray, np.ndarray | None]:
         """Convert the input time series and target data (if provided) into numpy arrays.
