@@ -3,7 +3,7 @@ import torch
 from torchchronos.transforms.basic_transforms import Identity, Normalize, Scale, Shift
 
 
-@pytest.fixure
+@pytest.fixture
 def data():
     return torch.randn(10, 1, 100)
 
