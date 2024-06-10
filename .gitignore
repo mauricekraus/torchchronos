@@ -12,3 +12,7 @@ docs/build/*
 .python-version
 # Debug File
 tests/debug.py
+# MyPy Cache
+.mypy_cache/
+# Ruff Cache
+.ruff_cache/

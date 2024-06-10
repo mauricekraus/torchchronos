@@ -36,8 +36,7 @@ sphinx_rtd_theme = "^2.0.0"
 line-length = 110  # Same as Black
 target-version = "py311"  # The lowest supported version
 fix=true
-src = ["torchchronos", "tests"]
-
+exclude = ["docs"]
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "D", "C90", "UP", "NPY"]
 ignore = ["D105", "D107", "N812"] # Remove rules for commenting magic methods and __init__ methods
@@ -61,3 +60,7 @@ addopts = [
     "--import-mode=importlib",
     "--doctest-modules",
 ]
+
+[tool.mypy]
+exclude = ["docs/"]
+allow_redefinition = true
