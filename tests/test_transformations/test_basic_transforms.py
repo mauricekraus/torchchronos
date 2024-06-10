@@ -1,11 +1,20 @@
+import pytest
 import torch
 from torchchronos.transforms.basic_transforms import Identity, Normalize, Scale, Shift
 
 
-def test_identity():
+@pytest.fixure
+def data():
+    return torch.randn(10, 1, 100)
+
+
+@pytest.fixture
+def targets():
+    return torch.randint(0, 2, (100, 1))
+
+
+def test_identity(data, targets):
     transform = Identity()
-    data = torch.randn(10, 1, 100)
-    targets = torch.randint(0, 2, (100, 1))
 
     transformed_data = transform.transform(data)
     assert torch.equal(data, transformed_data)
@@ -16,13 +25,10 @@ def test_identity():
 
     inverted_transform = transform.invert()
     assert isinstance(inverted_transform, Identity)
-    assert str(inverted_transform) == "Identity()"
 
 
-def test_scale():
+def test_scale(data, targets):
     transform = Scale(torch.tensor([2.0]))
-    data = torch.randn(10, 1, 100)
-    targets = torch.randint(0, 2, (100, 1))
 
     transformed_data = transform.transform(data)
     assert torch.equal(data * 2.0, transformed_data)

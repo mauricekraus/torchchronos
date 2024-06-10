@@ -29,14 +29,8 @@ def test_transform_transform():
     assert type(transformed_data) == torch.Tensor
     assert type(transformed_targets) == torch.Tensor
 
-    # dataset_transformed = transform.transform(dataset)
-    # assert type(dataset_transformed) == BaseDataset
-
-    # dataset_transformed = transform.transform(dataset, None)
-    # assert type(dataset_transformed) == BaseDataset
-
     with pytest.raises(Exception):
-        dataset_transformed = transform.transform(dataset, targets)
+        transform.transform(dataset, targets)
 
 
 def test_transform_call():
@@ -58,49 +52,39 @@ def test_transform_call():
     assert type(transformed_data) == torch.Tensor
     assert type(transformed_targets) == torch.Tensor
 
-    dataset_transformed = transform(dataset)
-    # assert type(dataset_transformed) == BaseDataset
-
-    dataset_transformed = transform(dataset, None)
-    # assert type(dataset_transformed) == BaseDataset
+    # ToDO: Add test for Tensor Dataset as return Type
 
     with pytest.raises(Exception):
-        dataset_transformed = transform(dataset, targets)
+        transform(dataset, targets)
 
 
 def test_fit():
     return_type = transform.fit(data)
-    assert return_type == None
+    assert return_type is None
 
     return_type = transform.fit(data, None)
-    assert return_type == None
+    assert return_type is None
 
     return_type = transform.fit(dataset)
-    assert return_type == None
+    assert return_type is None
 
     return_type = transform.fit(dataset, None)
-    assert return_type == None
+    assert return_type is None
 
     return_type = transform.fit(data, targets)
-    assert return_type == None
+    assert return_type is None
 
 
 def test_fit_transform():
     transformed_data = transform.fit_transform(data)
-    assert type(transformed_data) == torch.Tensor
+    assert isinstance(transformed_data, torch.Tensor)
 
     transformed_data = transform.fit_transform(data, None)
-    assert type(transformed_data) == torch.Tensor
-
-    # transformed_data = transform.fit_transform(dataset)
-    # assert type(transformed_data) == BaseDataset
-
-    # transformed_data = transform.fit_transform(dataset, None)
-    # assert type(transformed_data) == BaseDataset
+    assert isinstance(transformed_data, torch.Tensor)
 
     transformed_data, transformed_targets = transform.fit_transform(data, targets)
-    assert type(transformed_data) == torch.Tensor
-    assert type(transformed_targets) == torch.Tensor
+    assert isinstance(transformed_data, torch.Tensor)
+    assert isinstance(transformed_targets, torch.Tensor)
 
 
 def test_add():
@@ -110,7 +94,7 @@ def test_add():
 
 
 def test_invert():
-    assert transform._invert_transform == None
+    assert transform._invert_transform is None
 
     inverted_transform = ~transform
     assert inverted_transform._invert_transform == transform

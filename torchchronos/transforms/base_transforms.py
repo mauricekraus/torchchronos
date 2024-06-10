@@ -233,7 +233,16 @@ class Transform(ABC):
             assert targets is None
             self._fit_dataset(time_series)
         else:
-            self._fit(time_series, targets)
+            shape = time_series.shape
+
+            if time_series.ndim == 1:
+                time_series = time_series.reshape(1, 1, shape[0])
+            elif time_series.ndim == 2:
+                time_series = time_series.reshape(shape[0], 1, shape[1])
+                self._fit(time_series, targets)
+            else:
+                self._fit(time_series, targets)
+
         self.is_fitted = True
 
     @overload
@@ -306,10 +315,10 @@ class Transform(ABC):
         data, targets = get_data_from_dataset(dataset)
 
         if targets is None:
-            ts_transformed, _ = self._transform(data)
+            ts_transformed, _ = self.transform(data)
             return TensorDataset(ts_transformed)
 
-        ts_transformed, targets_transformed = self._transform(data, targets)
+        ts_transformed, targets_transformed = self.transform(data, targets)
         return TensorDataset(ts_transformed, targets_transformed)
 
     def _fit_dataset(self, dataset: Dataset) -> None:
@@ -326,7 +335,6 @@ class Transform(ABC):
         Returns:
             The string representation of the object.
         """
-        pass
 
     @abstractmethod
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
@@ -337,7 +345,6 @@ class Transform(ABC):
             targets: The target values associated with the time series data.
 
         """
-        pass
 
     @abstractmethod
     def _transform(
@@ -354,7 +361,6 @@ class Transform(ABC):
             tuple[torch.Tensor, None] if only a time series is provided.
             tuple[torch.Tensor, torch.Tensor] if both the time series and targets are provided.
         """
-        pass
 
     @abstractmethod
     def _invert(self) -> None:
@@ -363,7 +369,6 @@ class Transform(ABC):
         This method should be implemented by subclasses to define how the transformation is inverted.
 
         """
-        pass
 
 
 class Compose(Transform):

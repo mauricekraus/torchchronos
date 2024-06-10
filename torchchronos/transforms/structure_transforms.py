@@ -119,7 +119,12 @@ class PadFront(Transform):
     tensor([[0., 0., 0., 0., 0., 0., 1., 2., 3., 4., 5., 6., 7., 8., 9.]])
     """
 
-    def __init__(self, length: int, value: float = 0, fixed_length: bool = False) -> None:
+    def __init__(
+        self,
+        length: int,
+        fixed_length: bool = False,
+        value: float = 0,
+    ) -> None:
         super().__init__()
         self.length = length
         self.fixed_length = fixed_length
@@ -215,7 +220,7 @@ class PadBack(Transform):
     tensor([[0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 0., 0., 0., 0., 0.]])
     """
 
-    def __init__(self, length: int, value: float = 0, fixed_length: bool = False) -> None:
+    def __init__(self, length: int, fixed_length: bool = False, value: float = 0) -> None:
         super().__init__()
         self.time_series_length: int | None = None
         self.fixed_length = fixed_length

@@ -57,4 +57,7 @@ testpaths = [
     "tests",
     "torchchronos",
 ]
-addopts="--doctest-modules"
+addopts = [
+    "--import-mode=importlib",
+    "--doctest-modules",
+]
