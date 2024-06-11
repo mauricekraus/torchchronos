@@ -64,7 +64,7 @@ class Transform(ABC):
         ...
 
     @overload
-    def __call__(self, time_series: Dataset) -> Dataset:
+    def __call__(self, time_series: Dataset) -> TensorDataset:
         ...
 
     def __call__(
@@ -252,7 +252,7 @@ class Transform(ABC):
     @overload
     def transform(
         self, time_series: torch.Tensor, targets: torch.Tensor
-    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         ...
 
     @overload
