@@ -62,5 +62,6 @@ addopts = [
 ]
 
 [tool.mypy]
-exclude = ["docs/"]
+exclude = ["docs/", 
+"torchchronos/tranforms/base_transforms.py"]
 allow_redefinition = true

@@ -9,8 +9,8 @@ from torchchronos.transforms.transformation_exceptions import NoInverseError
 def test_to_torch_tensor():
     generator = np.random.default_rng(7)
     transform = ToTorchTensor()
-    numpy_data = generator.rand(10, 1, 10)
-    numpy_targets = generator.rand(10, 1)
+    numpy_data = generator.random((50, 1, 34))
+    numpy_targets = generator.random((50, 1))
     numpy_string_targets = np.array(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"])
 
     torch_data = transform(numpy_data)

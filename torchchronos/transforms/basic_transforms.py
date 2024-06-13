@@ -54,7 +54,6 @@ class Identity(Transform):
             time_series: The input time series.
             targets: The input targets.
         """
-        pass
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -228,7 +227,6 @@ class Scale(Transform):
             targets: The target values associated with the time series.
 
         """
-        pass
 
     def _transform(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> torch.Tensor:
         """Apply the scaling transformation to the input time series.
@@ -241,7 +239,7 @@ class Scale(Transform):
         Returns:
             The scaled time series.
         """
-        pass
+        ...
 
     def _invert(self) -> "Scale":
         """Return the inverse transformation of the scaling transformation.
@@ -249,7 +247,6 @@ class Scale(Transform):
         Returns:
             The inverse scaling transformation.
         """
-        pass
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -264,7 +261,6 @@ class Scale(Transform):
         Returns:
             The scaled time series and the targets (if provided).
         """
-        pass
         return time_series * self.scale, targets
 
     def _invert(self) -> Transform:
@@ -331,7 +327,6 @@ class Shift(Transform):
             time_series: The input time series data.
             targets: The target data (if applicable).
         """
-        pass
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -379,7 +374,11 @@ class NaNToNumber(Transform):
         return time_series, targets
 
     def _invert(self):
-        raise NoInverseError
+        error_message = (
+            "This transform can not be reversed. To reverse this, the transform would have to "
+            "safe the positions of the replaced numbers. This is not done."
+        )
+        raise NoInverseError(error_message)
 
     def __repr__(self):
         return f"NaNToNumber(replacement={self.replacement})"
