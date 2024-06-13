@@ -4,10 +4,10 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import TensorDataset
 
 
-def save_dataset(dataset: Dataset, name: str, save_path: Path | None = None) -> None:
+def save_dataset(dataset: TensorDataset, name: str, save_path: Path | None = None) -> None:
     """Save a dataset to a file.
 
     Args:
@@ -16,19 +16,21 @@ def save_dataset(dataset: Dataset, name: str, save_path: Path | None = None) -> 
         save_path: The path to save the file to.
 
     """
-    has_targets = True if isinstance(dataset[0], tuple) else False
-    data: torch.Tensor = dataset[0][0] if has_targets else dataset[0]
-    targets: list[int] | None = [dataset[0][1]] if has_targets else None
-    for i in range(1, len(dataset)):
-        if has_targets:
-            data = torch.cat((data, dataset[i][0]), axis=0)
-            targets.append(dataset[i][1])
-        else:
-            data = torch.cat((data, dataset[i]), axis=0)
+    has_targets: bool = True if isinstance(dataset[0], tuple) else False
+    data: list[torch.Tensor] = []
+    targets: list[torch.Tensor] = []
 
-    data = data.numpy()
+    for i in range(len(dataset)):
+        if has_targets:
+            ts, tar = dataset[i]
+            data.append(ts)
+            targets.append(tar)
+        else:
+            data.append(dataset[i])
+
+    data = torch.stack(data).numpy()
     if has_targets:
-        targets = np.array(targets)
+        targets = torch.stack(targets).numpy()
 
     if save_path is None:
         save_path = Path(".cache/torchchronos/datasets")
@@ -40,23 +42,3 @@ def save_dataset(dataset: Dataset, name: str, save_path: Path | None = None) -> 
             np.savez(f, data=data, targets=targets)
         else:
             np.savez(f, data=data)
-
-
-def get_meta_data(dataset: Dataset) -> dict:
-    """Get the meta data of a dataset.
-
-    Args:
-        dataset: The dataset to get the meta data from.
-
-    Returns:
-        dict: The meta data of the dataset.
-    """
-    meta_data = {}
-    meta_data["length"] = len(dataset)
-    has_targets = True if isinstance(dataset[0], tuple) else False
-    if has_targets:
-        meta_data["data_shape"] = dataset[0][0].shape
-        meta_data["target_shape"] = dataset[0][1].shape
-    else:
-        meta_data["data_shape"] = dataset[0].shape
-    return meta_data

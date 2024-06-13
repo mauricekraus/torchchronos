@@ -44,7 +44,7 @@ class PrepareableDataset(ABC, Dataset):
     ) -> None:
         self.is_prepared: bool = False
         self.is_loaded: bool = False
-        self._transform: list[base_transforms.Transform] = transform
+        self._transform: base_transforms.Transform = transform
         self.domain: str | None = domain
 
     @property

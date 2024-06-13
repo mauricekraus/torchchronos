@@ -10,13 +10,11 @@ from aeon.datasets._data_loaders import load_classification, load_forecasting
 from torchchronos import dataset_cache_path
 
 from ..transforms import (
-    Compose,
     Identity,
     LabelTransform,
-    ToTorchTensor,
     Transform,
 )
-from .prepareable_dataset import PrepareableDataset
+from .prepareable_dataset import NotLoadedError, PrepareableDataset
 
 
 class AeonClassificationDataset(PrepareableDataset):
@@ -129,7 +127,8 @@ class AeonClassificationDataset(PrepareableDataset):
         targets: np.ndarray
         data, targets = load_classification(name=self.name, split=self.split, extract_path=self._save_path)
 
-        transform: Compose = Compose([ToTorchTensor(), LabelTransform()])
+        data, targets = torch.tensor(data), torch.tensor(targets)
+        transform: LabelTransform = LabelTransform()
         transform.fit(data, targets)
 
         self._data, self._targets = transform(data, targets)
@@ -183,9 +182,13 @@ class MonashForcastingDataset(PrepareableDataset):
 
     def _get_item(self, idx: int) -> torch.Tensor:
         """Get an item from the dataset."""
+        if self._data is None:
+            raise NotLoadedError("The Dataset has to be loaded fitst, before an item can be indexed.")
         return self._data[idx]
 
     def __len__(self) -> int:
+        if self._data is None:
+            raise NotLoadedError("The Dataset has to be loaded fitst, before the length can be accessed.")
         return len(self._data)
 
     def _prepare(self) -> None:
@@ -217,5 +220,5 @@ class MonashForcastingDataset(PrepareableDataset):
         """Load the dataset and fit the self.transform object to the data."""
         np_data = np.load(self._save_path / f"{self.name}.npy")
 
-        self._data = ToTorchTensor()(np_data)
+        self._data = torch.tensor(np_data)
         self.transforms.fit(self._data)

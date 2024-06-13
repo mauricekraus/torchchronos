@@ -230,27 +230,6 @@ class Scale(Transform):
         """
         pass
 
-    def _transform(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> torch.Tensor:
-        """Apply the scaling transformation to the input time series.
-
-        Args:
-            time_series: The input time series to apply the scaling transformation to.
-            targets: The target values associated with the time series.
-
-
-        Returns:
-            The scaled time series.
-        """
-        pass
-
-    def _invert(self) -> "Scale":
-        """Return the inverse transformation of the scaling transformation.
-
-        Returns:
-            The inverse scaling transformation.
-        """
-        pass
-
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
     ) -> tuple[torch.Tensor, torch.Tensor | None]:

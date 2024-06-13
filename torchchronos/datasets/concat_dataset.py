@@ -12,7 +12,7 @@ from typing import Any
 
 import numpy as np
 from torch import Tensor
-from torch.utils.data import Dataset, Subset
+from torch.utils.data import Dataset, Subset, TensorDataset
 
 from torchchronos.transforms import Identity, Transform
 
@@ -129,7 +129,7 @@ class ConcatDataset(PrepareableDataset):
                 f" but was {len(datasets)} and {len(frequency)} respectively"
             )
 
-        self.datasets = datasets
+        self.datasets: list[Dataset] = datasets
         self.frequency = frequency
         self.shuffle = shuffle
         self.transform = transform
@@ -151,7 +151,7 @@ class ConcatDataset(PrepareableDataset):
         """
         rnd = np.random.default_rng()
 
-        def _build_indicies(dataset: Dataset, fraction: float) -> Dataset:
+        def _build_indicies(dataset: TensorDataset, fraction: float) -> np.ndarray:
             if fraction == 1.0:
                 return np.arange(len(dataset))
             else:
@@ -178,7 +178,7 @@ class ConcatDataset(PrepareableDataset):
             self.frequency = [longest_dataset / len(dataset) for dataset in self.datasets]
 
         self.datasets = [
-            Subset(dataset, _build_indicies(dataset, fraction))
+            Subset(dataset, _build_indicies(dataset, fraction).tolist())
             for dataset, fraction in zip(self.datasets, self.frequency)
         ]
 
