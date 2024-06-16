@@ -10,21 +10,25 @@ from torchchronos.transforms.representation_transformations import (
 )
 
 
-def test_label_transform():
-    transform = LabelTransform()
+class TestLabelTransform:
+    def test_label_transform(self):
+        pass
 
-    data = torch.randn((10, 1, 10), dtype=torch.float32).numpy()
-    labels = torch.tensor([1, 5, 2, 1, 4, 1, 9, 0, 5, 1])
+    def test_label_transform_case_2(self):
+        transform = LabelTransform()
 
-    transform.fit(data, labels)
-    data_transformed, labels_transformed = transform(data, labels)
+        data = torch.randn((10, 1, 10), dtype=torch.float32).numpy()
+        labels = torch.tensor([1, 5, 2, 1, 4, 1, 9, 0, 5, 1])
 
-    assert np.allclose(data, data_transformed)
-    assert np.allclose(labels_transformed, np.array([1, 4, 2, 1, 3, 1, 5, 0, 4, 1]))
+        transform.fit(data, labels)
+        data_transformed, labels_transformed = transform(data, labels)
 
-    inverse_transform = ~transform
-    assert isinstance(inverse_transform, LabelTransform)
-    assert inverse_transform.label_map == {0: 0, 1: 1, 2: 2, 3: 4, 4: 5, 5: 9}
+        assert np.allclose(data, data_transformed)
+        assert np.allclose(labels_transformed, np.array([1, 4, 2, 1, 3, 1, 5, 0, 4, 1]))
+
+        inverse_transform = ~transform
+        assert isinstance(inverse_transform, LabelTransform)
+        assert inverse_transform.label_map == {0: 0, 1: 1, 2: 2, 3: 4, 4: 5, 5: 9}
 
 
 def test_complex_to_polar():

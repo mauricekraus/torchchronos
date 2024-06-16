@@ -20,6 +20,10 @@ def targets_random(size):
     return torch.randint(0, 10, (size, 1))
 
 
+def targets_random_wide_range(size):
+    return torch.randint(-10, 10, (size, 1))
+
+
 def make_time_series_unequal_length(ts):
     test_ts_unequal_length = ts.clone().detach()
     for i in range(ts.shape[0] - 1):
@@ -48,6 +52,12 @@ def target_method(request):
 def targets(dataset, target_method):
     size = dataset.shape[0]
     return target_method(size)
+
+
+@pytest.fixture(scope="module")
+def wide_targets(dataset):
+    size = dataset.shape[0]
+    return targets_random_wide_range(size)
 
 
 @pytest.fixture(scope="module")
