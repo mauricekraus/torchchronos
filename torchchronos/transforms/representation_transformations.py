@@ -94,7 +94,6 @@ class ComplexToPolar(Transform):
             time_series: The input time series data.
             targets: The target data.
         """
-        pass
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -139,7 +138,6 @@ class PolarToComplex(Transform):
             time_series: The input time series data.
             targets : The target data.
         """
-        pass
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -186,7 +184,6 @@ class CombineToComplex(Transform):
             time_series: The input time series data.
             targets: The target to the data.
         """
-        pass
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -233,7 +230,6 @@ class SplitComplexToRealImag(Transform):
             targets: The target data.
 
         """
-        pass
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None

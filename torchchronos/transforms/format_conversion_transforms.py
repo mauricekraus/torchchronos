@@ -27,7 +27,6 @@ class ToTorchTensor(Transform):
             targets: The target data.
 
         """
-        pass
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -63,7 +62,11 @@ class ToTorchTensor(Transform):
         Raises:
             NoInverseError: The inversion of the transformation is not supported.
         """
-        raise NoInverseError()
+        error_message = (
+            "There is no real inverse of transforming to a PyTorch Tensor. "
+            "Maybe use the transform ToNumpyArray"
+        )
+        raise NoInverseError(error_message)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}()"
@@ -89,7 +92,6 @@ class ToNumpyArray(Transform):
             targets: The target data.
 
         """
-        pass
 
     def _transform(  # type: ignore[override]
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -114,7 +116,11 @@ class ToNumpyArray(Transform):
         Raises:
             NoInverseError: The inversion of the transformation is not supported.
         """
-        raise NoInverseError()
+        error_message = (
+            "Transforming to a Numpy Array can not be reversed. Maybe the transform"
+            "ToTorchTensor is the correct transform to use here."
+        )
+        raise NoInverseError(error_message)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}()"
@@ -144,7 +150,6 @@ class To(Transform):
             targets: The target data.
 
         """
-        pass
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -169,7 +174,8 @@ class To(Transform):
         Raises:
             NoInverseError: The inversion of the transformation is not supported.
         """
-        raise NoInverseError()
+        error_message = "There is no inverse for torch.to(). "
+        raise NoInverseError(error_message)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(attribute={self.torch_attribute})"

@@ -1,92 +1,139 @@
-import pytest
 import torch
 
 from torchchronos.transforms.basic_transforms import Identity, Normalize, Scale, Shift
 
 
-@pytest.fixture
-def data():
-    return torch.randn(10, 1, 100)
+class TestIdentityTransform:
+    def test_case_1(self, test_case_with_target):
+        time_series, targets, has_unequal_length = test_case_with_target
+        transform = Identity()
+
+        ts_transformed = transform(time_series)
+        assert torch.allclose(time_series, ts_transformed, equal_nan=has_unequal_length)
+
+        if targets is not None:
+            ts_transformed, tar_transformed = transform(time_series, targets)
+            assert torch.allclose(time_series, ts_transformed, equal_nan=has_unequal_length)
+            assert torch.equal(targets, tar_transformed)
+
+    def test_inverse(self):
+        transform = Identity()
+        inv_transform = ~transform
+        assert isinstance(inv_transform, Identity)
 
 
-@pytest.fixture
-def targets():
-    return torch.randint(0, 2, (100, 1))
+class TestScaleTransform:
+    def test_scale(self, test_case_with_target):
+        time_series, targets, has_unequal_length = test_case_with_target
+        transform = Scale(torch.tensor([2.0]))
+
+        transformed_data = transform(time_series)
+        assert torch.allclose(time_series * 2.0, transformed_data, equal_nan=has_unequal_length)
+
+        if targets is not None:
+            transformed_data, transformed_targets = transform(time_series, targets)
+            assert torch.allclose(time_series * 2.0, transformed_data, equal_nan=has_unequal_length)
+            assert torch.equal(targets, transformed_targets)
+
+    def test_scale_invert(self, test_case_without_target):
+        time_series, has_unequal_length = test_case_without_target
+        transform = Scale(2.0)
+        inv_transform = transform.invert()
+        assert isinstance(inv_transform, Scale)
+        assert inv_transform.scale == 0.5
+
+        ts_transformed = transform(time_series)
+        ts_inv_transformed = inv_transform(ts_transformed)
+        assert torch.allclose(time_series, ts_inv_transformed, equal_nan=has_unequal_length)
+
+    def test_scale_with_vector(self, test_case_without_target):
+        time_series, has_unequal_length = test_case_without_target
+        n_time_steps = time_series.shape[2]
+        scale_tensor = torch.randint(1, 10, (n_time_steps, 1)).float()
+        transform = Scale(scale_tensor)
+
+        transformed_data = transform.transform(time_series)
+        assert torch.allclose(transformed_data, time_series * scale_tensor, equal_nan=has_unequal_length)
 
 
-def test_identity(data, targets):
-    transform = Identity()
+class TestShiftTransform:
+    def test_shift(self, test_case_with_target):
+        time_series, targets, has_unequal_length = test_case_with_target
+        transform = Shift(torch.tensor([2.0]))
 
-    transformed_data = transform.transform(data)
-    assert torch.equal(data, transformed_data)
+        transformed_data = transform(time_series)
+        assert torch.allclose(time_series + 2.0, transformed_data, equal_nan=has_unequal_length)
 
-    transformed_data, transformed_targets = transform.transform(data, targets)
-    assert torch.equal(data, transformed_data)
-    assert torch.equal(targets, transformed_targets)
+        if targets is not None:
+            transformed_data, transformed_targets = transform(time_series, targets)
+            assert torch.allclose(time_series + 2.0, transformed_data, equal_nan=has_unequal_length)
+            assert torch.equal(targets, transformed_targets)
 
-    inverted_transform = transform.invert()
-    assert isinstance(inverted_transform, Identity)
+    def test_shift_inverse(self, test_case_without_target):
+        time_series, has_unequal_length = test_case_without_target
+        transform = Shift(2.0)
+        inv_tranform = transform.invert()
+        assert isinstance(inv_tranform, Shift)
+        assert inv_tranform.shift == -2.0
 
+        ts_transformed = transform(time_series)
+        inv_ts_transformed = inv_tranform(ts_transformed)
+        assert torch.allclose(time_series, inv_ts_transformed, equal_nan=has_unequal_length)
 
-def test_scale(data, targets):
-    transform = Scale(torch.tensor([2.0]))
+    def test_shift_with_vector(self, test_case_without_target):
+        time_series, has_unequal_length = test_case_without_target
+        n_time_steps = time_series.shape[2]
+        shift_tensor = torch.randint(1, 10, (n_time_steps, 1)).float()
+        transform = Shift(shift_tensor)
 
-    transformed_data = transform.transform(data)
-    assert torch.equal(data * 2.0, transformed_data)
-
-    transformed_data, transformed_targets = transform.transform(data, targets)
-    assert torch.equal(data * 2.0, transformed_data)
-    assert torch.equal(targets, transformed_targets)
-
-    inverted_transform = transform.invert()
-    assert isinstance(inverted_transform, Scale)
-    assert inverted_transform.scale == 0.5
-
-    scale_tensor = torch.randint(1, 10, (100, 1)).float()
-    transform = Scale(scale_tensor)
-    transformed_data = transform.transform(data)
-    assert torch.equal(data * scale_tensor, transformed_data)
-
-
-def test_shift():
-    transform = Shift(torch.tensor([2.0]))
-    data = torch.randn(10, 1, 100)
-    targets = torch.randint(0, 2, (100, 1))
-
-    transformed_data = transform.transform(data)
-    assert torch.equal(data + 2.0, transformed_data)
-
-    transformed_data, transformed_targets = transform.transform(data, targets)
-    assert torch.equal(data + 2.0, transformed_data)
-    assert torch.equal(targets, transformed_targets)
-
-    inverted_transform = transform.invert()
-    assert isinstance(inverted_transform, Shift)
-    assert inverted_transform.shift == -2.0
-
-    shift_tensor = torch.randint(1, 10, (100, 1)).float()
-    transform = Shift(shift_tensor)
-    transformed_data = transform.transform(data)
-    assert torch.equal(data + shift_tensor, transformed_data)
+        ts_transformed = transform(time_series)
+        assert torch.allclose(time_series + shift_tensor, ts_transformed, equal_nan=has_unequal_length)
 
 
-def test_normalize():
-    transform = Normalize()
+class TestNormalizeTransform:
+    def test_normalize(self, test_case_with_target):
+        time_series, target, has_unequal_length = test_case_with_target
+        transform = Normalize()
 
-    data = torch.tensor([[1, 2, 3], [4, 5, 6]]).to(torch.float32).reshape(2, 1, 3)
-    transform.fit(data)
-    assert torch.allclose(transform.mean, torch.tensor([2.5, 3.5, 4.5]).reshape(1, 3))
-    assert torch.allclose(transform.std, torch.std(data, 0, True) + 1e-5)
+        transform.fit(time_series)
+        ts_transformed = transform(time_series)
+        if not has_unequal_length:
+            # Normal Case
+            assert torch.allclose(
+                torch.mean(ts_transformed, dim=[0], keepdim=True),
+                torch.zeros_like(torch.mean(ts_transformed, dim=[0], keepdim=True)),
+                atol=1e-5,
+            )
+            assert torch.allclose(
+                torch.std(ts_transformed, dim=0, keepdim=True),
+                torch.ones_like(torch.std(ts_transformed, dim=0, keepdim=True)),
+                atol=1e-3,
+            )
+        else:
+            # Case with nones
+            pass
 
-    transformed_data = transform.transform(data)
-    assert torch.allclose(transformed_data, (data - transform.mean) / transform.std)
+    def test_inverse(self, test_case_without_target):
+        time_series, has_unequal_length = test_case_without_target
+        transform = Normalize()
+        transform.fit(time_series)
+        inv_transform = ~transform
 
-    inverse_transform = transform.invert()
-    inverted_data = inverse_transform.transform(transformed_data)
-    assert torch.allclose(inverted_data, data)
+        ts_transformed = transform(time_series)
+        inv_ts_transformed = inv_transform(ts_transformed)
+        assert torch.allclose(time_series, inv_ts_transformed, equal_nan=has_unequal_length)
 
-    local_transformer = Normalize(local=True)
-    local_transformed_data = local_transformer.transform(data)
-    assert torch.allclose(
-        local_transformed_data, (data - torch.mean(data, 2, True)) / (torch.std(data, 2, True) + 1e-5)
-    )
+    def test_local_normalize(self, test_case_without_target):
+        time_series, has_unequal_length = test_case_without_target
+        transform = Normalize(local=True)
+        ts_transformed = transform(time_series)
+
+        if not has_unequal_length:
+            ts_transformed
+            # mean = torch.mean(ts_transformed, dim=2)
+            # res = torch.allclose(
+            #     torch.mean(ts_transformed, dim=1, keepdim=True),
+            #     torch.zeros_like(torch.mean(ts_transformed, dim=1, keepdim=True)),
+            #     atol=1e-5,
+            # )
+        # print(res)

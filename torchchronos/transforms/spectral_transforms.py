@@ -13,7 +13,8 @@ from .base_transforms import Transform
 class FourierTransform(Transform):
     """Fourier Transform class that applies the Fourier transform to time series data."""
 
-    def __init__(self) -> None:
+    def __init__(self, norm="ortho") -> None:
+        self.norm = norm
         super().__init__(True)
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
@@ -28,7 +29,6 @@ class FourierTransform(Transform):
 
 
         """
-        pass
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -42,7 +42,7 @@ class FourierTransform(Transform):
         Returns:
             The Fourier transformed data and the targets (if provided).
         """
-        ft = torch.fft.fft(time_series, norm="ortho")
+        ft = torch.fft.fft(time_series, norm=self.norm)
         return ft, targets
 
     def _invert(self):
@@ -60,7 +60,8 @@ class FourierTransform(Transform):
 class InverseFourierTransform(Transform):
     """Inverse Fourier transform."""
 
-    def __init__(self):
+    def __init__(self, norm="ortho"):
+        self.norm = norm
         super().__init__(True)
 
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
@@ -74,7 +75,6 @@ class InverseFourierTransform(Transform):
             targets: The target values.
 
         """
-        pass
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -88,7 +88,7 @@ class InverseFourierTransform(Transform):
         Returns:
             The transformed time series and targets.
         """
-        ifft = torch.fft.ifft(time_series, norm="ortho")
+        ifft = torch.fft.ifft(time_series, norm=self.norm)
         return ifft, targets
 
     def _invert(self):

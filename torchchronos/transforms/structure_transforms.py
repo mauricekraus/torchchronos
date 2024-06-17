@@ -76,7 +76,8 @@ class Crop(Transform):
             NoInverseError: If the crop transformation is not invertible.
 
         """
-        raise NoInverseError("Crop transformation is not invertible")
+        error_message = "Croping can not be inverted."
+        raise NoInverseError(error_message)
 
     def __repr__(self) -> str:
         return f"Crop(start={self.start}, end={self.end})"
@@ -324,7 +325,6 @@ class Filter(Transform):
             targets: The target values associated with the time series data.
 
         """
-        pass
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -362,7 +362,11 @@ class Filter(Transform):
             NoInverseError: If the filter transformation is not invertible.
 
         """
-        raise NoInverseError("Filter transformation is not invertible")
+        error_message = (
+            "The filter transform can not be inverted. To invert this transform the whole datset"
+            "has to be saved and a difference needs to be determined."
+        )
+        raise NoInverseError(error_message)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}()"
@@ -421,7 +425,6 @@ class SlidingWindow(Transform):
             targets: The target values associated with the time series data.
 
         """
-        pass
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -469,7 +472,10 @@ class SlidingWindow(Transform):
         Raises:
             NoInverseError: The sliding window transform does not have an inverse.
         """
-        raise NoInverseError()
+        error_message = (
+            "The SlidingWindow Transform cuts the time series into smaller peaced. This can not" "be undone."
+        )
+        raise NoInverseError(error_message)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(window_size={self.window_size}, step_size={self.step_size})"

@@ -19,6 +19,7 @@ fastapi = { version = "^0.88.0" }
 uplink = "^0.9.7"
 aeon = "^0.6.0"
 dill = "^0.3.8"
+setuptools = "^70.0.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
@@ -33,13 +34,17 @@ sphinx = "^7.2.6"
 sphinx_rtd_theme = "^2.0.0"
 
 [tool.ruff]
-line-length = 110  # Same as Black
-target-version = "py311"  # The lowest supported version
-fix=true
+line-length = 110        # Same as Black
+target-version = "py311" # The lowest supported version
+fix = true
 exclude = ["docs"]
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "D", "C90", "UP", "NPY"]
-ignore = ["D105", "D107", "N812"] # Remove rules for commenting magic methods and __init__ methods
+ignore = [
+    "D105",
+    "D107",
+    "N812",
+] # Remove rules for commenting magic methods and __init__ methods
 
 [tool.ruff.format]
 docstring-code-format = true
@@ -52,17 +57,14 @@ convention = "google"
 "tests/*" = ["D"]
 
 [tool.pytest.ini_options]
-testpaths = [
-    "tests",
-    "torchchronos",
-]
-addopts = [
-    "--import-mode=importlib",
-    "--doctest-modules",
+testpaths = ["tests", "torchchronos"]
+addopts = ["--import-mode=importlib", "--doctest-modules", "--strict-markers"]
+markers = [
+    "download_all: Downloads all available Datasets on the Time Series Classification Website.",
 ]
 
 [tool.mypy]
-exclude = ["docs/"]
+exclude = ["docs/", "torchchronos/tranforms/base_transforms.py"]
 allow_redefinition = true
 disable_error_code = ["import-untyped"]
 
