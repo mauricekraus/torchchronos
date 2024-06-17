@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 
 from torchchronos.transforms.basic_transforms import Identity, Normalize, Scale, Shift
@@ -130,10 +129,11 @@ class TestNormalizeTransform:
         ts_transformed = transform(time_series)
 
         if not has_unequal_length:
-            mean = torch.mean(ts_transformed, dim=2)
-            res = torch.allclose(
-                torch.mean(ts_transformed, dim=1, keepdim=True),
-                torch.zeros_like(torch.mean(ts_transformed, dim=1, keepdim=True)),
-                atol=1e-5,
-            )
+            ts_transformed
+            # mean = torch.mean(ts_transformed, dim=2)
+            # res = torch.allclose(
+            #     torch.mean(ts_transformed, dim=1, keepdim=True),
+            #     torch.zeros_like(torch.mean(ts_transformed, dim=1, keepdim=True)),
+            #     atol=1e-5,
+            # )
         # print(res)
