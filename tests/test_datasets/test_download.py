@@ -1,7 +1,7 @@
 import pytest
-from aeon.datasets.tsf_data_lists import tsf_all
-from aeon.datasets.tser_data_lists import tser_all
 from aeon.datasets._data_loaders import load_forecasting, load_regression
+from aeon.datasets.tser_data_lists import tser_all
+from aeon.datasets.tsf_data_lists import tsf_all
 
 
 @pytest.mark.download_all
