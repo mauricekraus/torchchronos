@@ -21,9 +21,9 @@ class DatasetDataModule(L.LightningDataModule):
     Args:
         train: The training dataset.
         val: The validation dataset. This can either be a float or a dataset. If it is a float, it will be
-        used as the fraction of the training dataset to be used for validation.
+            used as the fraction of the training dataset to be used for validation.
         test: The test dataset. This can either be a float or a dataset. If it is a float, it will be used
-        as the fraction of the training dataset to be used for testing.
+            as the fraction of the training dataset to be used for testing.
         batch_size: The batch size.
         shuffle: Whether to shuffle the data.
 

@@ -1,11 +1,8 @@
 Welcome to torchchronos!
 ========================
 
-TODO: write
-
-Most information about the setup and usage can currently be found in this project's `README <https://github.com/mauricekraus/torchchronos>`__.
-
-In this documentation you will find more complete and in-depth technical information about the library.
+This library is designed to combine Time Series data handling combined with PyTorch. The library is seperated into 3 parts.
+First the Dataset section. This section ... 
 
 .. toctree::
    :maxdepth: 2
