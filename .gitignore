@@ -16,3 +16,5 @@ tests/debug.py
 .mypy_cache/
 # Ruff Cache
 .ruff_cache/
+# Documentation Builds
+.docs/build/
