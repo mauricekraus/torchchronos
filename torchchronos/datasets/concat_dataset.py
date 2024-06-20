@@ -6,9 +6,9 @@ how the indices are shuffled, while the FrequencyMode describes how the datasets
 """
 
 import math
-from collections.abc import Sequence
+from collections.abc import Sequence, Sized
 from enum import Enum, auto
-from typing import Any
+from typing import Any, Protocol, TypeVar
 
 import numpy as np
 from torch import Tensor
@@ -17,6 +17,13 @@ from torch.utils.data import Dataset, Subset, TensorDataset
 from torchchronos.transforms import Identity, Transform
 
 from .prepareable_dataset import PrepareableDataset
+
+
+class SizedDatasetProtocol(Protocol, Dataset, Sized):
+    ...
+
+
+SizedDataset = TypeVar("SizedDataset", bound=SizedDatasetProtocol)
 
 
 class ShuffleMode(Enum):
@@ -111,7 +118,7 @@ class ConcatDataset(PrepareableDataset):
 
     def __init__(
         self,
-        datasets: list[PrepareableDataset],
+        datasets: list[SizedDataset],
         frequency: (float | Sequence[float] | FrequencyMode) = FrequencyMode.PROPORTIONAL_TO_SAMPLE,
         shuffle: ShuffleMode = ShuffleMode.DISABLED,
         transform: Transform = Identity(),
@@ -129,7 +136,7 @@ class ConcatDataset(PrepareableDataset):
                 f" but was {len(datasets)} and {len(frequency)} respectively"
             )
 
-        self.datasets: list[Dataset] = datasets
+        self.datasets: list[SizedDataset] = datasets
         self.frequency = frequency
         self.shuffle = shuffle
         self.transform = transform
@@ -172,7 +179,6 @@ class ConcatDataset(PrepareableDataset):
         for dataset in self.datasets:
             if isinstance(dataset, PrepareableDataset):
                 dataset.load()
-
         if self.frequency == FrequencyMode.ALL_EQUAL:
             longest_dataset = max(len(dataset) for dataset in self.datasets)
             self.frequency = [longest_dataset / len(dataset) for dataset in self.datasets]
