@@ -136,10 +136,12 @@ class DatasetDataModule(L.LightningDataModule):
 
         if stage == "fit":
             self._train_dataset = self.train
-            self._val_dataset = self.val
+            if isinstance(self.val, Dataset):
+                self._val_dataset = self.val
 
         elif stage == "test":
-            self._test_dataset = self.test
+            if isinstance(self.test, Dataset):
+                self._test_dataset = self.test
 
     def train_dataloader(self) -> DataLoader:
         """Get the train dataloader."""

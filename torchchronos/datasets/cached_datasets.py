@@ -56,7 +56,7 @@ class CachedDataset(PrepareableDataset):
 
         super().__init__(transform=transform)
 
-    def _get_data(self) -> tuple[np.ndarray, None] | tuple[np.ndarray, np.ndarray]:
+    def _get_data(self) -> tuple[torch.Tensor, None] | tuple[torch.Tensor, torch.Tensor]:
         """Load the data from the cached file.
 
         Returns:
@@ -68,9 +68,9 @@ class CachedDataset(PrepareableDataset):
         data: np.ndarray = data_dict["data"]
         if "targets" in data_dict.files:
             targets: np.ndarray = data_dict["targets"]
-            return data, targets
+            return torch.from_numpy(data), torch.from_numpy(targets)
         else:
-            return data, None
+            return torch.from_numpy(data), None
 
     def _prepare(self) -> None:
         """Prepare the dataset for loading.
@@ -84,10 +84,9 @@ class CachedDataset(PrepareableDataset):
 
     def _load(self) -> None:
         """Load the data and targets into memory."""
-        data: np.ndarray
-        targets: np.ndarray | None
-        data, targets = self._get_data()
-        self.data, self.targets = ToTorchTensor()(data, targets)
+        data: torch.Tensor
+        targets: torch.Tensor | None
+        self.data, self.targets = self._get_data()
         self.transforms.fit(self.data, self.targets)
 
     def _get_item(self, index: int) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:

@@ -33,17 +33,17 @@ def make_time_series_unequal_length(ts):
 
 
 # Register datasets and target functions in lists for easy extension
-datasets = [dataset_1, dataset_2]
-targets = [targets_none, targets_random]
+dataset_list = [dataset_1, dataset_2]
+target_list = [targets_none, targets_random]
 
 
 # Fixtures for parameterization
-@pytest.fixture(scope="module", params=datasets)
+@pytest.fixture(scope="module", params=dataset_list)
 def dataset(request):
     return request.param()
 
 
-@pytest.fixture(scope="module", params=targets)
+@pytest.fixture(scope="module", params=target_list)
 def target_method(request):
     return request.param
 

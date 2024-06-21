@@ -4,26 +4,23 @@ This module implements the functionality to combine mutliple datasets into one. 
 in the ConcatDataset class, there are two Enums: ShuffleMode and FrequencyMode. The ShuffleMode describes
 how the indices are shuffled, while the FrequencyMode describes how the datasets can be are combined.
 """
+from __future__ import annotations
 
 import math
-from collections.abc import Sequence, Sized
+from collections.abc import Sequence
 from enum import Enum, auto
-from typing import Any, Protocol, TypeVar
+from typing import Any, TypeAlias
 
 import numpy as np
 from torch import Tensor
 from torch.utils.data import Dataset, Subset, TensorDataset
 
-from torchchronos.transforms import Identity, Transform
+from torchchronos.datasets.prepareable_dataset import PrepareableDataset
+from torchchronos.transforms.base_transforms import Transform
+from torchchronos.transforms.basic_transforms import Identity
 
-from .prepareable_dataset import PrepareableDataset
-
-
-class SizedDatasetProtocol(Protocol, Dataset, Sized):
-    ...
-
-
-SizedDataset = TypeVar("SizedDataset", bound=SizedDatasetProtocol)
+# Since there is no Sized Dataset type in torch
+SizedDataset: TypeAlias = Any
 
 
 class ShuffleMode(Enum):
@@ -68,8 +65,9 @@ class ConcatDataset(PrepareableDataset):
     Args:
         datasets: The datasets to be concatenated.
         frequency: The frequency of the datasets. Can be a float, a list of floats or a FrequencyMode.
-                    This describes how much of the according datset is in the new concated dataset.
+            This describes how much of the according datset is in the new concated dataset.
         shuffle: The shuffle mode of the dataset.
+        transform: The transform that is applied to each data point.
 
     Examples:
         This example shows how to create a dataset containng 3 times the same dataset.
@@ -146,6 +144,10 @@ class ConcatDataset(PrepareableDataset):
     def _prepare(self) -> None:
         """Calls prepare on all PrepareableDatasets in the datasets list."""
         for dataset in self.datasets:
+            # Checking for Sized Dataset
+            assert isinstance(dataset, Dataset)
+            assert hasattr(dataset, "__len__")
+
             if isinstance(dataset, PrepareableDataset):
                 dataset.prepare()
 

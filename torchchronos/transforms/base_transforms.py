@@ -308,9 +308,11 @@ class Transform(ABC):
 
         if targets is None:
             return transformed_ts
-        else:
+        elif isinstance(transformed_target, torch.Tensor):
             return transformed_ts, transformed_target
-
+        else:
+            raise TypeError("Got wrong Type.")
+        
     def _transform_dataset(self, dataset: Dataset) -> TensorDataset:
         data, targets = get_data_from_dataset(dataset)
 
