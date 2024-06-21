@@ -167,7 +167,7 @@ class MonashForcastingDataset(PrepareableDataset):
         >>> data = dataset[0]
     """
 
-    def __init__(self, name: str, path: Path | str = dataset_cache_path, transform=Identity()):
+    def __init__(self, name: str, path: Path | str = dataset_cache_path, transform:Transform=Identity()):
         self._data: torch.Tensor | None = None
 
         self.name: str = name

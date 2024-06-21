@@ -93,6 +93,7 @@ class PadFront(Transform):
     Args:
         length: The length of the padding to be added.
         fixed_length: If True, the length is the time series will have the given length, after transforming.
+        value: The value the time series is padded with. Defaults to 0.
 
     Examples:
     This example demonstrates how to pad 2 zeros at the front of the time series.
@@ -194,6 +195,7 @@ class PadBack(Transform):
     Args:
         length: The length of the padding to be added.
         fixed_length: If True, the length is the time series will have the given length, after transforming.
+        value: The value the time series is padded with. Defaults to 0.
 
     Examples:
     This example demonstrates how to pad 2 zeros at the end of the time series.

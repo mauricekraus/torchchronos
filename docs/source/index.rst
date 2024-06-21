@@ -1,4 +1,4 @@
-Welcome to torchchronos!
+Welcome to torchchronos
 ========================
 
 Introduction
@@ -6,7 +6,7 @@ Introduction
 
 Why torchchronos
 ----------------
-TorchChronos is a library to make handeling time series data easy with PyTorch and Lightning. There are alreads some libraries for handeling
+TorchChronos is a library to make handling time series data easy with PyTorch and Lightning. There are already some libraries for handeling
 time series data such as SkTime or Darts, however those libraries do not work together with PyTorch.
 
 The goal of this library is to bridge that gap, by implementing a library that takes time series data and makes processing and using it in
@@ -43,8 +43,8 @@ Example Code
    from torchchronos.transforms import Scale
    from torchchronos.datasets import MonashForcastingDataset
    from torchchronos.lightning import DatasetDataModule
+
    # Load the dataset
-   
    dataset = MonashForcastingDataset(
        name="sunspot_dataset_without_missing_values", transform=scale_transform
    )

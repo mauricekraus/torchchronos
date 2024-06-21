@@ -376,6 +376,9 @@ class Transform(ABC):
 class Compose(Transform):
     """A class representing a composition of multiple transforms.
 
+    Args:
+        transforms: A list of transforms that are applied successively.
+        
     Attributes:
         transforms: The list of transforms in the composition.
     """

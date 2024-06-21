@@ -30,6 +30,7 @@ class Identity(Transform):
 
     The second example demonstrates how to use the Identity transform to return the input time series data and
     targets unchanged.
+    
     >>> import torch
     >>> time_series = torch.randn(10, 1, 100)  # 10 samples, 1 feature, 100 time points
     >>> targets = torch.randn(10, 1)  # 10 samples, 1 target

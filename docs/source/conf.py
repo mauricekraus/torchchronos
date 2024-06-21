@@ -55,6 +55,7 @@ html_theme = "sphinx_rtd_theme"
 
 # Change the description of the autodoc_typehints directive
 autodoc_typehints = "description"
+autodoc_type_aliases = {'SizedDataset': 'SizedDataset'}
 
 
 # -- Options for Napoleon extension ------------------------------------------
