@@ -4,14 +4,14 @@ The following transformations are implemented:
     - Identity: A transformation that returns the input time series and targets unchanged.
     - Normalize: Normalize the input time series data.
     - Scale: A transformation class that scales the input time series by a given factor.
-- Shift: A transformation class that shifts a time series data by a constant value or a tensor.
+    - Shift: A transformation class that shifts a time series data by a constant value or a tensor.
 """
 
 import numpy as np
 import torch
 
-from .base_transforms import Compose, Transform
-from .transformation_exceptions import NoInverseError
+from torchchronos.transforms.base_transforms import Compose, Transform
+from torchchronos.transforms.transformation_exceptions import NoInverseError
 
 
 class Identity(Transform):
@@ -340,7 +340,23 @@ class Shift(Transform):
 
 
 class NaNToNumber(Transform):
-    """A transformation to replace all NaNs with a fixed number."""
+    """A transformation to replace all NaNs with a fixed number.
+
+    Args:
+        replacemnt: The number that NaN is replaced with.
+
+    Examples:
+        The first example demonstrates how to use the Shift transform to shift the input time series data.
+
+        >>> import torch
+        >>> data = [0, 1, 3, float("NaN"), float("NaN")]
+        >>> time_series = torch.tensor(data).float()
+        >>> replace_transform = NaNToNumber(9)
+        >>> transformed_time_series = replace_transform(time_series)  # Does not require fitting
+        >>> transformed_time_series
+        tensor([0., 1., 3., 9., 9.])
+
+    """
 
     def __init__(self, replacement: float = 0):
         self.replacement = replacement
@@ -351,7 +367,7 @@ class NaNToNumber(Transform):
         pass
 
     def _transform(self, time_series, targets):
-        time_series[time_series == torch.nan] = self.replacement
+        time_series[torch.isnan(time_series)] = self.replacement
         return time_series, targets
 
     def _invert(self):

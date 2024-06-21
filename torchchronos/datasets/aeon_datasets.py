@@ -127,7 +127,10 @@ class AeonClassificationDataset(PrepareableDataset):
         targets: np.ndarray
         data, targets = load_classification(name=self.name, split=self.split, extract_path=self._save_path)
 
-        data, targets = torch.tensor(data), torch.tensor(targets)
+        data = torch.tensor(data)
+        targets = targets.astype(float)
+        
+        targets = torch.tensor(targets)
         transform: LabelTransform = LabelTransform()
         transform.fit(data, targets)
 

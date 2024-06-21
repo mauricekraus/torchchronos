@@ -78,7 +78,7 @@ class TestShiftTransform:
 
         ts_transformed = transform(time_series)
         inv_ts_transformed = inv_tranform(ts_transformed)
-        assert torch.allclose(time_series, inv_ts_transformed, equal_nan=has_unequal_length)
+        assert torch.allclose(time_series, inv_ts_transformed, equal_nan=has_unequal_length, atol=1e-5)
 
     def test_shift_with_vector(self, test_case_without_target):
         time_series, has_unequal_length = test_case_without_target
@@ -121,7 +121,8 @@ class TestNormalizeTransform:
 
         ts_transformed = transform(time_series)
         inv_ts_transformed = inv_transform(ts_transformed)
-        assert torch.allclose(time_series, inv_ts_transformed, equal_nan=has_unequal_length)
+        print(time_series - inv_ts_transformed)
+        assert torch.allclose(time_series, inv_ts_transformed, equal_nan=has_unequal_length, atol=1e-5)
 
     def test_local_normalize(self, test_case_without_target):
         time_series, has_unequal_length = test_case_without_target

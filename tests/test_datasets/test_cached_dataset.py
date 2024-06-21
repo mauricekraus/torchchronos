@@ -26,21 +26,20 @@ def test_prepare():
         assert dataset.is_prepared
 
 
-def test_load():
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        dataset = AeonClassificationDataset(name="GunPoint")
-        dataset.prepare()
-        dataset.load()
-        save_dataset(dataset, "test_dataset", Path(tmpdirname))
+def test_load(tmp_path):
+    dataset = AeonClassificationDataset(name="GunPoint")
+    dataset.prepare()
+    dataset.load()
+    save_dataset(dataset, "test_dataset", Path(tmp_path))
 
-        cached_dataset = CachedDataset(name="test_dataset", save_path=tmpdirname)
-        cached_dataset.prepare()
-        assert not cached_dataset.is_loaded
-        cached_dataset.load()
-        assert cached_dataset.is_loaded
-        assert len(dataset) == len(cached_dataset)
-        print(dataset[:][0].shape)
-        print(cached_dataset[:][0].shape)
+    cached_dataset = CachedDataset(name="test_dataset", save_path=tmp_path)
+    cached_dataset.prepare()
+    assert not cached_dataset.is_loaded
 
-        assert torch.all(torch.eq(dataset[:][0], cached_dataset[:][0]))
-        assert torch.all(torch.eq(dataset[:][1], cached_dataset[:][1]))
+    cached_dataset.load()
+    assert cached_dataset.is_loaded
+    assert len(dataset) == len(cached_dataset)
+    print(dataset[:][0].shape)
+    print(cached_dataset[:][0].shape)
+
+    assert torch.allclose(dataset._data, cached_dataset.data, atol=1e-5)

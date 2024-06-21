@@ -9,8 +9,9 @@ def dataset_1():
 
 
 def dataset_2():
-    return torch.arange(0, 200, 1).repeat(200).reshape(200, 1, 200).float() / 100 - 1
-
+    ts = torch.arange(0, 200, 1).repeat(200).reshape(200, 1, 200).float() / 100 - 1
+    random = torch.randint_like(ts, 10) / 10
+    return ts + random
 
 def targets_none(size):
     return None

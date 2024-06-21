@@ -10,6 +10,7 @@ from typing import NoReturn, overload
 
 import dill
 import torch
+import numpy as np
 from torch.utils.data import Dataset, TensorDataset
 
 # TODO: implement Reshape Transform, MinMax Transform
@@ -310,6 +311,8 @@ class Transform(ABC):
             return transformed_ts
         elif isinstance(transformed_target, torch.Tensor):
             return transformed_ts, transformed_target
+        elif isinstance(transformed_target, np.ndarray):
+            return transformed_ts, transformed_target # type: ignore
         else:
             raise TypeError("Got wrong Type.")
         

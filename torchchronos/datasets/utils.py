@@ -28,7 +28,7 @@ def save_dataset(dataset: TensorDataset, name: str, save_path: Path | None = Non
         else:
             data.append(dataset[i])
 
-    data = torch.stack(data).numpy()
+    data = torch.cat(data).numpy()
     if has_targets:
         targets = torch.stack(targets).numpy()
 
