@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from ..transforms import Identity, ToTorchTensor, Transform
+from ..transforms import Identity, Transform
 from .prepareable_dataset import PrepareableDataset
 
 
@@ -84,8 +84,6 @@ class CachedDataset(PrepareableDataset):
 
     def _load(self) -> None:
         """Load the data and targets into memory."""
-        data: torch.Tensor
-        targets: torch.Tensor | None
         self.data, self.targets = self._get_data()
         self.transforms.fit(self.data, self.targets)
 

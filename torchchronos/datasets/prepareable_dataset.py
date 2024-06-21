@@ -11,16 +11,17 @@ from ..transforms import base_transforms, basic_transforms
 class PrepareableDataset(ABC, Dataset):
     """A base class for prepareable datasets.
 
-    This class is the main building block for many further classes that inherit from it. The class has a perpare
-    and a load step. In the prepare step actions like downloading data, reading data, and preprocessing data
-    should be done. In the load step the data is loaded.
+    This class is the main building block for many further classes that inherit from it. The class has a
+    perpare and a load step. In the prepare step actions like downloading data, reading data, and
+    preprocessing data should be done. In the load step the data is loaded.
 
     Note:
         When inheriting from this class keep the following in mind:
-        - The inherited class can ignore the is_prepared and is_loaded attributes, all handeling is done in the
-        base class.
-        - In the load step the passed transformation has to be fitted. This can not be done here, since different
-        classes will have different ways of saving the data such as numpy arrays, torch Tensors, or pandas
+        - The inherited class can ignore the is_prepared and is_loaded attributes, all handeling is done
+            in the base class.
+        - In the load step the passed transformation has to be fitted. This can not be done here, since
+            different classes will have different ways of saving the data such as numpy arrays, torch Tensors,
+            or pandas
         DataFrames. Therefore, the fitting of the transformation has to be done in the inherited class.
 
     Args:

@@ -9,8 +9,8 @@ from pathlib import Path
 from typing import NoReturn, overload
 
 import dill
-import torch
 import numpy as np
+import torch
 from torch.utils.data import Dataset, TensorDataset
 
 # TODO: implement Reshape Transform, MinMax Transform
@@ -315,7 +315,7 @@ class Transform(ABC):
             return transformed_ts, transformed_target # type: ignore
         else:
             raise TypeError("Got wrong Type.")
-        
+
     def _transform_dataset(self, dataset: Dataset) -> TensorDataset:
         data, targets = get_data_from_dataset(dataset)
 
@@ -381,7 +381,7 @@ class Compose(Transform):
 
     Args:
         transforms: A list of transforms that are applied successively.
-        
+
     Attributes:
         transforms: The list of transforms in the composition.
     """

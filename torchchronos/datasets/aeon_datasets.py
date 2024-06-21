@@ -129,7 +129,7 @@ class AeonClassificationDataset(PrepareableDataset):
 
         data = torch.tensor(data)
         targets = targets.astype(float)
-        
+
         targets = torch.tensor(targets)
         transform: LabelTransform = LabelTransform()
         transform.fit(data, targets)
