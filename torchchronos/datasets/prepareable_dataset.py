@@ -5,7 +5,8 @@ from typing import Any
 
 from torch.utils.data import Dataset
 
-from ..transforms import base_transforms, basic_transforms
+from torchchronos.transforms.base_transforms import Transform
+from torchchronos.transforms.basic_transforms import Identity
 
 
 class PrepareableDataset(ABC, Dataset):
@@ -17,12 +18,14 @@ class PrepareableDataset(ABC, Dataset):
 
     Note:
         When inheriting from this class keep the following in mind:
-        - The inherited class can ignore the is_prepared and is_loaded attributes, all handeling is done
-            in the base class.
+
+        - The inherited class can ignore the is_prepared and is_loaded attributes, all handeling is done in 
+          the base class
+
         - In the load step the passed transformation has to be fitted. This can not be done here, since
-            different classes will have different ways of saving the data such as numpy arrays, torch Tensors,
-            or pandas
-        DataFrames. Therefore, the fitting of the transformation has to be done in the inherited class.
+          different classes will have different ways of saving the data such as numpy arrays, torch Tensors,
+          or pandas DataFrames. Therefore, the fitting of the transformation has to be done in the inherited
+          class.
 
     Args:
         transform: The transform to be applied to the dataset.
@@ -37,16 +40,16 @@ class PrepareableDataset(ABC, Dataset):
 
     def __init__(
         self,
-        transform: base_transforms.Transform = basic_transforms.Identity(),
+        transform:Transform = Identity(),
         domain: str | None = None,
     ) -> None:
         self.is_prepared: bool = False
         self.is_loaded: bool = False
-        self._transform: base_transforms.Transform = transform
+        self._transform: Transform = transform
         self.domain: str | None = domain
 
     @property
-    def transforms(self) -> base_transforms.Transform:
+    def transforms(self) -> Transform:
         """Get the transform to be applied to the dataset.
 
         Returns:

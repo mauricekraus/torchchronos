@@ -8,7 +8,7 @@ from torch.utils.data import (
     random_split,
 )
 
-from torchchronos.datasets import PrepareableDataset
+from torchchronos.datasets.prepareable_dataset import PrepareableDataset
 
 
 class DatasetDataModule(L.LightningDataModule):

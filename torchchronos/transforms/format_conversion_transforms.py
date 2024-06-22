@@ -3,8 +3,8 @@
 import numpy as np
 import torch
 
-from .base_transforms import Transform
-from .transformation_exceptions import NoInverseError
+from torchchronos.transforms.base_transforms import Transform
+from torchchronos.transforms.transformation_exceptions import NoInverseError
 
 
 class ToTorchTensor(Transform):

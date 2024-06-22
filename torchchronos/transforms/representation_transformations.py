@@ -3,7 +3,7 @@
 import numpy as np
 import torch
 
-from .base_transforms import Transform
+from torchchronos.transforms.base_transforms import Transform
 
 
 class LabelTransform(Transform):

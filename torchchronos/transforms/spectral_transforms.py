@@ -7,7 +7,7 @@ Implemeted transforms:
 
 import torch
 
-from .base_transforms import Transform
+from torchchronos.transforms.base_transforms import Transform
 
 
 class FourierTransform(Transform):
