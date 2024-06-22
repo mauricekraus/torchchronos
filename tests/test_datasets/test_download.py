@@ -1,7 +1,7 @@
 import pytest
-from aeon.datasets._data_loaders import load_forecasting, load_regression, load_classification
+from aeon.datasets._data_loaders import load_classification, load_regression
+from aeon.datasets.tsc_datasets import univariate
 from aeon.datasets.tser_datasets import tser_monash
-from aeon.datasets.tsc_datasets import univariate, univariate2015, multivariate
 
 
 @pytest.mark.download_all

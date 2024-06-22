@@ -19,7 +19,7 @@ class PrepareableDataset(ABC, Dataset):
     Note:
         When inheriting from this class keep the following in mind:
 
-        - The inherited class can ignore the is_prepared and is_loaded attributes, all handeling is done in 
+        - The inherited class can ignore the is_prepared and is_loaded attributes, all handeling is done in
           the base class
 
         - In the load step the passed transformation has to be fitted. This can not be done here, since

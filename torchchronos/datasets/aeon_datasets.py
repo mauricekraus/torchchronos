@@ -8,11 +8,10 @@ import torch
 from aeon.datasets._data_loaders import load_classification, load_forecasting
 
 from torchchronos import dataset_cache_path
-
-from torchchronos.transforms.base_transforms import Transform
-from torchchronos.transforms.representation_transformations import LabelTransform
-from torchchronos.transforms.basic_transforms import Identity
 from torchchronos.datasets.prepareable_dataset import NotLoadedError, PrepareableDataset
+from torchchronos.transforms.base_transforms import Transform
+from torchchronos.transforms.basic_transforms import Identity
+from torchchronos.transforms.representation_transformations import LabelTransform
 
 
 class AeonClassificationDataset(PrepareableDataset):

@@ -6,9 +6,9 @@ from pathlib import Path
 import numpy as np
 import torch
 
+from torchchronos.datasets.prepareable_dataset import PrepareableDataset
 from torchchronos.transforms.base_transforms import Transform
 from torchchronos.transforms.basic_transforms import Identity
-from torchchronos.datasets.prepareable_dataset import PrepareableDataset
 
 
 class CachedDataset(PrepareableDataset):
