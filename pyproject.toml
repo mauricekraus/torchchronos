@@ -6,7 +6,7 @@ build-backend = "poetry.core.masonry.api"
 name = "torchchronos"
 version = "0.1.0"
 authors = [
-    "Paul Rabich <78356939+PaulRabich@users.noreply.github.com",
+    "Paul Rabich <78356939+PaulRabich@users.noreply.github.com>",
     "Maurice Kraus <dev@mkraus.io>",
 ]
 readme = "README.md"
