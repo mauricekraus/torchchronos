@@ -27,9 +27,9 @@ language = "en"
 
 # Add any Sphinx extension
 extensions = [
+    "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
     "sphinx_rtd_theme",
