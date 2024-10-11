@@ -152,8 +152,8 @@ class Normalize(Transform):
 
         """
         if self.local:
-            mean = torch.mean(time_series, 2, True)
-            std = torch.std(time_series, 2, True) + 1e-5
+            mean = torch.mean(time_series, 2, True).reshape(time_series.shape[0], time_series.shape[1], 1)
+            std = torch.std(time_series, 2, True).reshape(time_series.shape[0], time_series.shape[1], 1) + 1e-5
             time_series = (time_series - mean) / std
             time_series[torch.isnan(time_series)] = 0
             return time_series, targets
