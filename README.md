@@ -1,88 +1,36 @@
-# torchchronos
+# Torchchronos
+## Content
+The goal of this project is to make loading time series and applying transformations in PyTorch easier. The library is divided into three main components: datasets, lightning and transforms. 
 
-[![PyPI version](https://img.shields.io/pypi/v/torchchronos.svg?color=blue)](https://pypi.org/project/torchchronos)
-[![license](https://img.shields.io/pypi/l/torchchronos.svg?color=blue)](https://github.com/mauricekraus/torchchronos/blob/main/LICENSE)
-[![python version](https://img.shields.io/badge/python-3.10+-blue)](https://devguide.python.org/versions/)
+The datasets section provides some methods for loading online datasets. Datasets that can be loaded are:
++ every dataset from https://timeseriesclassification.com/
++ every dataset form https://forecastingdata.org/
 
-[![test](https://github.com/mauricekraus/torchchronos/actions/workflows/main.yml/badge.svg)](https://github.com/mauricekraus/torchchronos/actions/workflows/main.yml)
-[![code style](https://img.shields.io/badge/code%20style-black-black)](https://github.com/psf/black)
+Currently all datasets are downloaded using the [Aeon Library](https://www.aeon-toolkit.org/en/stable/).
+The datasets module also provides a `PrepareableDataset` class, introducing a two step method to handle data. First the data is prepared, often the dataset files are downlowded here, and second the data is loaded. This is for splitting downloading the data and loading them into memory. Many torchchronos dataset classes inherit from the `PrepareableDataset` class.
 
-*torchchronos* is an experimental [PyTorch](https://pytorch.org/) and [Lightning](https://lightning.ai/pytorch-lightning/) compatible library that provides easy and flexible access to various time-series datasets for classification and regression tasks. It also provides a simple and extensible transform API to preprocess data.
-It is inspired by the much more complicated [torchtime](https://github.com/philipdarke/torchtime).
+The lightning section provides a lightning moduls for a prepareable dataset. The data is setup and loaded in the respectfully methods and all datas handeling is hidden in the class. In combination with the `ConcatDataset`class, the lightning module allows to train and test on different datasets.
+
+The transformation section provides different methods to transform the datasets. As with other transformation classes, the transformations have to be fit to the data to later transform them.
+
+```python
+from torchchronos.datasets import AeonClassificationDataset
+from torchchronos.transforms import Compose, Normalize, PadFront
+
+time_series = AeonClassificationDataset("GunPoint")
+time_series.prepare()
+time_series.load()
+
+transform = Compose([Normalize(), PadFront(10)])
+transform.fit(time_series)
+
+transformed_time_series = transform(time_series)
+
+```
 
 ## Installation
-You can install torchchronos via pip:
 
-`pip install torchchronos`
-
-## Usage
-### Datasets
-torchchronos currently provides access to several popular time-series datasets, including:
-
-- [UCR/UEA Time Series Classification Repository](https://www.timeseriesclassification.com/): `torchchronos.datasets.UCRUEADataset`
-- Time series as preprocessed in the [TFC paper](https://github.com/mims-harvard/TFC-pretraining): `torchchronos.datasets.TFCPretrainDataset` (datasets `Gesture` and `EMG`)
-
-To use a dataset, you can simply import the corresponding dataset class and create an instance:
-
-```python
-from torchchronos.datasets import UCRUEADataset
-from torchchronos.transforms import PadFront
-from torchchronos.download import download_uea_ucr
-
-download_uea_ucr("ECG5000",Path(".cache/data"))
-dataset = UCRUEADataset('ECG5000', path=Path(".cache") / "data", transforms=PadFront(10))
+The library can be installed via pip
+```bash
+pip intall torchchronos
 ```
-
-### Data Modules
-torchchronos also provides [Lightning compatible `DataModules`](https://lightning.ai/docs/pytorch/stable/data/datamodule.html) to make it easy to load and preprocess data. They support common use cases like (multi-)GPU training and train/test/val-splitting out of the box. For example:
-
-```python
-from torchchronos.lightning import UCRUEADataModule
-from torchchronos.transforms import PadFront, PadBack
-
-module = UCRUEAModule('ECG5000', split_ratio= (0.75, 0.15), batch_size= 32,
-                      transforms=Compose([PadFront(10), PadBack(10)]))
-```
-
-Analogous the the datasets above, these dataloaders are supported as of now, wrapping the respective datasets:
-- `torchchronos.lightning.UCRUEADataModule`
-- `torchchronos.lightning.TFCPretrainDataModule`
-
-### Transforms
-torchchronos provides a flexible transform API to preprocess time-series data. For example, to normalize a dataset, you can define a custom `Transform` like this:
-
-```python
-from torchchronos.transforms import Transform
-
-class Normalize(Transform):
-    def __init__(self, mean=None, std=None):
-        self.mean = mean
-        self.std = std
-
-    def fit(self, data) -> Self:
-        self.mean = data.mean()
-        self.std = data.std()
-        return self
-
-    def __call__(self, data):
-        return (data - self.mean) / self.std
-```
-
-## Known issues
-- The dataset [SpokenArabicDigits](https://www.timeseriesclassification.com/description.php?Dataset=SpokenArabicDigits) does not seem to work due to a missmatch of TRAIN and TEST size
-- The dataset [UrbanSound](https://www.timeseriesclassification.com/description.php?Dataset=UrbanSound) does not seem to work due to missing ts files
-
-
-## Roadmap
-The following features are planned for future releases of torchchronos:
-
-- Support for additional time-series datasets, including:
-    - Energy consumption dataset
-    - Traffic dataset
-    - PhysioNet Challenge 2012 (in-hospital mortality)
-    - PhysioNet Challenge 2019 (sepsis prediction) datasets
-- Additional transform classes, including:
-    - Resampling
-    - Missing value imputation
-
-If you have any feature requests or suggestions, please open an issue on our GitHub page.

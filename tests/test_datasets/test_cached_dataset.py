@@ -1,0 +1,45 @@
+import tempfile
+from pathlib import Path
+
+import pytest
+import torch
+
+from torchchronos.datasets.aeon_datasets import AeonClassificationDataset
+from torchchronos.datasets.cached_datasets import CachedDataset
+from torchchronos.datasets.utils import save_dataset
+
+
+def test_prepare():
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        dataset = AeonClassificationDataset(name="GunPoint")
+        dataset.prepare()
+        dataset.load()
+        save_dataset(dataset, "test_dataset", Path(tmpdirname))
+
+        dataset = CachedDataset(name="wrong_file", save_path=tmpdirname)
+        with pytest.raises(FileNotFoundError):
+            dataset.prepare()
+
+        dataset = CachedDataset(name="test_dataset", save_path=tmpdirname)
+        assert not dataset.is_prepared
+        dataset.prepare()
+        assert dataset.is_prepared
+
+
+def test_load(tmp_path):
+    dataset = AeonClassificationDataset(name="GunPoint")
+    dataset.prepare()
+    dataset.load()
+    save_dataset(dataset, "test_dataset", Path(tmp_path))
+
+    cached_dataset = CachedDataset(name="test_dataset", save_path=tmp_path)
+    cached_dataset.prepare()
+    assert not cached_dataset.is_loaded
+
+    cached_dataset.load()
+    assert cached_dataset.is_loaded
+    assert len(dataset) == len(cached_dataset)
+    print(dataset[:][0].shape)
+    print(cached_dataset[:][0].shape)
+
+    assert torch.allclose(dataset._data, cached_dataset.data, atol=1e-5)

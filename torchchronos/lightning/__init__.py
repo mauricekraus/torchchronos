@@ -1,4 +1,5 @@
-from .ucr_uea import UCRUEADataModule
-from .tfc_pretrain import TFCPretrainDataModule
+"""This module is for creating a Lightning DataModule to make learning easier."""
 
-__all__ = ["UCRUEADataModule", "TFCPretrainDataModule"]
+from .dataset_data_module import DatasetDataModule
+
+__all__ = ["DatasetDataModule"]

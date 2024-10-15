@@ -1,25 +1,74 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "torchchronos"
-version = "0.0.4"
-authors = ["Maurice Kraus <dev@mkraus.io>"]
+version = "0.1.0"
+authors = [
+    "Paul Rabich <78356939+PaulRabich@users.noreply.github.com>",
+    "Maurice Kraus <dev@mkraus.io>",
+]
 readme = "README.md"
 description = "PyTorch and Lightning compatible library that provides easy and flexible access to various time-series datasets for classification and regression tasks"
 license = "MIT"
 homepage = "https://github.com/mauricekraus/torchchronos"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
-sktime = "^0.16.1"
+python = ">=3.11, <3.12"
 torch = ">=2.0.0, !=2.0.1"
 lightning = "^2.0.0"
 fastapi = { version = "^0.88.0" }
 uplink = "^0.9.7"
+aeon = ">=0.9.0"
+dill = "^0.3.8"
+setuptools = "^70.0.0"
+numpy = "^1.21.2"
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.1.0"
 pytest = "^7.2.2"
 ipykernel = "^6.25.1"
+ruff = "^0.1.11"
+mypy = "^1.8.0"
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.poetry.group.doc.dependencies]
+sphinx = "^7.2.6"
+sphinx_rtd_theme = "^2.0.0"
+
+[tool.ruff]
+line-length = 110        # Same as Black
+target-version = "py311" # The lowest supported version
+fix = true
+exclude = ["docs"]
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "D", "C90", "UP", "NPY"]
+ignore = [
+    "D105",
+    "D107",
+    "N812",
+] # Remove rules for commenting magic methods and __init__ methods
+
+[tool.ruff.format]
+docstring-code-format = true
+quote-style = "double"
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "torchchronos"]
+addopts = ["--import-mode=importlib", "--doctest-modules", "--strict-markers"]
+markers = [
+    "download_all: Downloads all available Datasets on the Time Series Classification Website.",
+]
+
+[tool.mypy]
+exclude = ["docs/", "torchchronos/tranforms/base_transforms.py"]
+allow_redefinition = true
+disable_error_code = ["import-untyped"]
+
+[tool.mypy-torchchronos-transforms]
+disable_error_code = ["call-overload"]
