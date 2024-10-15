@@ -132,8 +132,8 @@ class Normalize(Transform):
 
         """
         if self.local:
-            mean = torch.mean(time_series, 2, True).reshape(time_series.shape[0], time_series.shape[1], 1)
-            std = torch.std(time_series, 2, True).reshape(time_series.shape[0], time_series.shape[1], 1) + 1e-5
+            self.mean = torch.mean(time_series, 2, True).reshape(time_series.shape[0], time_series.shape[1], 1)
+            self.std = torch.std(time_series, 2, True).reshape(time_series.shape[0], time_series.shape[1], 1) + 1e-5
             self.std = torch.nan_to_num(self.std, nan=1e-5)
         else:
             self.mean = torch.from_numpy(np.nanmean(time_series, axis=0, keepdims=True))
