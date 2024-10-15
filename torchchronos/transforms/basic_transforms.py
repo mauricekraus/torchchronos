@@ -108,14 +108,15 @@ class Normalize(Transform):
     >>> import torch
     >>> time_series = torch.arange(10).repeat(10, 1, 1).float()  # 10 samples, 1 feature, 100 time points
     >>> normalize_transform = Normalize(local=True)
-    >>> transformed_time_series = normalize_transform(time_series)  # Does not require fitting
+    >>> normalize_transform.fit(time_series)
+    >>> transformed_time_series = normalize_transform(time_series)
     >>> transformed_time_series[0, 0]
     tensor([-1.4863, -1.1560, -0.8257, -0.4954, -0.1651,  0.1651,  0.4954,  0.8257,
              1.1560,  1.4863])
     """
 
     def __init__(self, local: bool = False) -> None:
-        super().__init__(local)
+        super().__init__()
         self.local = local
         self.mean: torch.Tensor | None = None
         self.std: torch.Tensor | None = None
@@ -123,7 +124,6 @@ class Normalize(Transform):
     def _fit(self, time_series: torch.Tensor, targets: torch.Tensor | None = None) -> None:
         """Fit the normalization parameters based on the input time series data.
 
-        If self.local is True, nothing is done here
         If self.local is False, the mean and standard deviation are computed across the time dimension.
 
         Args:
@@ -155,10 +155,10 @@ class Normalize(Transform):
 
         """
         if self.mean is None or self.std is None:
-                raise RuntimeError("Cannot transform before fitting.")
+            raise RuntimeError("Cannot transform before fitting.")
             
         if self.local:
-            time_series = (time_series - mean) / std
+            time_series = (time_series - self.mean) / self.std
             time_series[torch.isnan(time_series)] = 0
             return time_series, targets
         else:
