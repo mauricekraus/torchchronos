@@ -132,10 +132,13 @@ class Normalize(Transform):
 
         """
         if self.local:
-            return
-        self.mean = torch.from_numpy(np.nanmean(time_series, axis=0, keepdims=True))
-        self.std = torch.from_numpy(np.nanstd(time_series, axis=0, keepdims=True, ddof=1) + 1e-5)
-        self.std = torch.nan_to_num(self.std, nan=1e-5)
+            mean = torch.mean(time_series, 2, True).reshape(time_series.shape[0], time_series.shape[1], 1)
+            std = torch.std(time_series, 2, True).reshape(time_series.shape[0], time_series.shape[1], 1) + 1e-5
+            self.std = torch.nan_to_num(self.std, nan=1e-5)
+        else:
+            self.mean = torch.from_numpy(np.nanmean(time_series, axis=0, keepdims=True))
+            self.std = torch.from_numpy(np.nanstd(time_series, axis=0, keepdims=True, ddof=1) + 1e-5)
+            self.std = torch.nan_to_num(self.std, nan=1e-5)
 
     def _transform(
         self, time_series: torch.Tensor, targets: torch.Tensor | None = None
@@ -151,16 +154,14 @@ class Normalize(Transform):
             The normalized time series data and the targets (if provided).
 
         """
+        if self.mean is None or self.std is None:
+                raise RuntimeError("Cannot transform before fitting.")
+            
         if self.local:
-            mean = torch.mean(time_series, 2, True).reshape(time_series.shape[0], time_series.shape[1], 1)
-            std = torch.std(time_series, 2, True).reshape(time_series.shape[0], time_series.shape[1], 1) + 1e-5
             time_series = (time_series - mean) / std
             time_series[torch.isnan(time_series)] = 0
             return time_series, targets
         else:
-            if self.mean is None or self.std is None:
-                raise RuntimeError("Cannot transform before fitting.")
-
             time_series = (time_series - self.mean) / self.std
             return time_series, targets
 
